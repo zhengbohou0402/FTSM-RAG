@@ -112,6 +112,10 @@ Open:
 http://127.0.0.1:8000/
 ```
 
+The web UI requires a local FTSM student account. Students can register and sign in from the login screen. Accounts are stored locally in `data/ukm_ftsm/student_accounts.json` with PBKDF2 password hashes; this file is ignored by git.
+
+Management endpoints for uploading, deleting, and re-indexing documents are separate from student login and require the `X-Admin-API-Key` header configured by `ADMIN_API_KEY`.
+
 Health check:
 
 ```powershell

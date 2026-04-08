@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
@@ -12,24 +12,58 @@
         />
         <link rel="stylesheet" href="/static/styles.css" />
     </head>
-    <body>
+    <body class="auth-locked">
+        <div class="auth-screen" id="auth-screen">
+            <form class="auth-card" id="auth-form">
+                <div class="auth-logo-frame">
+                    <img src="/static/assets/ftsm-logo.png" alt="FTSM logo" />
+                </div>
+                <h1>Welcome back</h1>
+                <p>Sign in with your FTSM student account.</p>
+                <label>
+                    Student ID or email
+                    <input
+                        id="auth-student-id"
+                        type="text"
+                        autocomplete="username"
+                        placeholder="e.g. p123456@siswa.ukm.edu.my"
+                        required
+                    />
+                </label>
+                <label>
+                    Password
+                    <input
+                        id="auth-password"
+                        type="password"
+                        autocomplete="current-password"
+                        minlength="6"
+                        required
+                    />
+                </label>
+                <label class="auth-register-only">
+                    Display name
+                    <input
+                        id="auth-display-name"
+                        type="text"
+                        autocomplete="name"
+                        placeholder="Optional"
+                    />
+                </label>
+                <button class="auth-submit" id="auth-submit" type="submit">
+                    Sign in
+                </button>
+                <p class="auth-error" id="auth-error"></p>
+                <button class="auth-switch" id="auth-switch" type="button">
+                    Create a student account
+                </button>
+            </form>
+        </div>
+
         <div class="app">
-            <!-- Sidebar -->
             <nav class="sidebar" id="sidebar">
                 <div class="sidebar-head">
-                    <button
-                        class="new-chat-btn"
-                        id="new-chat-btn"
-                        title="New chat"
-                    >
-                        <svg
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                        >
+                    <button class="new-chat-btn" id="new-chat-btn" title="New chat">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M12 5v14M5 12h14" />
                         </svg>
                         <span>New chat</span>
@@ -37,96 +71,44 @@
                 </div>
                 <div class="sidebar-history" id="history-list"></div>
                 <div class="sidebar-foot">
-                    <button
-                        class="icon-btn"
-                        id="theme-toggle"
-                        title="Toggle theme"
-                    >
-                        <svg
-                            class="icon-sun"
-                            width="18"
-                            height="18"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                        >
+                    <button class="icon-btn" id="theme-toggle" title="Toggle theme">
+                        <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="12" cy="12" r="5" />
-                            <path
-                                d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"
-                            />
+                            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
                         </svg>
-                        <svg
-                            class="icon-moon"
-                            width="18"
-                            height="18"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                        >
-                            <path
-                                d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"
-                            />
+                        <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
                         </svg>
                     </button>
-                    <button
-                        class="icon-btn"
-                        id="kb-toggle-btn"
-                        title="Knowledge Base"
-                    >
-                        <svg
-                            width="18"
-                            height="18"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                        >
+                    <a class="icon-btn" href="/manage" title="Manage documents">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-                            <path
-                                d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"
-                            />
+                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
                         </svg>
-                    </button>
+                    </a>
                     <span class="sidebar-foot-label">UKM FTSM Assistant</span>
                 </div>
             </nav>
 
-            <!-- Main -->
             <div class="main">
                 <header class="topbar">
-                    <button
-                        class="icon-btn"
-                        id="sidebar-toggle"
-                        title="Toggle sidebar"
-                    >
-                        <svg
-                            width="20"
-                            height="20"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                        >
+                    <button class="icon-btn" id="sidebar-toggle" title="Toggle sidebar">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <rect x="3" y="3" width="18" height="18" rx="2" />
                             <line x1="9" y1="3" x2="9" y2="21" />
                         </svg>
                     </button>
                     <span class="topbar-title">UKM FTSM Assistant</span>
-                    <button
-                        class="icon-btn"
-                        id="new-chat-btn-top"
-                        title="New chat"
-                    >
-                        <svg
-                            width="18"
-                            height="18"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                        >
+                    <span class="topbar-user" id="topbar-user"></span>
+                    <button class="icon-btn" id="logout-btn" title="Sign out">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                            <polyline points="16 17 21 12 16 7" />
+                            <line x1="21" y1="12" x2="9" y2="12" />
+                        </svg>
+                    </button>
+                    <button class="icon-btn" id="new-chat-btn-top" title="New chat">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M12 5v14M5 12h14" />
                         </svg>
                     </button>
@@ -135,68 +117,31 @@
                 <section class="chat" id="chat-log">
                     <div class="welcome" id="welcome">
                         <div class="welcome-logo">
-                            <svg
-                                width="40"
-                                height="40"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="1.5"
-                            >
-                                <path
-                                    d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
-                                />
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
                             </svg>
                         </div>
                         <h1>How can I help you today?</h1>
                         <div class="suggestion-grid">
-                            <button
-                                class="suggestion-card"
-                                data-prompt="Where can I view the academic calendar?"
-                            >
+                            <button class="suggestion-card" data-prompt="Where can I view the academic calendar?">
                                 <span class="suggestion-icon">📅</span>
-                                <span class="suggestion-title"
-                                    >Academic Calendar</span
-                                >
-                                <span class="suggestion-desc"
-                                    >Check semester dates and holidays</span
-                                >
+                                <span class="suggestion-title">Academic Calendar</span>
+                                <span class="suggestion-desc">Check semester dates and holidays</span>
                             </button>
-                            <button
-                                class="suggestion-card"
-                                data-prompt="How do I check my course timetable?"
-                            >
+                            <button class="suggestion-card" data-prompt="How do I check my course timetable?">
                                 <span class="suggestion-icon">🗓️</span>
-                                <span class="suggestion-title"
-                                    >Course Timetable</span
-                                >
-                                <span class="suggestion-desc"
-                                    >View class schedules</span
-                                >
+                                <span class="suggestion-title">Course Timetable</span>
+                                <span class="suggestion-desc">View class schedules</span>
                             </button>
-                            <button
-                                class="suggestion-card"
-                                data-prompt="What are the admission requirements for FTSM postgraduate programs?"
-                            >
+                            <button class="suggestion-card" data-prompt="What are the admission requirements for FTSM postgraduate programs?">
                                 <span class="suggestion-icon">🎓</span>
-                                <span class="suggestion-title"
-                                    >Admission Info</span
-                                >
-                                <span class="suggestion-desc"
-                                    >Requirements and application process</span
-                                >
+                                <span class="suggestion-title">Admission Info</span>
+                                <span class="suggestion-desc">Requirements and application process</span>
                             </button>
-                            <button
-                                class="suggestion-card"
-                                data-prompt="How do I renew my student visa?"
-                            >
-                                <span class="suggestion-icon">📋</span>
-                                <span class="suggestion-title"
-                                    >Visa Renewal</span
-                                >
-                                <span class="suggestion-desc"
-                                    >Documents and procedures</span
-                                >
+                            <button class="suggestion-card" data-prompt="How do I renew my student visa?">
+                                <span class="suggestion-icon">📝</span>
+                                <span class="suggestion-title">Visa Renewal</span>
+                                <span class="suggestion-desc">Documents and procedures</span>
                             </button>
                         </div>
                     </div>
@@ -204,29 +149,14 @@
 
                 <div class="composer-wrap">
                     <form class="composer" id="chat-form">
-                        <textarea
-                            id="message-input"
-                            rows="1"
-                            placeholder="Message UKM FTSM Assistant..."
-                            maxlength="1500"
-                        ></textarea>
+                        <textarea id="message-input" rows="1" placeholder="Message UKM FTSM Assistant..." maxlength="1500"></textarea>
                         <button id="send-btn" type="submit" title="Send">
-                            <svg
-                                width="18"
-                                height="18"
-                                viewBox="0 0 24 24"
-                                fill="currentColor"
-                            >
-                                <path
-                                    d="M3.478 2.405a.75.75 0 0 0-.926.94l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94l18-8.25a.75.75 0 0 0 0-1.38l-18-8.25Z"
-                                />
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M3.478 2.405a.75.75 0 0 0-.926.94l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94l18-8.25a.75.75 0 0 0 0-1.38l-18-8.25Z" />
                             </svg>
                         </button>
                     </form>
-                    <p class="disclaimer">
-                        This assistant can make mistakes. Verify critical
-                        deadlines through official UKM channels.
-                    </p>
+                    <p class="disclaimer">This assistant can make mistakes. Verify critical deadlines through official UKM channels.</p>
                 </div>
             </div>
         </div>
@@ -234,133 +164,5 @@
         <script src="/static/vendor/purify.min.js" defer></script>
         <script src="/static/vendor/marked.min.js" defer></script>
         <script src="/static/app.js" defer></script>
-
-        <!-- Knowledge Base Overlay -->
-        <div class="kb-overlay" id="kb-overlay"></div>
-
-        <!-- Knowledge Base Drawer Panel -->
-        <aside class="kb-panel" id="kb-panel" aria-label="Knowledge Base">
-            <div class="kb-header">
-                <div class="kb-header-title">
-                    <svg
-                        width="18"
-                        height="18"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                    >
-                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-                        <path
-                            d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"
-                        />
-                    </svg>
-                    <h2>Knowledge Base</h2>
-                </div>
-                <button
-                    class="icon-btn kb-close-icon"
-                    id="kb-close-btn"
-                    title="Close panel"
-                >
-                    <svg
-                        width="18"
-                        height="18"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                    >
-                        <path d="M18 6L6 18M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-
-            <!-- Training Status Banner -->
-            <div class="kb-training-banner" id="kb-training-banner">
-                <div class="thinking-spinner"></div>
-                <span
-                    >Training in progress — new documents are being
-                    indexed…</span
-                >
-            </div>
-
-            <!-- Upload Area -->
-            <div class="kb-upload-area" id="kb-upload-area">
-                <input
-                    type="file"
-                    id="kb-file-input"
-                    multiple
-                    accept=".txt,.pdf,.png,.jpg,.jpeg,.webp,.gif"
-                    style="display: none"
-                />
-                <div class="kb-upload-icon">
-                    <svg
-                        width="28"
-                        height="28"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="1.5"
-                    >
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                        <polyline points="17 8 12 3 7 8" />
-                        <line x1="12" y1="3" x2="12" y2="15" />
-                    </svg>
-                </div>
-                <p class="kb-upload-title">Drag &amp; drop files here</p>
-                <p class="kb-upload-sub">
-                    or
-                    <button class="kb-browse-link" id="kb-browse-btn">
-                        browse
-                    </button>
-                    to upload
-                </p>
-                <p class="kb-upload-types">
-                    TXT &middot; PDF &middot; PNG &middot; JPG &middot; WEBP
-                    &middot; GIF &nbsp;&bull;&nbsp; Max 50 MB per file
-                </p>
-            </div>
-
-            <!-- Inline feedback after upload -->
-            <div class="kb-result" id="kb-result"></div>
-
-            <!-- Document List -->
-            <div class="kb-docs-section">
-                <div class="kb-docs-header">
-                    <span class="kb-docs-title">Uploaded Documents</span>
-                    <div class="kb-docs-header-actions">
-                        <span class="kb-docs-count" id="kb-docs-count"
-                            >0 files</span
-                        >
-                        <button
-                            class="kb-retrain-btn"
-                            id="kb-retrain-btn"
-                            title="Re-index all documents"
-                        >
-                            <svg
-                                width="13"
-                                height="13"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="2"
-                            >
-                                <polyline points="23 4 23 10 17 10" />
-                                <polyline points="1 20 1 14 7 14" />
-                                <path
-                                    d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"
-                                />
-                            </svg>
-                            Re-index
-                        </button>
-                    </div>
-                </div>
-                <div class="kb-docs-list" id="kb-docs-list">
-                    <div class="kb-empty">
-                        No documents yet. Upload files above to get started.
-                    </div>
-                </div>
-            </div>
-        </aside>
     </body>
 </html>
