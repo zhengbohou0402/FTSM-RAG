@@ -128,6 +128,10 @@ uvicorn web_app:app --host 0.0.0.0 --port 8000
 
 The source documents live in `data/ukm_ftsm`. The vector store is generated into `chroma_db_ftsm`, which is intentionally ignored by git.
 
+During ingestion, each local file is normalized into a source-document record with a stable `doc_id`, content `hash`, `title`, `updated_at`, `file_path`, `source_type`, and `permission_scope`. Chunk metadata is written into Chroma with `doc_id`, `chunk_id`, `chunk_index`, `hash`, and source fields so retrieved answers can be traced back to the indexed document.
+
+Index state is stored in `data/ukm_ftsm/ingestion_manifest.json`. If a file hash is unchanged, indexing skips it. If a known file changes, the old chunk ids are deleted from Chroma before new chunks are added.
+
 Run indexing manually:
 
 ```powershell
