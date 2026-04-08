@@ -5,6 +5,7 @@ import os
 from langchain_community.document_loaders import PyPDFLoader, TextLoader
 from langchain_core.documents import Document
 
+from utils.config_handler import rag_conf
 from utils.logger_handler import logger
 
 
@@ -73,8 +74,6 @@ def image_loader(filepath: str) -> list[Document]:
         # Get image filename for context
         filename = os.path.basename(filepath)
         
-        # Use DashScope API directly for Qwen-VL
-        import dashscope
         from dashscope import MultiModalConversation
         
         # Get image dimensions for proper formatting
@@ -97,10 +96,8 @@ def image_loader(filepath: str) -> list[Document]:
             }
         ]
         
-        response = MultiModalConversation.call(
-            model="qwen-vl-plus",
-            messages=messages
-        )
+        image_model_name = rag_conf.get("image_model_name", "qwen-vl-plus")
+        response = MultiModalConversation.call(model=image_model_name, messages=messages)
         
         if response.status_code == 200:
             extracted_text = response.output.choices[0].message.content[0]["text"]
