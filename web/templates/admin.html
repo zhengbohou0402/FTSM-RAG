@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>FTSM Documents</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+            rel="stylesheet"
+        />
+        <link rel="stylesheet" href="/static/styles.css" />
+    </head>
+    <body class="manage-page">
+        <main class="manage-shell">
+            <section class="manage-hero">
+                <div>
+                    <p class="manage-kicker">FTSM-RAG</p>
+                    <h1>Document Management</h1>
+                    <p class="manage-subtitle">
+                        Upload, re-index, and remove knowledge-base files in one place.
+                    </p>
+                </div>
+                <a class="manage-back" href="/">Back to chat</a>
+            </section>
+
+            <section class="manage-grid">
+                <div class="manage-card">
+                    <div class="manage-card-head">
+                        <h2>Admin Access</h2>
+                        <span>Required</span>
+                    </div>
+                    <label class="manage-field">
+                        Admin API key
+                        <input id="admin-api-key" type="password" placeholder="ADMIN_API_KEY" />
+                    </label>
+                    <button class="manage-btn" id="admin-save-key" type="button">
+                        Save key
+                    </button>
+                    <p class="manage-note">
+                        The key is stored only in your browser.
+                    </p>
+                </div>
+
+                <div class="manage-card">
+                    <div class="manage-card-head">
+                        <h2>Upload Files</h2>
+                        <span>TXT, PDF, PNG, JPG, WEBP, GIF</span>
+                    </div>
+                    <div class="manage-dropzone" id="manage-dropzone">
+                        <input
+                            type="file"
+                            id="manage-file-input"
+                            multiple
+                            accept=".txt,.pdf,.png,.jpg,.jpeg,.webp,.gif"
+                            hidden
+                        />
+                        <p>Drag and drop files here</p>
+                        <button class="manage-link" id="manage-browse" type="button">
+                            Browse files
+                        </button>
+                    </div>
+                    <div class="manage-result" id="manage-result"></div>
+                </div>
+
+                <div class="manage-card manage-card-wide">
+                    <div class="manage-card-head">
+                        <h2>Knowledge Base</h2>
+                        <span id="manage-doc-count">0 files</span>
+                    </div>
+                    <div class="manage-actions">
+                        <button class="manage-btn" id="manage-reindex" type="button">
+                            Re-index all
+                        </button>
+                        <button class="manage-btn manage-btn-ghost" id="manage-refresh" type="button">
+                            Refresh
+                        </button>
+                    </div>
+                    <div class="manage-list" id="manage-doc-list"></div>
+                </div>
+            </section>
+        </main>
+        <script src="/static/manage.js" defer></script>
+    </body>
+</html>

@@ -15,6 +15,7 @@ data/ukm_ftsm/semantic_cache.json
 data/ukm_ftsm/.last_crawl
 data/ukm_ftsm/ingestion_manifest.json
 data/ukm_ftsm/student_accounts.json
+data/ukm_ftsm/ScreenShot_*.png
 
 .env
 .env.*
