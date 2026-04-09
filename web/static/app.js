@@ -18,6 +18,106 @@ const topbarUser = document.getElementById("topbar-user");
 const STORAGE_KEY = "ukm_ftsm_chat_v3";
 const THEME_KEY = "ukm_ftsm_theme";
 const MAX_HISTORY = 20;
+const ICONS = {
+  calendar:
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2"></rect><path d="M8 2v4M16 2v4M3 10h18"></path></svg>',
+  timetable:
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2"></rect><path d="M8 2v4M16 2v4M8 14h3M13 14h3M8 18h3"></path></svg>',
+  graduation:
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 8l10-5 10 5-10 5-10-5z"></path><path d="M6 11v5c3 2 9 2 12 0v-5"></path></svg>',
+  document:
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h7l4 4v14H7z"></path><path d="M14 3v5h5M9 13h6M9 17h6"></path></svg>',
+  bus:
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h12a2 2 0 0 1 2 2v9a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V6a2 2 0 0 1 2-2z"></path><path d="M4 10h16M8 18v2M16 18v2M8 14h.01M16 14h.01"></path></svg>',
+  staff:
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1.5-4 14.5-4 16 0"></path></svg>',
+  registration:
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v16H5z"></path><path d="M8 8h8M8 12h8M8 16h5"></path></svg>',
+  training:
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8h18v11H3z"></path><path d="M9 8V5h6v3M3 13h18"></path></svg>',
+  facilities:
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21V8l8-5 8 5v13"></path><path d="M9 21v-7h6v7M8 10h.01M16 10h.01"></path></svg>',
+  holiday:
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h16"></path><path d="M6 20c0-5 3-9 6-9s6 4 6 9"></path><path d="M12 4v4M8 6l2 3M16 6l-2 3"></path></svg>',
+  systems:
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"></rect><path d="M8 21h8M12 17v4"></path></svg>',
+  exam:
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18H6z"></path><path d="M9 8h6M9 12h3M9 16h6"></path></svg>',
+};
+const SUGGESTIONS = [
+  {
+    icon: "calendar",
+    title: "Academic Calendar",
+    desc: "Check semester dates and holidays",
+    prompt: "Where can I view the academic calendar?",
+  },
+  {
+    icon: "timetable",
+    title: "Course Timetable",
+    desc: "View class schedules",
+    prompt: "How do I check my course timetable?",
+  },
+  {
+    icon: "graduation",
+    title: "Admission Info",
+    desc: "Requirements and application process",
+    prompt: "What are the admission requirements for FTSM postgraduate programs?",
+  },
+  {
+    icon: "document",
+    title: "Visa Renewal",
+    desc: "Documents and procedures",
+    prompt: "How do I renew my student visa?",
+  },
+  {
+    icon: "bus",
+    title: "Campus Bus",
+    desc: "Find routes and shuttle details",
+    prompt: "How can I check UKM campus bus routes?",
+  },
+  {
+    icon: "staff",
+    title: "Staff Directory",
+    desc: "Find lecturers and advisors",
+    prompt: "How can I find FTSM academic staff and their expertise?",
+  },
+  {
+    icon: "registration",
+    title: "Registration",
+    desc: "Understand renewal steps",
+    prompt: "What should I prepare for course registration renewal?",
+  },
+  {
+    icon: "training",
+    title: "Industrial Training",
+    desc: "Check contacts and guidance",
+    prompt: "Where can I find industrial training information and contacts?",
+  },
+  {
+    icon: "facilities",
+    title: "Facilities",
+    desc: "Ask about faculty services",
+    prompt: "What facilities and services are available at FTSM?",
+  },
+  {
+    icon: "holiday",
+    title: "Public Holidays",
+    desc: "Review Malaysia holiday dates",
+    prompt: "What are the Malaysian public holidays for this academic year?",
+  },
+  {
+    icon: "systems",
+    title: "Student Systems",
+    desc: "Find useful portals",
+    prompt: "Which UKM student systems should I use for academic matters?",
+  },
+  {
+    icon: "exam",
+    title: "Exam Schedule",
+    desc: "Ask about exam timing",
+    prompt: "Where can I check my final exam schedule?",
+  },
+];
 
 let chatHistory = [];
 let conversationId = null;
@@ -25,7 +125,7 @@ let busy = false;
 let currentStudent = null;
 let authMode = "login";
 
-// ── Theme Management ──
+// Theme management
 
 function initTheme() {
   const saved = localStorage.getItem(THEME_KEY);
@@ -48,7 +148,7 @@ function toggleTheme() {
 document.getElementById("theme-toggle").addEventListener("click", toggleTheme);
 initTheme();
 
-// ── Helpers ──
+// Helpers
 
 function scrollToBottom() {
   chatLog.scrollTop = chatLog.scrollHeight;
@@ -89,6 +189,48 @@ function showToast(message) {
   toast.textContent = message;
   document.body.appendChild(toast);
   setTimeout(() => toast.remove(), 2000);
+}
+
+function pickSuggestions(count = 4) {
+  const pool = [...SUGGESTIONS];
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  return pool.slice(0, count);
+}
+
+function renderSuggestionCards() {
+  return pickSuggestions()
+    .map(
+      (item) => `
+        <button class="suggestion-card" data-prompt="${escapeHtml(item.prompt)}">
+          <span class="suggestion-icon">${ICONS[item.icon] || ICONS.document}</span>
+          <span class="suggestion-title">${escapeHtml(item.title)}</span>
+          <span class="suggestion-desc">${escapeHtml(item.desc)}</span>
+        </button>`,
+    )
+    .join("");
+}
+
+function bindSuggestionCards(root = document) {
+  root.querySelectorAll(".suggestion-card").forEach((card) => {
+    card.addEventListener("click", () => {
+      const prompt = card.dataset.prompt;
+      if (prompt) {
+        messageInput.value = prompt;
+        autoResize();
+        chatForm.requestSubmit();
+      }
+    });
+  });
+}
+
+function refreshWelcomeSuggestions() {
+  const grid = document.querySelector(".suggestion-grid");
+  if (!grid) return;
+  grid.innerHTML = renderSuggestionCards();
+  bindSuggestionCards(grid);
 }
 
 // Auth
@@ -194,7 +336,7 @@ logoutBtn.addEventListener("click", async () => {
   authStudentId.focus();
 });
 
-// ── Sidebar History ──
+// Sidebar history
 
 function loadHistory() {
   try {
@@ -271,7 +413,7 @@ function loadConversation(conv) {
   scrollToBottom();
 }
 
-// ── Messages ──
+// Messages
 
 function createMsg(role, text) {
   if (welcome && welcome.parentNode) welcome.remove();
@@ -335,7 +477,7 @@ function hideThinking(bubble) {
   if (thinking) thinking.remove();
 }
 
-// ── Busy state ──
+// Busy state
 
 function setBusy(v) {
   busy = v;
@@ -343,7 +485,7 @@ function setBusy(v) {
   sendBtn.disabled = v;
 }
 
-// ── Stream reply ──
+// Stream reply
 
 async function streamReply(prompt) {
   const res = await fetch("/api/chat", {
@@ -458,7 +600,7 @@ async function send(prompt) {
   }
 }
 
-// ── Events ──
+// Events
 
 chatForm.addEventListener("submit", (e) => {
   e.preventDefault();
@@ -499,18 +641,6 @@ document.getElementById("sidebar-toggle").addEventListener("click", () => {
   sidebar.classList.toggle("collapsed");
 });
 
-// Suggestion cards
-document.querySelectorAll(".suggestion-card").forEach((card) => {
-  card.addEventListener("click", () => {
-    const prompt = card.dataset.prompt;
-    if (prompt) {
-      messageInput.value = prompt;
-      autoResize();
-      chatForm.requestSubmit();
-    }
-  });
-});
-
 // New chat buttons
 function newChat() {
   chatLog.innerHTML = `
@@ -522,50 +652,18 @@ function newChat() {
             </div>
             <h1>How can I help you today?</h1>
             <div class="suggestion-grid">
-                <button class="suggestion-card" data-prompt="Where can I view the academic calendar?">
-                    <span class="suggestion-icon">📅</span>
-                    <span class="suggestion-title">Academic Calendar</span>
-                    <span class="suggestion-desc">Check semester dates and holidays</span>
-                </button>
-                <button class="suggestion-card" data-prompt="How do I check my course timetable?">
-                    <span class="suggestion-icon">🗓️</span>
-                    <span class="suggestion-title">Course Timetable</span>
-                    <span class="suggestion-desc">View class schedules</span>
-                </button>
-                <button class="suggestion-card" data-prompt="What are the admission requirements for FTSM postgraduate programs?">
-                    <span class="suggestion-icon">🎓</span>
-                    <span class="suggestion-title">Admission Info</span>
-                    <span class="suggestion-desc">Requirements and application process</span>
-                </button>
-                <button class="suggestion-card" data-prompt="How do I renew my student visa?">
-                    <span class="suggestion-icon">📋</span>
-                    <span class="suggestion-title">Visa Renewal</span>
-                    <span class="suggestion-desc">Documents and procedures</span>
-                </button>
+                ${renderSuggestionCards()}
             </div>
         </div>`;
   conversationId = null;
   messageInput.value = "";
   autoResize();
   messageInput.focus();
-
-  // Re-bind suggestion card events
-  document.querySelectorAll(".suggestion-card").forEach((card) => {
-    card.addEventListener("click", () => {
-      const prompt = card.dataset.prompt;
-      if (prompt) {
-        messageInput.value = prompt;
-        autoResize();
-        chatForm.requestSubmit();
-      }
-    });
-  });
+  bindSuggestionCards(chatLog);
 }
-
 document.getElementById("new-chat-btn").addEventListener("click", newChat);
-document.getElementById("new-chat-btn-top")?.addEventListener("click", newChat);
 
-// ── Init ──
+// Init
 function syncServerHistory() {
   fetch("/api/conversations")
     .then((r) => {
@@ -586,5 +684,6 @@ function syncServerHistory() {
 }
 
 autoResize();
+refreshWelcomeSuggestions();
 initAuth();
 
