@@ -4,6 +4,7 @@ python-multipart==0.0.22
 Jinja2==3.1.6
 PyYAML==6.0.3
 python-dotenv==1.2.2
+pyinstaller==6.13.0
 
 dashscope==1.25.15
 langchain==1.2.14
