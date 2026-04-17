@@ -855,7 +855,7 @@ input {
     font-weight: 600;
 }
 
-/* ── Thinking ── */
+/* ── Thinking spinner (tool-call stage) ── */
 .thinking {
     display: flex;
     align-items: center;
@@ -876,9 +876,7 @@ input {
 }
 
 @keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
+    to { transform: rotate(360deg); }
 }
 
 .thinking-text {

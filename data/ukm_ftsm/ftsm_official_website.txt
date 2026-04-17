@@ -1,6 +1,6 @@
 FTSM UKM Official Website Content
 Source: https://www.ftsm.ukm.my/v6/
-Crawled at: 2026-04-04T21:15:11.134625
+Crawled at: 2026-04-16T22:21:24.617287
 Total pages: 59
 ================================================================================
 
@@ -8,6 +8,7 @@ Total pages: 59
 URL: https://www.ftsm.ukm.my/v6
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -32,17 +33,25 @@ Student Affairs
 Gallery
 Download
 FTSM NEWS & EVENT
+03 APR 2026
+Tahniah Atas Pelantikan Sebagai Penolong Dekan Pengajaran dan Citra
+Setinggi-tinggi tahniah kepada YBrs. Ts. Dr. Siti Fadzilah Mat Nor atas pelantikan sebagai Penolong Dekan Pengajaran dan Citra, Fakulti Teknologi...
+READ MORE
+02 APR 2026
+Tahniah Atas Pelantikan Semula Sebagai Timbalan Dekan HEJIM
+Setinggi-tinggi tahniah kepada YBrs. Prof. Madya Dr. Mohd Ridzwan Yaakub di atas pelantikan semula sebagai Timbalan Dekan Hal Ehwal Jaringan...
+READ MORE
 01 APR 2026
 Tahniah Atas Pelantikan Semula Sebagai Ketua Program Kecerdasan Buatan
 Setinggi-tinggi tahniah kepada YBrs. Prof. Madya Dr. Nor Samsiah Sani di atas pelantikan semula sebagai Ketua Program Kecerdasan Buatan, Fakulti...
 READ MORE
-01 APR 2026
-Tahniah Atas Pelantikan Semula Sebagai Penolong Dekan (Keusahawanan)
-Setinggi-tinggi tahniah kepada YBrs. Dr. Saidah Saad di atas pelantikan semula sebagai Penolong Dekan (Keusahawanan), Fakulti Teknologi dan Sains Maklumat...
+15 APR 2026
+Tahniah FTSM di APJC NetAcad Riders 2026 - Round 1
+TAHNIAH & syabas diucapkan kepada pasukan Universiti Kebangsaan Malaysia (UKM) telah berjaya meraih 1 Pingat Perak dan 1 Pingat Gangsa...
 READ MORE
-31 MAR 2026
-Terima Kasih Ketua Program Teknologi Perisian dan Rangkaian
-Sekalung penghargaan dan ucapan terima kasih kepada Dr. Hadi Affendy Dahlan atas khidmat bakti dan jasa sepanjang menjalankan tugas sebagai...
+08 APR 2026
+Tahniah Kepada Pemenang Pertandingan Logik Pengaturcaraan dan Algoritma (LOGIKA) 2026
+Setinggi-tinggi TAHNIAH diucapkan kepada para pemenang Pertandingan Logik Pengaturcaraan dan Algoritma (LOGIKA) 2026 yang telah berlangsung pada 1 April 2026. ...
 READ MORE
 03 APR 2026
 Terima Kasih Penolong Dekan Pengajaran dan Citra
@@ -60,35 +69,27 @@ READ MORE
 Tahniah Atas Pelantikan Semula Sebagai Ketua Program Kecerdasan Buatan
 Setinggi-tinggi tahniah kepada YBrs. Prof. Madya Dr. Nor Samsiah Sani di atas pelantikan semula sebagai Ketua Program Kecerdasan Buatan, Fakulti...
 READ MORE
-01 APR 2026
-Tahniah Atas Pelantikan Semula Sebagai Penolong Dekan (Keusahawanan)
-Setinggi-tinggi tahniah kepada YBrs. Dr. Saidah Saad di atas pelantikan semula sebagai Penolong Dekan (Keusahawanan), Fakulti Teknologi dan Sains Maklumat...
+15 APR 2026
+Tahniah FTSM di APJC NetAcad Riders 2026 - Round 1
+TAHNIAH & syabas diucapkan kepada pasukan Universiti Kebangsaan Malaysia (UKM) telah berjaya meraih 1 Pingat Perak dan 1 Pingat Gangsa...
 READ MORE
-31 MAR 2026
-Terima Kasih Ketua Program Teknologi Perisian dan Rangkaian
-Sekalung penghargaan dan ucapan terima kasih kepada Dr. Hadi Affendy Dahlan atas khidmat bakti dan jasa sepanjang menjalankan tugas sebagai...
+08 APR 2026
+Tahniah Kepada Pemenang Pertandingan Logik Pengaturcaraan dan Algoritma (LOGIKA) 2026
+Setinggi-tinggi TAHNIAH diucapkan kepada para pemenang Pertandingan Logik Pengaturcaraan dan Algoritma (LOGIKA) 2026 yang telah berlangsung pada 1 April 2026. ...
 READ MORE
 03 APR 2026
 Terima Kasih Penolong Dekan Pengajaran dan Citra
 Sekalung penghargaan dan ucapan terima kasih kepada YBrs. Ts. Dr. Khairul Azmi Abu Bakar atas khidmat bakti dan jasa sepanjang...
-READ MORE
-03 APR 2026
-Tahniah Atas Pelantikan Sebagai Penolong Dekan Pengajaran dan Citra
-Setinggi-tinggi tahniah kepada YBrs. Ts. Dr. Siti Fadzilah Mat Nor atas pelantikan sebagai Penolong Dekan Pengajaran dan Citra, Fakulti Teknologi...
-READ MORE
-02 APR 2026
-Tahniah Atas Pelantikan Semula Sebagai Timbalan Dekan HEJIM
-Setinggi-tinggi tahniah kepada YBrs. Prof. Madya Dr. Mohd Ridzwan Yaakub di atas pelantikan semula sebagai Timbalan Dekan Hal Ehwal Jaringan...
 READ MORE
 Latest Event
 Bengkel Kemahiran Pembangunan Sistem AR/VR
 25 - 26 APR 2026
+Karnival Latihan Industri dan Kerjaya (KLIK) 2026
+13 APR 2026
 Pra Karnival Inovasi Digital (PraKID) 2026
 11 - 12 FEB 2026
 Siri Bicara Industri: Reimagining Operations Management in Digital Enterprises
 08 JAN 2026
-Bicara Kuliah - Keeping Code Alive : Methods and Tools in Software Maintenance
-07 JAN 2026
 VIEW ALL NEWS
 WHY CHOOSE US?
 PROGRAMME OFFERED
@@ -130,6 +131,7 @@ Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
 URL: https://www.ftsm.ukm.my/v6/background
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -197,6 +199,7 @@ Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
 URL: https://www.ftsm.ukm.my/v6/mission-faculty
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -232,6 +235,7 @@ Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
 URL: https://www.ftsm.ukm.my/v6/quality-statement
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -268,6 +272,7 @@ Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
 URL: https://www.ftsm.ukm.my/v6/chart
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -293,6 +298,7 @@ Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
 URL: https://www.ftsm.ukm.my/v6/faculty-map
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -323,6 +329,7 @@ Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
 URL: https://www.ftsm.ukm.my/v6/faculty-management
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -380,6 +387,7 @@ Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
 URL: https://www.ftsm.ukm.my/v6/why-choose-us
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -441,6 +449,7 @@ Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
 URL: https://www.ftsm.ukm.my/v6/undergraduate
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -484,6 +493,7 @@ Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
 URL: https://www.ftsm.ukm.my/v6/master-program
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -549,6 +559,7 @@ Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
 URL: https://www.ftsm.ukm.my/v6/doctoral-programme
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -595,6 +606,7 @@ Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
 URL: https://www.ftsm.ukm.my/v6/entrepreneurship-programme
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -628,6 +640,7 @@ Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
 URL: https://www.ftsm.ukm.my/v6/staff-academic
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -673,6 +686,8 @@ Dr. Fahad Taha Naji AL-Dhief
 Center for Software Technology and Management
 Dr. Faizan Qamar
 Center for Cyber Security
+Dr. Farhah Amaliya Zaharuddin
+Center for Software Technology and Management
 Dr. Fatin Filzahti Ismail
 Center for Software Technology and Management
 Ts. Dr. Fazlina Mohd Ali
@@ -836,6 +851,7 @@ Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
 URL: https://www.ftsm.ukm.my/v6/staff-admin
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -958,6 +974,7 @@ Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
 URL: https://www.ftsm.ukm.my/v6/staff-ictsupport
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -1027,7 +1044,7 @@ Norzaimawati Mahadi
 Computer Technician (FT3)
 ICT Service Support (Asset Management)
 Mohd Hata Muhammad
-Computer Technician (FT2)
+Computer Technician (FT3)
 Infrastructure Building Support
 M. Lokman Nur Hakim Minu
 Computer Technician (FT2)
@@ -1053,6 +1070,7 @@ Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
 URL: https://www.ftsm.ukm.my/v6/adjunct-professor
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -1090,6 +1108,7 @@ Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
 URL: https://www.ftsm.ukm.my/v6/emeritus-professor
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -1119,6 +1138,7 @@ Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
 URL: https://www.ftsm.ukm.my/v6/honorary-professor
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -1146,6 +1166,7 @@ Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
 URL: https://www.ftsm.ukm.my/v6/advisory-board
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -1181,6 +1202,7 @@ Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
 URL: https://www.ftsm.ukm.my/v6/external-examiner
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -1218,6 +1240,7 @@ Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
 URL: https://www.ftsm.ukm.my/v6/expertise
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -1265,6 +1288,7 @@ Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
 URL: https://www.ftsm.ukm.my/v6/research-center
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -1297,6 +1321,7 @@ Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
 URL: https://www.ftsm.ukm.my/v6/research-university
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -1332,6 +1357,7 @@ Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
 URL: https://www.ftsm.ukm.my/v6/research-conference
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -1366,6 +1392,7 @@ Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
 URL: https://www.ftsm.ukm.my/v6/research-guidelineform
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -1398,6 +1425,7 @@ Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
 URL: https://www.ftsm.ukm.my/v6/publication
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -1432,6 +1460,7 @@ Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
 URL: https://www.ftsm.ukm.my/v6/technical-report
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -1469,6 +1498,7 @@ Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
 URL: https://www.ftsm.ukm.my/v6/editing-book
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -1516,6 +1546,7 @@ Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
 URL: https://www.ftsm.ukm.my/v6/student-affair
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -1562,6 +1593,7 @@ Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
 URL: https://www.ftsm.ukm.my/v6/industrial-training
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -1592,6 +1624,7 @@ Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
 URL: https://www.ftsm.ukm.my/v6/fyp
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -1628,6 +1661,7 @@ Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
 URL: https://www.ftsm.ukm.my/v6/mobility-exchange
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -1679,6 +1713,7 @@ Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
 URL: https://www.ftsm.ukm.my/v6/hejim
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -1713,6 +1748,7 @@ Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
 URL: https://www.ftsm.ukm.my/v6/unit-postgraduate
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -1767,6 +1803,7 @@ Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
 URL: https://www.ftsm.ukm.my/v6/unit-undergraduate
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -1821,6 +1858,7 @@ Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
 URL: https://www.ftsm.ukm.my/v6/unit-cait
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -1878,6 +1916,7 @@ Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
 URL: https://www.ftsm.ukm.my/v6/unit-cyber
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -1926,6 +1965,7 @@ Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
 URL: https://www.ftsm.ukm.my/v6/unit-softam
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -1976,6 +2016,7 @@ Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
 URL: https://www.ftsm.ukm.my/v6/facility
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -2050,6 +2091,7 @@ Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
 URL: https://www.ftsm.ukm.my/v6/download
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -2081,6 +2123,7 @@ Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
 URL: https://www.ftsm.ukm.my/v6/news-event
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -2096,6 +2139,18 @@ ARCHIVE
 NEW
 Bengkel Kemahiran Pembangunan Sistem AR/VR
 Makluman Perubahan Tarikh Bengkel Pusat Kajian Pengurusan dan Teknologi Perisian (SOFTAM) FTSM akan menganjurkan "BENGKEL KEMAHIRAN PEMBANGUNAN SISTEM AR/VR"...
+READ MORE
+15 APR 2026
+Tahniah FTSM di APJC NetAcad Riders 2026 - Round 1
+TAHNIAH & syabas diucapkan kepada pasukan Universiti Kebangsaan Malaysia (UKM) telah berjaya meraih 1 Pingat Perak dan 1 Pingat Gangsa...
+READ MORE
+13 APR 2026
+Karnival Latihan Industri dan Kerjaya (KLIK) 2026
+Jom ke Karnival Latihan Industri dan Kerjaya (KLIK) 2026! Fakulti Teknologi dan Sains Maklumat menjemput anda semua untuk hadir...
+READ MORE
+08 APR 2026
+Tahniah Kepada Pemenang Pertandingan Logik Pengaturcaraan dan Algoritma (LOGIKA) 2026
+Setinggi-tinggi TAHNIAH diucapkan kepada para pemenang Pertandingan Logik Pengaturcaraan dan Algoritma (LOGIKA) 2026 yang telah berlangsung pada 1 April 2026. ...
 READ MORE
 03 APR 2026
 Terima Kasih Penolong Dekan Pengajaran dan Citra
@@ -2117,18 +2172,6 @@ READ MORE
 Tahniah Atas Pelantikan Semula Sebagai Penolong Dekan (Keusahawanan)
 Setinggi-tinggi tahniah kepada YBrs. Dr. Saidah Saad di atas pelantikan semula sebagai Penolong Dekan (Keusahawanan), Fakulti Teknologi dan Sains Maklumat...
 READ MORE
-31 MAR 2026
-Terima Kasih Ketua Program Teknologi Perisian dan Rangkaian
-Sekalung penghargaan dan ucapan terima kasih kepada Dr. Hadi Affendy Dahlan atas khidmat bakti dan jasa sepanjang menjalankan tugas sebagai...
-READ MORE
-31 MAR 2026
-Tahniah Atas Pelantikan Sebagai Ketua Program Teknologi Perisian dan Rangkaian Yang Baharu
-Setinggi-tinggi tahniah kepada YBrs. Ts. Dr. Fazlina Mohd Ali atas pelantikan sebagai Ketua Program Teknologi Perisian dan Rangkaian, FTSM UKM...
-READ MORE
-27 MAR 2026
-Subjek FTSM UKM Cemerlang di Persada Dunia
-TAHNIAH!! Fakulti Teknologi & Sains Maklumat (FTSM), Universiti Kebangsaan Malaysia (UKM) terus mengukuhkan kecemerlangan akademik di peringkat global apabila tersenarai...
-READ MORE
 Next
 Last
 Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
@@ -2146,6 +2189,7 @@ Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
 URL: https://www.ftsm.ukm.my/v6/alumni
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -2297,6 +2341,7 @@ Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
 URL: https://www.ftsm.ukm.my/v6/sustainability
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -2334,6 +2379,7 @@ Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
 URL: https://www.ftsm.ukm.my/v6/agreement
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -2383,6 +2429,7 @@ Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
 URL: https://www.ftsm.ukm.my/v6/online-survey
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -2480,9 +2527,43 @@ P127014 • NURUL AINI BINTI MAT ALI NAPIYAH • Dr. Rossilawati Sulaiman	Master
 ------------------------------------------------------------
 
 [Page 48]
+URL: https://www.ftsm.ukm.my/alumniftsm
+Title: FTSM UKM Alumni
+
+Home
+Prominent Alumni
+Past Events
+News
+Fund
+Login
+Contact Us
+Welcome to the FTSM Alumni Portal
+Stay connected with the Faculty of Information Science and Technology UKM. This platform brings together all FTSM graduates to strengthen professional networks, share opportunities and contribute to the faculty community
+Register now
+ALUMNI NEWS
+Salam takziah kepada keluarga Allahyarhamah Fatin Zahidah Alumni 2023
+Salam takziah kepada keluarga Allahyarhamah Fatin Zahidah Mohd Effendi, merupaka...
+Read More
+15 Dec 2025
+Tahniah Alumni FTSM 2001 Tan Sri Ayob Khan Mydin Pitchay
+Setinggi-tinggi TAHNIAH buat Alumni FTSM (2001), Datuk Seri Ayob Khan Mydin Pitc...
+Read More
+04 Jun 2025
+UPCOMING EVENTS
+Karnival Latihan Industri dan Kerjaya (KLIK) 2026
+Jom ke Karnival Latihan Industri dan Kerjaya (KLIK) 2026! Fakulti Teknologi dan Sains Maklumat menjemput anda semua untuk…
+Dewan Tun Abdullah Mohd Salleh (DTAMS), UKM, Bangi
+13 Apr 2026
+Read More »
+© Copyright 2025. All Rights Reserved by FTSM, UKM. All Rights Reserved
+
+------------------------------------------------------------
+
+[Page 49]
 URL: https://www.ftsm.ukm.my/v6/bachelor-in-computer-science
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -2514,10 +2595,11 @@ Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
 
 ------------------------------------------------------------
 
-[Page 49]
+[Page 50]
 URL: https://www.ftsm.ukm.my/v6/bachelor-in-information-technology
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -2549,10 +2631,11 @@ Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
 
 ------------------------------------------------------------
 
-[Page 50]
+[Page 51]
 URL: https://www.ftsm.ukm.my/v6/bachelor-in-software-engineering
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -2582,10 +2665,11 @@ Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
 
 ------------------------------------------------------------
 
-[Page 51]
+[Page 52]
 URL: https://www.ftsm.ukm.my/v6/bachelor-in-software-engineering-multimedia-system-development
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -2617,10 +2701,11 @@ Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
 
 ------------------------------------------------------------
 
-[Page 52]
+[Page 53]
 URL: https://www.ftsm.ukm.my/v6/bachelor-in-software-engineering-information-system-development
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -2652,10 +2737,11 @@ Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
 
 ------------------------------------------------------------
 
-[Page 53]
+[Page 54]
 URL: https://www.ftsm.ukm.my/v6/master-in-cyber-security-apelq
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -2708,10 +2794,11 @@ Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
 
 ------------------------------------------------------------
 
-[Page 54]
+[Page 55]
 URL: https://www.ftsm.ukm.my/v6/master-in-software-engineering
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -2748,10 +2835,11 @@ Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
 
 ------------------------------------------------------------
 
-[Page 55]
+[Page 56]
 URL: https://www.ftsm.ukm.my/v6/master-in-artificial-intelligence
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -2788,10 +2876,11 @@ Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
 
 ------------------------------------------------------------
 
-[Page 56]
+[Page 57]
 URL: https://www.ftsm.ukm.my/v6/master-in-information-technology
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -2828,10 +2917,11 @@ Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
 
 ------------------------------------------------------------
 
-[Page 57]
+[Page 58]
 URL: https://www.ftsm.ukm.my/v6/master-in-information-science
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -2868,10 +2958,11 @@ Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
 
 ------------------------------------------------------------
 
-[Page 58]
+[Page 59]
 URL: https://www.ftsm.ukm.my/v6/master-in-creative-media-technology
 Title: FTSM UKM
 
+EN | BM
 ABOUT US
 ACADEMIC
 RESEARCH
@@ -2882,46 +2973,6 @@ DIRECTORY
 FAKULTI TEKNOLOGI DAN SAINS MAKLUMAT Faculty of Information Science and Technology
 Discover UKM Give2UKM
 Master of Creative Media Technology
-OVERVIEW
-ENTRY REQUIREMENTS
-PROGRAMME STRUCTURE
-FEES
-MODE OF STUDY
-Coursework
-Coursework & Research
-DURATION OF STUDY
-Full time (2 – 4 semesters)
-Part time (4 – 8 semesters)
-ACCREDITATION STATUS BY
-UKM SENATE MQA
-APPLY NOW  BROCHURE
-Any enquiry please contact :
-FTSM POSTGRADUATE MANAGEMENT UNIT
-Universiti Kebangsaan Malaysia, 43600 Bangi Selangor, MALAYSIA
-+6 03 8094 2708 (Administration)
-+6 03 8094 2706 (Dean's Office)
-+6 03 8094 2707 (Postgraduate/ Undergraduate)
-+6 03 8921 6052 / 6177 (Research Unit)
-+6 03 8921 6089 / 6082 (Research Center)
-+6 03 8921 6180 / 6788 (Student Affairs)
-© Copyright 2025. All Rights Reserved By FTSM, UKM
-
-------------------------------------------------------------
-
-[Page 59]
-URL: https://www.ftsm.ukm.my/v6/master-in-information-systems
-Title: FTSM UKM
-
-ABOUT US
-ACADEMIC
-RESEARCH
-ENGAGE
-SUSTAINABILITY
-ALUMNI
-DIRECTORY
-FAKULTI TEKNOLOGI DAN SAINS MAKLUMAT Faculty of Information Science and Technology
-Discover UKM Give2UKM
-Master of Information System
 OVERVIEW
 ENTRY REQUIREMENTS
 PROGRAMME STRUCTURE

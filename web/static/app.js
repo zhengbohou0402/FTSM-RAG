@@ -459,11 +459,13 @@ function createMsg(role, text) {
   return bubble;
 }
 
+// ── Thinking spinner (tool-call stage) ──
+
 function showThinking(bubble) {
   bubble.innerHTML = `
         <div class="thinking">
             <div class="thinking-spinner"></div>
-            <span class="thinking-text">Analyzing question...</span>
+            <span class="thinking-text">Connecting...</span>
         </div>`;
 }
 
@@ -526,7 +528,7 @@ async function send(prompt) {
     const dec = new TextDecoder("utf-8");
     let buf = "";
     let result = "";
-    let started = false;
+    let answerStarted = false;
 
     while (true) {
       const { done, value } = await reader.read();
@@ -534,30 +536,31 @@ async function send(prompt) {
 
       buf += dec.decode(value, { stream: true });
 
-      // Parse thinking markers
+      // ── 工具调用提示标记 __THINK__...__ENDTHINK__ ──
       while (buf.includes("__THINK__") && buf.includes("__ENDTHINK__")) {
         const si = buf.indexOf("__THINK__");
         const ei = buf.indexOf("__ENDTHINK__");
         if (si < ei) {
           result += buf.substring(0, si);
-          const think = buf.substring(si + 9, ei).trim();
+          const hintText = buf.substring(si + 9, ei);
+          updateThinking(bubble, hintText || "Searching...");
           buf = buf.substring(ei + 12);
-          if (think) updateThinking(bubble, think);
         } else {
           break;
         }
       }
 
-      if (buf && !buf.includes("__THINK__") && !buf.includes("__ENDTHINK__")) {
+      // 若还未找到完整 __THINK__ 对，且 buf 开头可能是部分标记，暂不写入 result
+      if (!buf.includes("__THINK__") && !buf.includes("__ENDTHINK__")) {
         result += buf;
         buf = "";
       }
 
-      if (result.trim() && !started) {
-        started = true;
+      if (result.trim() && !answerStarted) {
+        answerStarted = true;
         hideThinking(bubble);
         bubble.innerHTML = renderMd(result);
-      } else if (started) {
+      } else if (answerStarted) {
         bubble.innerHTML = renderMd(result);
       }
 
@@ -565,6 +568,7 @@ async function send(prompt) {
     }
 
     if (buf) result += buf;
+    if (!answerStarted) hideThinking(bubble);
     bubble.innerHTML = renderMd(result.trim() || "No answer returned.");
     upsertConversation();
 

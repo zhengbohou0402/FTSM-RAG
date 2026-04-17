@@ -3,15 +3,15 @@ import hmac
 import os
 import re
 import secrets
-import sqlite3
-import sys
 import threading
 import time
 from contextlib import contextmanager
 from pathlib import Path
-from threading import Lock
 from typing import Any
 from uuid import uuid4
+
+import pymysql
+import pymysql.cursors
 
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, File, Header, HTTPException, Request, Response, UploadFile
@@ -27,18 +27,17 @@ from utils.scheduler import get_status as scheduler_status
 from utils.scheduler import start_scheduler, stop_scheduler
 from utils.semantic_cache import SemanticCache
 
-# PyInstaller 打包后 sys.frozen=True，_MEIPASS 是解压目录
-if getattr(sys, "frozen", False):
-    BASE_DIR = Path(sys.executable).parent
-    _BUNDLE_DIR = Path(getattr(sys, "_MEIPASS", BASE_DIR))
-else:
-    BASE_DIR = Path(__file__).resolve().parent
-    _BUNDLE_DIR = BASE_DIR
+BASE_DIR = Path(__file__).resolve().parent
 
 load_dotenv(BASE_DIR / ".env")
 
-WEB_DIR = _BUNDLE_DIR / "web"
-DB_PATH = BASE_DIR / "ftsm_rag.db"
+WEB_DIR = BASE_DIR / "web"
+
+MYSQL_HOST = os.getenv("MYSQL_HOST", "127.0.0.1")
+MYSQL_PORT = int(os.getenv("MYSQL_PORT", "3306"))
+MYSQL_USER = os.getenv("MYSQL_USER", "root")
+MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD", "")
+MYSQL_DATABASE = os.getenv("MYSQL_DATABASE", "ftsm_rag")
 
 AUTH_COOKIE_NAME = "ftsm_student_session"
 AUTH_SESSION_TTL_SECONDS = 7 * 24 * 3600
@@ -54,76 +53,91 @@ ALLOWED_UPLOAD_EXTENSIONS: set[str] = set(
 MAX_UPLOAD_SIZE_MB = 50
 ADMIN_API_KEY = os.getenv("ADMIN_API_KEY", "").strip()
 
-# ── SQLite 连接 ──
+# ── MySQL 连接 ──
+
+def _new_mysql_conn() -> pymysql.connections.Connection:
+    return pymysql.connect(
+        host=MYSQL_HOST,
+        port=MYSQL_PORT,
+        user=MYSQL_USER,
+        password=MYSQL_PASSWORD,
+        database=MYSQL_DATABASE,
+        charset="utf8mb4",
+        cursorclass=pymysql.cursors.DictCursor,
+        autocommit=False,
+    )
+
 
 _DB_LOCAL = threading.local()
 
 
 @contextmanager
 def get_db():
-    """
-    每个线程维护一个 SQLite 连接（check_same_thread=False 已禁用默认限制）。
-    WAL 模式让并发读写更顺畅。
-    """
-    if not hasattr(_DB_LOCAL, "conn") or _DB_LOCAL.conn is None:
-        _DB_LOCAL.conn = sqlite3.connect(
-            str(DB_PATH),
-            check_same_thread=False,
-            isolation_level=None,   # autocommit，手动 BEGIN/COMMIT
-        )
-        _DB_LOCAL.conn.row_factory = sqlite3.Row
-        _DB_LOCAL.conn.execute("PRAGMA journal_mode=WAL")
-        _DB_LOCAL.conn.execute("PRAGMA foreign_keys=ON")
+    """每个线程维护一个 MySQL 连接，自动重连断线连接。"""
+    conn = getattr(_DB_LOCAL, "conn", None)
+    if conn is None:
+        conn = _new_mysql_conn()
+        _DB_LOCAL.conn = conn
+    else:
+        try:
+            conn.ping(reconnect=True)
+        except Exception:
+            conn = _new_mysql_conn()
+            _DB_LOCAL.conn = conn
 
-    conn = _DB_LOCAL.conn
-    conn.execute("BEGIN")
+    conn.begin()
     try:
         yield conn
-        conn.execute("COMMIT")
+        conn.commit()
     except Exception:
-        conn.execute("ROLLBACK")
+        conn.rollback()
         raise
 
 
 def _init_db() -> None:
     """启动时确保四张表存在。"""
-    conn = sqlite3.connect(str(DB_PATH))
-    conn.execute("PRAGMA journal_mode=WAL")
-    conn.executescript("""
-        CREATE TABLE IF NOT EXISTS students (
-            student_id    TEXT NOT NULL PRIMARY KEY,
-            display_name  TEXT NOT NULL,
-            password_hash TEXT NOT NULL,
-            created_at    INTEGER NOT NULL
-        );
-
-        CREATE TABLE IF NOT EXISTS auth_sessions (
-            token      TEXT    NOT NULL PRIMARY KEY,
-            student_id TEXT    NOT NULL,
-            expires_at INTEGER NOT NULL
-        );
-        CREATE INDEX IF NOT EXISTS idx_sessions_student ON auth_sessions(student_id);
-        CREATE INDEX IF NOT EXISTS idx_sessions_expires ON auth_sessions(expires_at);
-
-        CREATE TABLE IF NOT EXISTS conversations (
-            id         TEXT    NOT NULL PRIMARY KEY,
-            student_id TEXT    NOT NULL,
-            title      TEXT    NOT NULL DEFAULT 'New chat',
-            updated_at INTEGER NOT NULL
-        );
-        CREATE INDEX IF NOT EXISTS idx_conv_student ON conversations(student_id, updated_at);
-
-        CREATE TABLE IF NOT EXISTS messages (
-            id              INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-            conversation_id TEXT    NOT NULL,
-            role            TEXT    NOT NULL CHECK(role IN ('user','assistant')),
-            content         TEXT    NOT NULL,
-            created_at      INTEGER NOT NULL
-        );
-        CREATE INDEX IF NOT EXISTS idx_msg_conv ON messages(conversation_id, id);
-    """)
-    conn.commit()
-    conn.close()
+    conn = _new_mysql_conn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS students (
+                    student_id    VARCHAR(80)  NOT NULL PRIMARY KEY,
+                    display_name  VARCHAR(80)  NOT NULL,
+                    password_hash VARCHAR(200) NOT NULL,
+                    created_at    INT UNSIGNED NOT NULL
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+            """)
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS auth_sessions (
+                    token      VARCHAR(64)  NOT NULL PRIMARY KEY,
+                    student_id VARCHAR(80)  NOT NULL,
+                    expires_at INT UNSIGNED NOT NULL,
+                    INDEX idx_sessions_student (student_id),
+                    INDEX idx_sessions_expires (expires_at)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+            """)
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS conversations (
+                    id         VARCHAR(36)  NOT NULL PRIMARY KEY,
+                    student_id VARCHAR(80)  NOT NULL,
+                    title      VARCHAR(200) NOT NULL DEFAULT 'New chat',
+                    updated_at INT UNSIGNED NOT NULL,
+                    INDEX idx_conv_student (student_id, updated_at)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+            """)
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS messages (
+                    id              BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                    conversation_id VARCHAR(36)     NOT NULL,
+                    role            ENUM('user','assistant') NOT NULL,
+                    content         MEDIUMTEXT      NOT NULL,
+                    created_at      INT UNSIGNED    NOT NULL,
+                    INDEX idx_msg_conv (conversation_id, id)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+            """)
+        conn.commit()
+    finally:
+        conn.close()
 
 
 # ── Training worker ──
@@ -246,10 +260,11 @@ def _create_student_session(response: Response, student_id: str) -> None:
     token = secrets.token_urlsafe(32)
     expires_at = int(time.time()) + AUTH_SESSION_TTL_SECONDS
     with get_db() as conn:
-        conn.execute(
-            "INSERT INTO auth_sessions (token, student_id, expires_at) VALUES (?,?,?)",
-            (token, student_id, expires_at),
-        )
+        with conn.cursor() as cur:
+            cur.execute(
+                "INSERT INTO auth_sessions (token, student_id, expires_at) VALUES (%s,%s,%s)",
+                (token, student_id, expires_at),
+            )
     response.set_cookie(
         AUTH_COOKIE_NAME, token,
         max_age=AUTH_SESSION_TTL_SECONDS,
@@ -261,13 +276,15 @@ def _clear_student_session(request: Request, response: Response) -> None:
     token = request.cookies.get(AUTH_COOKIE_NAME)
     if token:
         with get_db() as conn:
-            conn.execute("DELETE FROM auth_sessions WHERE token=?", (token,))
+            with conn.cursor() as cur:
+                cur.execute("DELETE FROM auth_sessions WHERE token=%s", (token,))
     response.delete_cookie(AUTH_COOKIE_NAME)
 
 
 def _cleanup_expired_sessions() -> None:
     with get_db() as conn:
-        conn.execute("DELETE FROM auth_sessions WHERE expires_at<?", (int(time.time()),))
+        with conn.cursor() as cur:
+            cur.execute("DELETE FROM auth_sessions WHERE expires_at<%s", (int(time.time()),))
 
 
 def require_student(request: Request) -> dict[str, str]:
@@ -275,19 +292,24 @@ def require_student(request: Request) -> dict[str, str]:
     if not token:
         raise HTTPException(status_code=401, detail="Login required")
     with get_db() as conn:
-        row = conn.execute(
-            "SELECT student_id, expires_at FROM auth_sessions WHERE token=?", (token,)
-        ).fetchone()
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT student_id, expires_at FROM auth_sessions WHERE token=%s", (token,)
+            )
+            row = cur.fetchone()
     if not row or row["expires_at"] < int(time.time()):
         if row:
             with get_db() as conn:
-                conn.execute("DELETE FROM auth_sessions WHERE token=?", (token,))
+                with conn.cursor() as cur:
+                    cur.execute("DELETE FROM auth_sessions WHERE token=%s", (token,))
         raise HTTPException(status_code=401, detail="Login required")
     with get_db() as conn:
-        student = conn.execute(
-            "SELECT student_id, display_name FROM students WHERE student_id=?",
-            (row["student_id"],),
-        ).fetchone()
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT student_id, display_name FROM students WHERE student_id=%s",
+                (row["student_id"],),
+            )
+            student = cur.fetchone()
     if not student:
         raise HTTPException(status_code=401, detail="Login required")
     return {"student_id": student["student_id"], "display_name": student["display_name"]}
@@ -304,88 +326,100 @@ def require_admin_api_key(x_admin_api_key: str | None = Header(default=None)) ->
 
 def _get_conversation_owner(conversation_id: str) -> str | None:
     with get_db() as conn:
-        row = conn.execute(
-            "SELECT student_id FROM conversations WHERE id=?", (conversation_id,)
-        ).fetchone()
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT student_id FROM conversations WHERE id=%s", (conversation_id,)
+            )
+            row = cur.fetchone()
     return row["student_id"] if row else None
 
 
 def _ensure_conversation(conversation_id: str, title: str = "New chat", student_id: str = "") -> None:
     now = int(time.time())
     with get_db() as conn:
-        exists = conn.execute(
-            "SELECT id FROM conversations WHERE id=?", (conversation_id,)
-        ).fetchone()
-        if not exists:
-            conn.execute(
-                "INSERT INTO conversations (id, student_id, title, updated_at) VALUES (?,?,?,?)",
-                (conversation_id, student_id, title, now),
-            )
+        with conn.cursor() as cur:
+            cur.execute("SELECT id FROM conversations WHERE id=%s", (conversation_id,))
+            exists = cur.fetchone()
+            if not exists:
+                cur.execute(
+                    "INSERT INTO conversations (id, student_id, title, updated_at) VALUES (%s,%s,%s,%s)",
+                    (conversation_id, student_id, title, now),
+                )
 
 
 def _update_conversation_title(conversation_id: str, title: str) -> None:
     with get_db() as conn:
-        conn.execute(
-            "UPDATE conversations SET title=?, updated_at=? WHERE id=?",
-            (title, int(time.time()), conversation_id),
-        )
+        with conn.cursor() as cur:
+            cur.execute(
+                "UPDATE conversations SET title=%s, updated_at=%s WHERE id=%s",
+                (title, int(time.time()), conversation_id),
+            )
 
 
 def _save_messages(conversation_id: str, user_msg: str, assistant_msg: str) -> None:
     now = int(time.time())
     with get_db() as conn:
-        conn.execute(
-            "INSERT INTO messages (conversation_id, role, content, created_at) VALUES (?,?,?,?)",
-            (conversation_id, "user", user_msg, now),
-        )
-        conn.execute(
-            "INSERT INTO messages (conversation_id, role, content, created_at) VALUES (?,?,?,?)",
-            (conversation_id, "assistant", assistant_msg, now),
-        )
-        # 只保留最近 40 条
-        conn.execute(
-            """
-            DELETE FROM messages WHERE conversation_id=?
-            AND id NOT IN (
-                SELECT id FROM messages WHERE conversation_id=?
-                ORDER BY id DESC LIMIT 40
+        with conn.cursor() as cur:
+            cur.execute(
+                "INSERT INTO messages (conversation_id, role, content, created_at) VALUES (%s,%s,%s,%s)",
+                (conversation_id, "user", user_msg, now),
             )
-            """,
-            (conversation_id, conversation_id),
-        )
+            cur.execute(
+                "INSERT INTO messages (conversation_id, role, content, created_at) VALUES (%s,%s,%s,%s)",
+                (conversation_id, "assistant", assistant_msg, now),
+            )
+            # 只保留最近 40 条
+            cur.execute(
+                """
+                DELETE FROM messages WHERE conversation_id=%s
+                AND id NOT IN (
+                    SELECT id FROM (
+                        SELECT id FROM messages WHERE conversation_id=%s
+                        ORDER BY id DESC LIMIT 40
+                    ) AS t
+                )
+                """,
+                (conversation_id, conversation_id),
+            )
 
 
 def _get_recent_messages(conversation_id: str, max_turns: int = 5) -> list[dict[str, str]]:
     limit = max_turns * 2
     with get_db() as conn:
-        rows = conn.execute(
-            """
-            SELECT role, content FROM (
-                SELECT id, role, content FROM messages
-                WHERE conversation_id=? ORDER BY id DESC LIMIT ?
-            ) ORDER BY id ASC
-            """,
-            (conversation_id, limit),
-        ).fetchall()
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT role, content FROM (
+                    SELECT id, role, content FROM messages
+                    WHERE conversation_id=%s ORDER BY id DESC LIMIT %s
+                ) AS t ORDER BY id ASC
+                """,
+                (conversation_id, limit),
+            )
+            rows = cur.fetchall()
     return [{"role": r["role"], "content": r["content"]} for r in rows]
 
 
 def _prune_conversations(student_id: str) -> None:
     with get_db() as conn:
-        cnt = conn.execute(
-            "SELECT COUNT(*) FROM conversations WHERE student_id=?", (student_id,)
-        ).fetchone()[0]
-        if cnt > MAX_CONVERSATION_ITEMS:
-            conn.execute(
-                """
-                DELETE FROM conversations WHERE student_id=?
-                AND id NOT IN (
-                    SELECT id FROM conversations WHERE student_id=?
-                    ORDER BY updated_at DESC LIMIT ?
-                )
-                """,
-                (student_id, student_id, MAX_CONVERSATION_ITEMS),
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT COUNT(*) AS cnt FROM conversations WHERE student_id=%s", (student_id,)
             )
+            cnt = cur.fetchone()["cnt"]
+            if cnt > MAX_CONVERSATION_ITEMS:
+                cur.execute(
+                    """
+                    DELETE FROM conversations WHERE student_id=%s
+                    AND id NOT IN (
+                        SELECT id FROM (
+                            SELECT id FROM conversations WHERE student_id=%s
+                            ORDER BY updated_at DESC LIMIT %s
+                        ) AS t
+                    )
+                    """,
+                    (student_id, student_id, MAX_CONVERSATION_ITEMS),
+                )
 
 
 # ── FastAPI 生命周期 ──
@@ -419,6 +453,84 @@ async def manage(request: Request) -> HTMLResponse:
     return templates.TemplateResponse(request, "admin.html", {})
 
 
+@app.get("/settings", response_class=HTMLResponse)
+async def settings_page(request: Request) -> HTMLResponse:
+    return templates.TemplateResponse(request, "settings.html", {})
+
+
+# ── Settings API（Admin Key 保护） ──
+
+def _parse_env_file(env_path: Path) -> dict[str, str]:
+    """读取 .env 文件，返回 key-value 字典（跳过注释行）。"""
+    result: dict[str, str] = {}
+    if not env_path.exists():
+        return result
+    for line in env_path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        if "=" in line:
+            k, _, v = line.partition("=")
+            result[k.strip()] = v.strip()
+    return result
+
+
+def _write_env_file(env_path: Path, updates: dict[str, str]) -> None:
+    """把 updates 写入 .env，已有 key 原地更新，新 key 追加到末尾。"""
+    lines: list[str] = []
+    written: set[str] = set()
+    if env_path.exists():
+        for line in env_path.read_text(encoding="utf-8").splitlines():
+            stripped = line.strip()
+            if stripped and not stripped.startswith("#") and "=" in stripped:
+                k = stripped.partition("=")[0].strip()
+                if k in updates:
+                    lines.append(f"{k}={updates[k]}")
+                    written.add(k)
+                    continue
+            lines.append(line)
+    for k, v in updates.items():
+        if k not in written:
+            lines.append(f"{k}={v}")
+    env_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+class SettingsPayload(BaseModel):
+    dashscope_api_key: str = Field(default="")
+    admin_api_key: str = Field(default="")
+
+
+@app.get("/api/settings")
+async def get_settings(x_admin_api_key: str = Header(default="")) -> JSONResponse:
+    if ADMIN_API_KEY and x_admin_api_key != ADMIN_API_KEY:
+        raise HTTPException(status_code=403, detail="Invalid admin key.")
+    env = _parse_env_file(BASE_DIR / ".env")
+    return JSONResponse({
+        "dashscope_api_key": env.get("DASHSCOPE_API_KEY", ""),
+        "admin_api_key":     env.get("ADMIN_API_KEY", ""),
+    })
+
+
+@app.post("/api/settings")
+async def save_settings(
+    payload: SettingsPayload,
+    x_admin_api_key: str = Header(default=""),
+) -> JSONResponse:
+    if ADMIN_API_KEY and x_admin_api_key != ADMIN_API_KEY:
+        raise HTTPException(status_code=403, detail="Invalid admin key.")
+    updates: dict[str, str] = {}
+    if payload.dashscope_api_key:
+        updates["DASHSCOPE_API_KEY"] = payload.dashscope_api_key
+    if payload.admin_api_key:
+        updates["ADMIN_API_KEY"] = payload.admin_api_key
+    if updates:
+        _write_env_file(BASE_DIR / ".env", updates)
+        # 立即生效到当前进程环境变量
+        for k, v in updates.items():
+            os.environ[k] = v
+    return JSONResponse({"ok": True, "updated": list(updates.keys())})
+
+
 @app.get("/api/health")
 async def health() -> JSONResponse:
     return JSONResponse({"status": "ok"})
@@ -434,15 +546,15 @@ async def auth_register(payload: StudentAuthRequest, response: Response) -> JSON
     student_id = _normalize_student_id(payload.student_id)
     display_name = (payload.display_name or student_id).strip() or student_id
     with get_db() as conn:
-        exists = conn.execute(
-            "SELECT student_id FROM students WHERE student_id=?", (student_id,)
-        ).fetchone()
-        if exists:
-            raise HTTPException(status_code=409, detail="Student account already exists.")
-        conn.execute(
-            "INSERT INTO students (student_id, display_name, password_hash, created_at) VALUES (?,?,?,?)",
-            (student_id, display_name, _hash_password(payload.password), int(time.time())),
-        )
+        with conn.cursor() as cur:
+            cur.execute("SELECT student_id FROM students WHERE student_id=%s", (student_id,))
+            exists = cur.fetchone()
+            if exists:
+                raise HTTPException(status_code=409, detail="Student account already exists.")
+            cur.execute(
+                "INSERT INTO students (student_id, display_name, password_hash, created_at) VALUES (%s,%s,%s,%s)",
+                (student_id, display_name, _hash_password(payload.password), int(time.time())),
+            )
     res = JSONResponse(
         {"authenticated": True, "student": {"student_id": student_id, "display_name": display_name}}
     )
@@ -454,10 +566,12 @@ async def auth_register(payload: StudentAuthRequest, response: Response) -> JSON
 async def auth_login(payload: StudentAuthRequest) -> JSONResponse:
     student_id = _normalize_student_id(payload.student_id)
     with get_db() as conn:
-        record = conn.execute(
-            "SELECT student_id, display_name, password_hash FROM students WHERE student_id=?",
-            (student_id,),
-        ).fetchone()
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT student_id, display_name, password_hash FROM students WHERE student_id=%s",
+                (student_id,),
+            )
+            record = cur.fetchone()
     if not record or not _verify_password(payload.password, record["password_hash"]):
         raise HTTPException(status_code=401, detail="Invalid student ID or password.")
     res = JSONResponse(
@@ -580,13 +694,15 @@ async def create_conversation(student: dict[str, str] = Depends(require_student)
 @app.get("/api/conversations")
 async def list_conversations(student: dict[str, str] = Depends(require_student)) -> JSONResponse:
     with get_db() as conn:
-        rows = conn.execute(
-            """
-            SELECT id, title, updated_at FROM conversations
-            WHERE student_id=? ORDER BY updated_at DESC LIMIT ?
-            """,
-            (student["student_id"], MAX_EXPOSED_CONVERSATIONS),
-        ).fetchall()
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT id, title, updated_at FROM conversations
+                WHERE student_id=%s ORDER BY updated_at DESC LIMIT %s
+                """,
+                (student["student_id"], MAX_EXPOSED_CONVERSATIONS),
+            )
+            rows = cur.fetchall()
     return JSONResponse({"items": [{"id": r["id"], "title": r["title"], "updated_at": r["updated_at"]} for r in rows]})
 
 
@@ -596,23 +712,27 @@ async def get_conversation(
     student: dict[str, str] = Depends(require_student),
 ) -> JSONResponse:
     with get_db() as conn:
-        conv = conn.execute(
-            "SELECT id, student_id, title, updated_at FROM conversations WHERE id=?",
-            (conversation_id,),
-        ).fetchone()
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT id, student_id, title, updated_at FROM conversations WHERE id=%s",
+                (conversation_id,),
+            )
+            conv = cur.fetchone()
     if not conv or conv["student_id"] != student["student_id"]:
         raise HTTPException(status_code=404, detail="Conversation not found")
     with get_db() as conn:
-        messages = conn.execute(
-            "SELECT role, content FROM messages WHERE conversation_id=? ORDER BY id ASC",
-            (conversation_id,),
-        ).fetchall()
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT role, content FROM messages WHERE conversation_id=%s ORDER BY id ASC",
+                (conversation_id,),
+            )
+            msgs = cur.fetchall()
     return JSONResponse(
         {
             "id": conv["id"],
             "title": conv["title"],
             "updated_at": conv["updated_at"],
-            "messages": [{"role": m["role"], "content": m["content"]} for m in messages],
+            "messages": [{"role": m["role"], "content": m["content"]} for m in msgs],
         }
     )
 
@@ -648,7 +768,8 @@ async def chat(
 
     def stream_response():
         hit, cached_answer = semantic_cache.get(message)
-        if hit and cached_answer:
+        # 若缓存内容包含控制标记（历史脏数据），跳过缓存重新走 agent
+        if hit and cached_answer and "__THINK" not in cached_answer:
             yield "__THINK__Answering from cache...__ENDTHINK__"
             save_history(cached_answer)
             for char in cached_answer:
@@ -662,6 +783,7 @@ async def chat(
         for chunk in agent.execute_stream(message, history=recent_history):
             if not chunk:
                 continue
+            # 工具调用提示标记直接转发，不逐字符、不计入最终答案
             if chunk.startswith("__THINK__"):
                 yield chunk
                 continue

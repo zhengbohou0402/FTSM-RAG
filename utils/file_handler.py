@@ -37,7 +37,7 @@ def listdir_with_allowed_type(path: str, allowed_types: tuple[str]):
 
     if not os.path.isdir(path):
         logger.error(f"[listdir_with_allowed_type] Not a directory: {path}")
-        return allowed_types
+        return []
 
     for f in os.listdir(path):
         if f.endswith(allowed_types):
