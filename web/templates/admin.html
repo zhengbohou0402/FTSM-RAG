@@ -4,6 +4,8 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>FTSM Documents</title>
+        <link rel="icon" type="image/svg+xml" href="/static/assets/ftsm-rag-icon.svg" />
+        <link rel="alternate icon" type="image/x-icon" href="/static/assets/favicon.ico" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link
@@ -22,30 +24,23 @@
                         Upload, re-index, and remove knowledge-base files in one place.
                     </p>
                 </div>
-                <div style="display:flex;gap:12px;align-items:center;">
-                    <a class="manage-back" href="/settings">⚙ Settings</a>
-                    <a class="manage-back" href="/">Back to chat</a>
+                <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                    <a class="manage-back" href="/settings">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                        </svg>
+                        Settings
+                    </a>
+                    <a class="manage-back" href="/">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="15 18 9 12 15 6"/>
+                        </svg>
+                        Back to Chat
+                    </a>
                 </div>
             </section>
 
             <section class="manage-grid">
-                <div class="manage-card">
-                    <div class="manage-card-head">
-                        <h2>Admin Access</h2>
-                        <span>Required</span>
-                    </div>
-                    <label class="manage-field">
-                        Admin API key
-                        <input id="admin-api-key" type="password" placeholder="ADMIN_API_KEY" />
-                    </label>
-                    <button class="manage-btn" id="admin-save-key" type="button">
-                        Save key
-                    </button>
-                    <p class="manage-note">
-                        The key is stored only in your browser.
-                    </p>
-                </div>
-
                 <div class="manage-card">
                     <div class="manage-card-head">
                         <h2>Upload Files</h2>

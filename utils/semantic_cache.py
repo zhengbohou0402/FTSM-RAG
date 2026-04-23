@@ -27,10 +27,11 @@ from threading import Lock
 # 强制 IPv4，与 vector_store.py 保持一致
 urllib3.util.connection.HAS_IPV6 = False
 
-from model.factory import embed_model
+from model.factory import get_embed_model
 from utils.logger_handler import logger
+from utils.path_tool import get_abs_path
 
-CACHE_FILE = Path(__file__).resolve().parents[1] / "data" / "ukm_ftsm" / "semantic_cache.json"
+CACHE_FILE = Path(get_abs_path("data/ukm_ftsm")) / "semantic_cache.json"
 MAX_CACHE_ENTRIES = 500       # 最多缓存条目数
 DEFAULT_THRESHOLD = 0.92      # 余弦相似度阈值，越高越严格
 CACHE_TTL_SECONDS = 7 * 24 * 3600  # 缓存有效期：7 天
@@ -136,7 +137,7 @@ class SemanticCache:
 
     def _embed(self, text: str) -> list[float]:
         """将文本向量化（调用 DashScope embedding）"""
-        return embed_model.embed_query(text)
+        return get_embed_model().embed_query(text)
 
     def _load(self) -> None:
         """从本地文件加载缓存"""

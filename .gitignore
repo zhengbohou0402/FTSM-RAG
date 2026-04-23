@@ -10,7 +10,13 @@ chroma_db_ftsm/
 md5_ftsm.text
 nul
 
+# PyInstaller build artifacts
+build/
+dist/
+*.manifest
+
 data/ukm_ftsm/chat_sessions.json
+data/ukm_ftsm/conversations.json
 data/ukm_ftsm/semantic_cache.json
 data/ukm_ftsm/.last_crawl
 data/ukm_ftsm/ingestion_manifest.json

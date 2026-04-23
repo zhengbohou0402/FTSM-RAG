@@ -1,3 +1,5 @@
+# Chat 模型名由 .env 中的 CHAT_MODEL_NAME 覆盖；此处为兜底默认值。
+# 可选：qwen3-max / qwen-plus / qwen-turbo / qwen3.6-plus（国际版）
 chat_model_name: qwen3-max
 embedding_model_name: text-embedding-v4
 image_model_name: qwen-vl-plus

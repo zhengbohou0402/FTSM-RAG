@@ -4,12 +4,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>FTSM-RAG – Settings</title>
+    <link rel="icon" type="image/svg+xml" href="/static/assets/ftsm-rag-icon.svg" />
+    <link rel="alternate icon" type="image/x-icon" href="/static/assets/favicon.ico" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="/static/styles.css" />
     <style>
-        /* ── Settings-specific overrides ── */
         .settings-shell {
             min-height: 100vh;
             background: #f5f6fa;
@@ -18,293 +19,206 @@
             align-items: center;
             padding: 40px 16px 60px;
         }
-
-        .settings-header {
-            width: 100%;
-            max-width: 560px;
-            margin-bottom: 28px;
-        }
+        .settings-header { width: 100%; max-width: 640px; margin-bottom: 24px; }
         .settings-header .kicker {
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            color: #2e6da4;
-            margin-bottom: 6px;
+            font-size: 11px; font-weight: 700; letter-spacing: 1px;
+            text-transform: uppercase; color: #2e6da4; margin-bottom: 6px;
         }
-        .settings-header h1 {
-            font-size: 24px;
-            font-weight: 700;
-            color: #1a1a2e;
-            margin-bottom: 4px;
-        }
-        .settings-header p {
-            font-size: 13px;
-            color: #666;
-        }
+        .settings-header h1 { font-size: 26px; font-weight: 700; color: #1a1a2e; margin-bottom: 4px; }
+        .settings-header p { font-size: 13px; color: #666; }
         .settings-back {
-            display: inline-block;
-            margin-top: 12px;
-            font-size: 13px;
-            color: #2e6da4;
+            display: inline-flex; align-items: center; gap: 6px;
+            margin-top: 14px;
+            padding: 8px 16px;
+            background: #fff;
+            border: 1.5px solid #2e6da4;
+            border-radius: 8px;
+            font-size: 13px; font-weight: 600; color: #2e6da4;
+            text-decoration: none;
+            transition: background .15s, color .15s;
+            box-shadow: 0 1px 4px rgba(46,109,164,.08);
+        }
+        .settings-back:hover {
+            background: #2e6da4; color: #fff;
             text-decoration: none;
         }
-        .settings-back:hover { text-decoration: underline; }
-
+        .first-run-banner {
+            width: 100%; max-width: 640px;
+            background: #fff7e6; border: 1px solid #ffd591; color: #8a5a00;
+            padding: 14px 18px; border-radius: 10px; margin-bottom: 18px;
+            font-size: 13px; line-height: 1.6;
+            display: none;
+        }
+        .first-run-banner.visible { display: block; }
+        .first-run-banner strong { color: #5d3c00; }
         .settings-card {
-            width: 100%;
-            max-width: 560px;
-            background: #fff;
-            border-radius: 14px;
-            box-shadow: 0 2px 12px rgba(0,0,0,.07);
-            padding: 28px 28px 24px;
-            margin-bottom: 20px;
+            width: 100%; max-width: 640px; background: #fff;
+            border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,.07);
+            padding: 28px 28px 24px; margin-bottom: 20px;
         }
         .settings-card-head {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 20px;
-            padding-bottom: 14px;
+            display: flex; align-items: center; gap: 10px;
+            margin-bottom: 20px; padding-bottom: 14px;
             border-bottom: 1px solid #f0f0f0;
         }
-        .settings-card-head h2 {
-            font-size: 15px;
-            font-weight: 600;
-            color: #1a1a2e;
-            flex: 1;
-        }
+        .settings-card-head h2 { font-size: 15px; font-weight: 600; color: #1a1a2e; flex: 1; }
         .badge {
-            font-size: 10px;
-            font-weight: 700;
-            letter-spacing: .5px;
-            text-transform: uppercase;
-            padding: 3px 8px;
-            border-radius: 20px;
+            font-size: 10px; font-weight: 700; letter-spacing: .5px;
+            text-transform: uppercase; padding: 3px 8px; border-radius: 20px;
         }
         .badge-required { background: #fff0f0; color: #d93025; }
         .badge-optional { background: #f0f4ff; color: #2e6da4; }
-
-        .field { margin-bottom: 18px; }
+        .field { margin-bottom: 20px; }
         .field:last-child { margin-bottom: 0; }
         .field label {
-            display: block;
-            font-size: 12px;
-            font-weight: 600;
-            color: #555;
-            margin-bottom: 6px;
-            letter-spacing: .2px;
+            display: block; font-size: 12px; font-weight: 600;
+            color: #555; margin-bottom: 6px; letter-spacing: .2px;
         }
-        .field .field-desc {
-            font-size: 11px;
-            color: #999;
-            margin-bottom: 6px;
+        .field .field-desc { font-size: 11px; color: #999; margin-bottom: 6px; }
+        .input-row { display: flex; gap: 8px; }
+        .input-row input, .input-row select {
+            flex: 1; padding: 10px 12px;
+            border: 1.5px solid #d0d5dd; border-radius: 8px;
+            font-size: 13px; background: #fff; outline: none;
+            transition: border-color .15s; color: #222;
         }
-        .input-row {
-            display: flex;
-            gap: 8px;
-        }
-        .input-row input {
-            flex: 1;
-            padding: 9px 12px;
-            border: 1.5px solid #d0d5dd;
-            border-radius: 8px;
-            font-size: 13px;
-            font-family: "Consolas", monospace;
-            background: #fff;
-            outline: none;
-            transition: border-color .15s;
-            color: #222;
-        }
-        .input-row input:focus { border-color: #2e6da4; }
+        .input-row input { font-family: "Consolas", monospace; }
+        .input-row input:focus, .input-row select:focus { border-color: #2e6da4; }
         .toggle-btn {
-            padding: 0 12px;
-            border: 1.5px solid #d0d5dd;
-            border-radius: 8px;
-            background: #fafafa;
-            cursor: pointer;
-            font-size: 15px;
-            color: #888;
-            transition: border-color .15s, color .15s;
+            padding: 0 12px; border: 1.5px solid #d0d5dd; border-radius: 8px;
+            background: #fafafa; cursor: pointer; font-size: 15px;
+            color: #888; transition: border-color .15s, color .15s;
         }
         .toggle-btn:hover { border-color: #2e6da4; color: #2e6da4; }
-
-        .field-hint {
-            font-size: 11px;
-            color: #aaa;
-            margin-top: 5px;
-        }
+        .field-hint { font-size: 11px; color: #aaa; margin-top: 5px; }
         .field-hint a { color: #2e6da4; text-decoration: none; }
         .field-hint a:hover { text-decoration: underline; }
-
-        /* Admin unlock row */
-        .unlock-row {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 20px;
-            padding-bottom: 18px;
-            border-bottom: 1px solid #f0f0f0;
-        }
-        .unlock-row input {
-            flex: 1;
-            padding: 9px 12px;
-            border: 1.5px solid #d0d5dd;
-            border-radius: 8px;
-            font-size: 13px;
-            font-family: "Consolas", monospace;
-            outline: none;
-            transition: border-color .15s;
-        }
-        .unlock-row input:focus { border-color: #2e6da4; }
-        .unlock-btn {
-            padding: 9px 18px;
-            background: #1a1a2e;
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: opacity .15s;
-        }
-        .unlock-btn:hover { opacity: .85; }
-
-        .locked-overlay {
-            text-align: center;
-            padding: 10px 0 4px;
-            color: #aaa;
-            font-size: 13px;
-        }
-
-        .save-row {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-top: 24px;
-        }
+        .save-row { display: flex; align-items: center; gap: 12px; margin-top: 8px; }
         .save-btn {
-            padding: 10px 24px;
-            background: linear-gradient(135deg, #1e3a5f, #2e6da4);
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
+            padding: 11px 26px; background: linear-gradient(135deg, #1e3a5f, #2e6da4);
+            color: #fff; border: none; border-radius: 8px;
+            font-size: 13px; font-weight: 600; cursor: pointer;
             transition: opacity .15s;
         }
         .save-btn:hover { opacity: .88; }
         .save-btn:disabled { opacity: .45; cursor: default; }
-        .status-msg {
-            font-size: 12px;
-            color: #2e6da4;
-        }
+        .status-msg { font-size: 12px; color: #2e6da4; }
         .status-msg.error { color: #d93025; }
         .status-msg.success { color: #1a7a3c; }
+        .region-group { display: flex; gap: 8px; }
+        .region-opt {
+            flex: 1; padding: 12px; border: 1.5px solid #d0d5dd;
+            border-radius: 8px; cursor: pointer; text-align: center;
+            background: #fff; transition: border-color .15s, background .15s;
+        }
+        .region-opt.active {
+            border-color: #2e6da4; background: #eaf2fb; color: #1a4a80;
+        }
+        .region-opt .region-title { font-size: 13px; font-weight: 600; }
+        .region-opt .region-sub { font-size: 11px; color: #888; margin-top: 3px; }
+        .refresh-btn {
+            padding: 0 12px; border: 1.5px solid #d0d5dd; border-radius: 8px;
+            background: #fafafa; cursor: pointer; font-size: 12px; font-weight: 600;
+            color: #555; white-space: nowrap; transition: border-color .15s, color .15s;
+        }
+        .refresh-btn:hover:not(:disabled) { border-color: #2e6da4; color: #2e6da4; }
+        .refresh-btn:disabled { opacity: .45; cursor: default; }
+        .model-hint { font-size: 11px; color: #aaa; margin-top: 5px; }
     </style>
 </head>
 <body>
 <div class="settings-shell">
-
     <div class="settings-header">
         <p class="kicker">FTSM-RAG</p>
         <h1>Settings</h1>
-        <p>Manage API keys stored in the server-side <code>.env</code> file.</p>
-        <a class="settings-back" href="/manage">← Back to Document Management</a>
+        <p>Configure your DashScope API credentials and model.</p>
+        <a class="settings-back" href="/">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6"/>
+            </svg>
+            Back to Chat
+        </a>
     </div>
 
-    <!-- Admin unlock -->
-    <div class="settings-card" id="unlock-card">
-        <div class="settings-card-head">
-            <h2>Admin Authentication</h2>
-            <span class="badge badge-required">Required</span>
-        </div>
-        <div class="unlock-row">
-            <input id="input-admin-unlock" type="password" placeholder="Enter Admin API key to unlock settings" />
-            <button class="unlock-btn" id="btn-unlock">Unlock</button>
-        </div>
-        <div class="locked-overlay" id="locked-hint">Settings are locked until you authenticate.</div>
+    <div class="first-run-banner" id="first-run-banner">
+        <strong>Welcome!</strong> Enter your DashScope API key below to start using FTSM-RAG.
+        Don't have one? Register at
+        <a href="https://dashscope.aliyun.com/" target="_blank">dashscope.aliyun.com</a>
+        (China) or
+        <a href="https://modelstudio.console.alibabacloud.com/?tab=playground#/api-key" target="_blank">modelstudio.alibabacloud.com</a>
+        (International).
     </div>
 
-    <!-- API Keys form (hidden until unlocked) -->
-    <div class="settings-card" id="keys-card" style="display:none">
+    <div class="settings-card">
         <div class="settings-card-head">
             <h2>DashScope API Key</h2>
             <span class="badge badge-required">Required</span>
         </div>
 
         <div class="field">
-            <label>DASHSCOPE_API_KEY</label>
-            <div class="field-desc">Used for Tongyi chat model, embedding model, and image extraction.</div>
+            <label>API Key</label>
+            <div class="field-desc">Used for the chat model, embeddings, and image text extraction.</div>
             <div class="input-row">
                 <input id="input-dashscope" type="password" placeholder="sk-xxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false" />
                 <button class="toggle-btn" data-target="input-dashscope" title="Show / Hide">👁</button>
             </div>
-            <div class="field-hint">
-                Get your key at <a href="https://dashscope.aliyun.com/" target="_blank">dashscope.aliyun.com</a>
-            </div>
         </div>
-    </div>
 
-    <div class="settings-card" id="admin-card" style="display:none">
-        <div class="settings-card-head">
-            <h2>Admin API Key</h2>
-            <span class="badge badge-optional">Optional</span>
-        </div>
         <div class="field">
-            <label>ADMIN_API_KEY</label>
-            <div class="field-desc">Protects document upload, delete, and re-index endpoints.</div>
-            <div class="input-row">
-                <input id="input-admin-new" type="password" placeholder="Leave blank to keep existing value" autocomplete="off" spellcheck="false" />
-                <button class="toggle-btn" data-target="input-admin-new" title="Show / Hide">👁</button>
+            <label>Service Region</label>
+            <div class="field-desc">China uses <code>qwen3-max</code>, International supports <code>qwen3.6-plus</code>.</div>
+            <div class="region-group">
+                <div class="region-opt active" data-region="china" data-base-url="">
+                    <div class="region-title">China 🇨🇳</div>
+                    <div class="region-sub">dashscope.aliyuncs.com</div>
+                </div>
+                <div class="region-opt" data-region="intl" data-base-url="https://dashscope-intl.aliyuncs.com/api/v1">
+                    <div class="region-title">International 🌏</div>
+                    <div class="region-sub">dashscope-intl.aliyuncs.com</div>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="settings-card" id="save-card" style="display:none">
+        <div class="field">
+            <label>Chat Model</label>
+            <div class="field-desc">Pick a Qwen model. Larger models are smarter but slower.</div>
+            <div class="input-row">
+                <select id="input-model">
+                    <optgroup label="Built-in (default)" id="optgroup-builtin">
+                        <option value="qwen3-max">qwen3-max (highest quality)</option>
+                        <option value="qwen-plus">qwen-plus (balanced)</option>
+                        <option value="qwen-turbo">qwen-turbo (fastest)</option>
+                    </optgroup>
+                    <optgroup label="Fetched from DashScope" id="optgroup-remote" style="display:none"></optgroup>
+                </select>
+                <button class="refresh-btn" id="btn-refresh-models" title="加载模型列表并验证 API Key">↻ 验证 & 同步</button>
+            </div>
+            <div class="model-hint" id="model-hint">点击 <strong>↻ 验证 & 同步</strong>，可加载完整模型列表并验证 API Key 是否有效。</div>
+        </div>
+
         <div class="save-row">
-            <button class="save-btn" id="btn-save">Save changes</button>
+            <button class="save-btn" id="btn-save">Save & apply</button>
             <span class="status-msg" id="status-msg"></span>
         </div>
     </div>
-
 </div>
 
 <script>
-    let adminKey = "";
+    let selectedRegion = "china";
+    let selectedBaseUrl = "";
 
-    // ── Unlock ────────────────────────────────────────────────────────────
-    async function unlock() {
-        const key = document.getElementById("input-admin-unlock").value.trim();
-        const res = await fetch("/api/settings", {
-            headers: { "X-Admin-Api-Key": key }
+    function setRegion(region, baseUrl) {
+        selectedRegion = region;
+        selectedBaseUrl = baseUrl || "";
+        document.querySelectorAll(".region-opt").forEach(el => {
+            el.classList.toggle("active", el.dataset.region === region);
         });
-        if (!res.ok) {
-            document.getElementById("locked-hint").textContent =
-                res.status === 403 ? "❌ Invalid admin key." : "❌ Server error.";
-            document.getElementById("locked-hint").style.color = "#d93025";
-            return;
-        }
-        const data = await res.json();
-        adminKey = key;
-
-        // populate fields
-        document.getElementById("input-dashscope").value = data.dashscope_api_key || "";
-        // don't pre-fill admin key for security
-
-        // show form cards
-        ["keys-card", "admin-card", "save-card"].forEach(id => {
-            document.getElementById(id).style.display = "";
-        });
-        document.getElementById("unlock-card").style.display = "none";
     }
 
-    document.getElementById("btn-unlock").addEventListener("click", unlock);
-    document.getElementById("input-admin-unlock").addEventListener("keydown", e => {
-        if (e.key === "Enter") unlock();
+    document.querySelectorAll(".region-opt").forEach(el => {
+        el.addEventListener("click", () => setRegion(el.dataset.region, el.dataset.baseUrl));
     });
 
-    // ── Toggle visibility ─────────────────────────────────────────────────
     document.querySelectorAll(".toggle-btn").forEach(btn => {
         btn.addEventListener("click", () => {
             const inp = document.getElementById(btn.dataset.target);
@@ -312,46 +226,145 @@
         });
     });
 
-    // ── Save ──────────────────────────────────────────────────────────────
-    document.getElementById("btn-save").addEventListener("click", async () => {
-        const dashscopeKey = document.getElementById("input-dashscope").value.trim();
-        const adminNewKey  = document.getElementById("input-admin-new").value.trim();
-        const statusEl     = document.getElementById("status-msg");
-        const btn          = document.getElementById("btn-save");
+    // ── 模型列表 & Key 验证 ──
 
-        if (!dashscopeKey) {
-            statusEl.textContent = "DashScope API Key cannot be empty.";
-            statusEl.className   = "status-msg error";
+    let _savedModelName = "";
+
+    function _trySelectModel(name) {
+        if (!name) return false;
+        const sel = document.getElementById("input-model");
+        const opt = Array.from(sel.options).find(o => o.value === name);
+        if (opt) { sel.value = name; return true; }
+        return false;
+    }
+
+    function _populateModels(models, savedName) {
+        const remoteGroup = document.getElementById("optgroup-remote");
+        const builtinGroup = document.getElementById("optgroup-builtin");
+        if (!models || models.length === 0) return;
+
+        remoteGroup.innerHTML = "";
+        models.forEach(m => {
+            const opt = document.createElement("option");
+            opt.value = m;
+            opt.textContent = m;
+            remoteGroup.appendChild(opt);
+        });
+        remoteGroup.style.display = "";
+        builtinGroup.style.display = "none";
+
+        if (!_trySelectModel(savedName || _savedModelName)) {
+            document.getElementById("input-model").value = models[0];
+        }
+    }
+
+    async function refreshModels(silent = false) {
+        const btn = document.getElementById("btn-refresh-models");
+        const hint = document.getElementById("model-hint");
+
+        btn.disabled = true;
+        btn.textContent = "↻ 验证中…";
+        if (!silent) hint.innerHTML = "正在加载模型列表并验证 API Key…";
+
+        try {
+            const res = await fetch("/api/models");
+            const data = await res.json();
+            const models = data.models || [];
+
+            // 填充模型下拉
+            _populateModels(models, _savedModelName);
+
+            // 显示 Key 验证结果
+            if (data.key_valid === true) {
+                hint.innerHTML = `<span style="color:#1a7a3c">✅ API Key 有效，已加载 ${models.length} 个${data.region === "intl" ? "国际版" : "国内版"}模型。</span>`;
+            } else if (data.key_valid === false) {
+                hint.innerHTML = `<span style="color:#d93025">❌ ${data.key_error || "API Key 无效，请重新填写。"}</span>`;
+            } else {
+                // null = 网络问题，但模型列表仍然有效
+                hint.innerHTML = `<span style="color:#b37400">⚠️ Key 验证未完成（${data.key_error}），但模型列表已加载。</span>`;
+            }
+        } catch (e) {
+            if (!silent) hint.innerHTML = `<span style="color:#d93025">请求失败：${e.message}</span>`;
+        } finally {
+            btn.disabled = false;
+            btn.textContent = "↻ 验证 & 同步";
+        }
+    }
+
+    document.getElementById("btn-refresh-models").addEventListener("click", () => refreshModels(false));
+
+    // ── 加载已保存设置 ──
+
+    async function loadSettings() {
+        try {
+            const res = await fetch("/api/settings");
+            if (!res.ok) return;
+            const data = await res.json();
+
+            document.getElementById("input-dashscope").value = data.dashscope_api_key || "";
+            _savedModelName = data.chat_model_name || "";
+
+            const baseUrl = (data.dashscope_base_url || "").trim();
+            if (baseUrl.includes("dashscope-intl")) {
+                setRegion("intl", baseUrl);
+            } else {
+                setRegion("china", "");
+            }
+
+            // 先用内置列表预选
+            _trySelectModel(_savedModelName);
+
+            if (!data.dashscope_api_key) {
+                document.getElementById("first-run-banner").classList.add("visible");
+            } else {
+                // 已有 Key，静默拉取一次最新模型列表
+                refreshModels(true);
+            }
+        } catch {}
+    }
+
+    // ── 保存 ──
+
+    document.getElementById("btn-save").addEventListener("click", async () => {
+        const apiKey = document.getElementById("input-dashscope").value.trim();
+        const model = document.getElementById("input-model").value;
+        const statusEl = document.getElementById("status-msg");
+        const btn = document.getElementById("btn-save");
+
+        if (!apiKey) {
+            statusEl.textContent = "API key cannot be empty.";
+            statusEl.className = "status-msg error";
             return;
         }
 
         btn.disabled = true;
-        statusEl.textContent = "Saving…";
-        statusEl.className   = "status-msg";
-
-        const body = { dashscope_api_key: dashscopeKey };
-        if (adminNewKey) body.admin_api_key = adminNewKey;
+        statusEl.textContent = "Saving...";
+        statusEl.className = "status-msg";
 
         try {
             const res = await fetch("/api/settings", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-Admin-Api-Key": adminKey,
-                },
-                body: JSON.stringify(body),
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    dashscope_api_key: apiKey,
+                    dashscope_base_url: selectedBaseUrl,
+                    chat_model_name: model,
+                }),
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.detail || "Unknown error");
-            statusEl.textContent = `✅ Saved (${data.updated.join(", ")}). Restart the server to reload all settings.`;
-            statusEl.className   = "status-msg success";
+            statusEl.textContent = "✅ Saved. Redirecting to chat...";
+            statusEl.className = "status-msg success";
+            setTimeout(() => { window.location.href = "/"; }, 900);
         } catch (e) {
             statusEl.textContent = "❌ " + e.message;
-            statusEl.className   = "status-msg error";
+            statusEl.className = "status-msg error";
         } finally {
             btn.disabled = false;
         }
     });
+
+    loadSettings();
 </script>
 </body>
 </html>

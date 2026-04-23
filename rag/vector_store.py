@@ -5,7 +5,7 @@ from langchain_chroma import Chroma
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-from model.factory import embed_model
+from model.factory import get_embed_model
 from rag.ingestion import (
     build_file_source_document,
     stable_file_doc_id,
@@ -27,8 +27,8 @@ class VectorStoreService:
     def __init__(self):
         self.vector_store = Chroma(
             collection_name=chroma_conf["collection_name"],
-            embedding_function=embed_model,
-            persist_directory=chroma_conf["persist_directory"],
+            embedding_function=get_embed_model(),
+            persist_directory=get_abs_path(chroma_conf["persist_directory"]),
         )
 
         self.spliter = RecursiveCharacterTextSplitter(

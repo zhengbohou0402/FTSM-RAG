@@ -1,5 +1,3 @@
-const apiKeyInput = document.getElementById("admin-api-key");
-const saveKeyBtn = document.getElementById("admin-save-key");
 const fileInput = document.getElementById("manage-file-input");
 const browseBtn = document.getElementById("manage-browse");
 const dropzone = document.getElementById("manage-dropzone");
@@ -8,37 +6,13 @@ const docCount = document.getElementById("manage-doc-count");
 const docList = document.getElementById("manage-doc-list");
 const reindexBtn = document.getElementById("manage-reindex");
 const refreshBtn = document.getElementById("manage-refresh");
-const STORAGE_KEY = "ftsm_admin_api_key";
-
-function getKey() {
-  return apiKeyInput.value.trim();
-}
 
 function setResult(html) {
   resultBox.innerHTML = html || "";
 }
 
-function headers() {
-  const key = getKey();
-  return key ? { "X-Admin-API-Key": key } : {};
-}
-
-function saveKey() {
-  localStorage.setItem(STORAGE_KEY, getKey());
-}
-
-function loadKey() {
-  apiKeyInput.value = localStorage.getItem(STORAGE_KEY) || "";
-}
-
 async function requestJson(url, options = {}) {
-  const res = await fetch(url, {
-    ...options,
-    headers: {
-      ...(options.headers || {}),
-      ...headers(),
-    },
-  });
+  const res = await fetch(url, options);
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.detail || "Request failed");
   return data;
@@ -46,8 +20,7 @@ async function requestJson(url, options = {}) {
 
 async function loadDocuments() {
   try {
-    const res = await fetch("/api/documents", { headers: headers() });
-    const data = await res.json();
+    const data = await requestJson("/api/documents");
     const docs = data.documents || [];
     docCount.textContent = `${docs.length} files`;
     if (!docs.length) {
@@ -89,11 +62,7 @@ async function uploadFiles(files) {
   const formData = new FormData();
   files.forEach((file) => formData.append("files", file));
   try {
-    const res = await fetch("/api/upload", {
-      method: "POST",
-      headers: headers(),
-      body: formData,
-    });
+    const res = await fetch("/api/upload", { method: "POST", body: formData });
     const data = await res.json();
     const lines = [];
     if (data.saved?.length) lines.push(`<div class="manage-ok">Saved: ${data.saved.join(", ")}</div>`);
@@ -107,12 +76,6 @@ async function uploadFiles(files) {
     setResult(`<div class="manage-err">${err.message}</div>`);
   }
 }
-
-saveKeyBtn.addEventListener("click", () => {
-  saveKey();
-  setResult('<div class="manage-ok">Admin key saved in this browser.</div>');
-  loadDocuments();
-});
 
 browseBtn.addEventListener("click", () => fileInput.click());
 dropzone.addEventListener("click", () => fileInput.click());
@@ -140,5 +103,4 @@ reindexBtn.addEventListener("click", async () => {
 });
 refreshBtn.addEventListener("click", loadDocuments);
 
-loadKey();
 loadDocuments();

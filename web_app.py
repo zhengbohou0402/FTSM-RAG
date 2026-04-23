@@ -1,49 +1,49 @@
-import hashlib
-import hmac
 import os
-import re
-import secrets
+import shutil
+import sys
 import threading
 import time
-from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
-import pymysql
-import pymysql.cursors
-
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, File, Header, HTTPException, Request, Response, UploadFile
-from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
+from fastapi import FastAPI, File, HTTPException, Request, UploadFile
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field
 
-from agent.react_agent import ReactAgent
-from utils.config_handler import chroma_conf
-from utils.path_tool import get_abs_path
-from utils.scheduler import get_status as scheduler_status
-from utils.scheduler import start_scheduler, stop_scheduler
-from utils.semantic_cache import SemanticCache
+# ── 打包路径处理 ──
+# 打包后 sys.frozen=True；_MEIPASS 是 PyInstaller 临时解压目录，只读
+if getattr(sys, "frozen", False):
+    BASE_DIR = Path(sys.executable).parent           # 可写（exe 所在目录）
+    _BUNDLE_DIR = Path(getattr(sys, "_MEIPASS", BASE_DIR))  # 只读资源根
+else:
+    BASE_DIR = Path(__file__).resolve().parent
+    _BUNDLE_DIR = BASE_DIR
 
-BASE_DIR = Path(__file__).resolve().parent
+# 首次启动：若本地没有 .env，从 bundle 里的 .env.example 复制一份
+_env_path = BASE_DIR / ".env"
+if not _env_path.exists():
+    example = _BUNDLE_DIR / ".env.example"
+    if example.exists():
+        shutil.copy2(example, _env_path)
 
-load_dotenv(BASE_DIR / ".env")
+load_dotenv(_env_path)
 
-WEB_DIR = BASE_DIR / "web"
+# ── 必须在 load_dotenv 之后再 import agent / 模型工厂（它们读环境变量）──
+from agent.react_agent import ReactAgent  # noqa: E402
+from utils.config_handler import chroma_conf  # noqa: E402
+from utils.conversation_store import ConversationStore  # noqa: E402
+from utils.path_tool import get_abs_path  # noqa: E402
+from utils.scheduler import get_status as scheduler_status  # noqa: E402
+from utils.scheduler import start_scheduler, stop_scheduler  # noqa: E402
+from utils.semantic_cache import SemanticCache  # noqa: E402
 
-MYSQL_HOST = os.getenv("MYSQL_HOST", "127.0.0.1")
-MYSQL_PORT = int(os.getenv("MYSQL_PORT", "3306"))
-MYSQL_USER = os.getenv("MYSQL_USER", "root")
-MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD", "")
-MYSQL_DATABASE = os.getenv("MYSQL_DATABASE", "ftsm_rag")
+WEB_DIR = _BUNDLE_DIR / "web"
 
-AUTH_COOKIE_NAME = "ftsm_student_session"
-AUTH_SESSION_TTL_SECONDS = 7 * 24 * 3600
-PASSWORD_HASH_ITERATIONS = 200_000
-
-# ── Knowledge Base ──
+# ── 知识库 ──
 DATA_DIR = Path(get_abs_path(chroma_conf["data_path"]))
 ALLOWED_UPLOAD_EXTENSIONS: set[str] = set(
     chroma_conf.get(
@@ -51,97 +51,15 @@ ALLOWED_UPLOAD_EXTENSIONS: set[str] = set(
     )
 )
 MAX_UPLOAD_SIZE_MB = 50
-ADMIN_API_KEY = os.getenv("ADMIN_API_KEY", "").strip()
 
-# ── MySQL 连接 ──
+MAX_EXPOSED_CONVERSATIONS = 50
+MAX_HISTORY_TURNS = 5
+CHAR_STREAM_DELAY_SECONDS = 0.006
 
-def _new_mysql_conn() -> pymysql.connections.Connection:
-    return pymysql.connect(
-        host=MYSQL_HOST,
-        port=MYSQL_PORT,
-        user=MYSQL_USER,
-        password=MYSQL_PASSWORD,
-        database=MYSQL_DATABASE,
-        charset="utf8mb4",
-        cursorclass=pymysql.cursors.DictCursor,
-        autocommit=False,
-    )
+conv_store = ConversationStore(DATA_DIR)
 
 
-_DB_LOCAL = threading.local()
-
-
-@contextmanager
-def get_db():
-    """每个线程维护一个 MySQL 连接，自动重连断线连接。"""
-    conn = getattr(_DB_LOCAL, "conn", None)
-    if conn is None:
-        conn = _new_mysql_conn()
-        _DB_LOCAL.conn = conn
-    else:
-        try:
-            conn.ping(reconnect=True)
-        except Exception:
-            conn = _new_mysql_conn()
-            _DB_LOCAL.conn = conn
-
-    conn.begin()
-    try:
-        yield conn
-        conn.commit()
-    except Exception:
-        conn.rollback()
-        raise
-
-
-def _init_db() -> None:
-    """启动时确保四张表存在。"""
-    conn = _new_mysql_conn()
-    try:
-        with conn.cursor() as cur:
-            cur.execute("""
-                CREATE TABLE IF NOT EXISTS students (
-                    student_id    VARCHAR(80)  NOT NULL PRIMARY KEY,
-                    display_name  VARCHAR(80)  NOT NULL,
-                    password_hash VARCHAR(200) NOT NULL,
-                    created_at    INT UNSIGNED NOT NULL
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-            """)
-            cur.execute("""
-                CREATE TABLE IF NOT EXISTS auth_sessions (
-                    token      VARCHAR(64)  NOT NULL PRIMARY KEY,
-                    student_id VARCHAR(80)  NOT NULL,
-                    expires_at INT UNSIGNED NOT NULL,
-                    INDEX idx_sessions_student (student_id),
-                    INDEX idx_sessions_expires (expires_at)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-            """)
-            cur.execute("""
-                CREATE TABLE IF NOT EXISTS conversations (
-                    id         VARCHAR(36)  NOT NULL PRIMARY KEY,
-                    student_id VARCHAR(80)  NOT NULL,
-                    title      VARCHAR(200) NOT NULL DEFAULT 'New chat',
-                    updated_at INT UNSIGNED NOT NULL,
-                    INDEX idx_conv_student (student_id, updated_at)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-            """)
-            cur.execute("""
-                CREATE TABLE IF NOT EXISTS messages (
-                    id              BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-                    conversation_id VARCHAR(36)     NOT NULL,
-                    role            ENUM('user','assistant') NOT NULL,
-                    content         MEDIUMTEXT      NOT NULL,
-                    created_at      INT UNSIGNED    NOT NULL,
-                    INDEX idx_msg_conv (conversation_id, id)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-            """)
-        conn.commit()
-    finally:
-        conn.close()
-
-
-# ── Training worker ──
-
+# ── 训练 worker ──
 _TRAINING_LOCK = threading.Lock()
 _TRAINING_STATE: dict[str, Any] = {
     "running": False,
@@ -190,17 +108,36 @@ def _start_training() -> bool:
     return True
 
 
+# ── FastAPI app ──
 app = FastAPI(title="FTSM-RAG")
 app.mount("/static", StaticFiles(directory=WEB_DIR / "static"), name="static")
 templates = Jinja2Templates(directory=str(WEB_DIR / "templates"))
 
-agent = ReactAgent()
+_agent: ReactAgent | None = None
+_agent_lock = threading.Lock()
 semantic_cache = SemanticCache(threshold=0.92)
 
-CHAR_STREAM_DELAY_SECONDS = 0.006
-MAX_CONVERSATION_ITEMS = 200
-MAX_EXPOSED_CONVERSATIONS = 50
-MAX_HISTORY_TURNS = 5
+
+def _get_agent() -> ReactAgent:
+    """懒加载 agent，避免 DASHSCOPE_API_KEY 缺失时启动失败。"""
+    global _agent
+    with _agent_lock:
+        if _agent is None:
+            _agent = ReactAgent()
+        return _agent
+
+
+def _reset_agent() -> None:
+    """保存设置后调用，下次聊天时会用新 key/模型重新创建 agent。"""
+    global _agent
+    from model.factory import reset_models
+    reset_models()
+    with _agent_lock:
+        _agent = None
+
+
+def _dashscope_configured() -> bool:
+    return bool(os.getenv("DASHSCOPE_API_KEY", "").strip())
 
 
 class ChatRequest(BaseModel):
@@ -209,234 +146,31 @@ class ChatRequest(BaseModel):
     new_chat: bool = Field(default=False)
 
 
-class StudentAuthRequest(BaseModel):
-    student_id: str = Field(min_length=3, max_length=80)
-    password: str = Field(min_length=6, max_length=200)
-    display_name: str | None = Field(default=None, max_length=80)
-
-
-# ── 工具函数 ──
-
-def _normalize_student_id(student_id: str) -> str:
-    normalized = student_id.strip().lower()
-    if not re.fullmatch(r"[a-z0-9@._-]{3,80}", normalized):
-        raise HTTPException(
-            status_code=400,
-            detail="Student ID can only contain letters, numbers, @, dot, underscore, or hyphen.",
-        )
-    return normalized
-
-
-def _hash_password(password: str, salt: str | None = None) -> str:
-    salt = salt or secrets.token_hex(16)
-    digest = hashlib.pbkdf2_hmac(
-        "sha256",
-        password.encode("utf-8"),
-        salt.encode("utf-8"),
-        PASSWORD_HASH_ITERATIONS,
-    ).hex()
-    return f"pbkdf2_sha256${PASSWORD_HASH_ITERATIONS}${salt}${digest}"
-
-
-def _verify_password(password: str, stored_hash: str) -> bool:
-    try:
-        scheme, iterations, salt, expected = stored_hash.split("$", 3)
-        if scheme != "pbkdf2_sha256":
-            return False
-        digest = hashlib.pbkdf2_hmac(
-            "sha256",
-            password.encode("utf-8"),
-            salt.encode("utf-8"),
-            int(iterations),
-        ).hex()
-        return hmac.compare_digest(digest, expected)
-    except Exception:
-        return False
-
-
-# ── Session ──
-
-def _create_student_session(response: Response, student_id: str) -> None:
-    token = secrets.token_urlsafe(32)
-    expires_at = int(time.time()) + AUTH_SESSION_TTL_SECONDS
-    with get_db() as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                "INSERT INTO auth_sessions (token, student_id, expires_at) VALUES (%s,%s,%s)",
-                (token, student_id, expires_at),
-            )
-    response.set_cookie(
-        AUTH_COOKIE_NAME, token,
-        max_age=AUTH_SESSION_TTL_SECONDS,
-        httponly=True, samesite="lax",
-    )
-
-
-def _clear_student_session(request: Request, response: Response) -> None:
-    token = request.cookies.get(AUTH_COOKIE_NAME)
-    if token:
-        with get_db() as conn:
-            with conn.cursor() as cur:
-                cur.execute("DELETE FROM auth_sessions WHERE token=%s", (token,))
-    response.delete_cookie(AUTH_COOKIE_NAME)
-
-
-def _cleanup_expired_sessions() -> None:
-    with get_db() as conn:
-        with conn.cursor() as cur:
-            cur.execute("DELETE FROM auth_sessions WHERE expires_at<%s", (int(time.time()),))
-
-
-def require_student(request: Request) -> dict[str, str]:
-    token = request.cookies.get(AUTH_COOKIE_NAME)
-    if not token:
-        raise HTTPException(status_code=401, detail="Login required")
-    with get_db() as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                "SELECT student_id, expires_at FROM auth_sessions WHERE token=%s", (token,)
-            )
-            row = cur.fetchone()
-    if not row or row["expires_at"] < int(time.time()):
-        if row:
-            with get_db() as conn:
-                with conn.cursor() as cur:
-                    cur.execute("DELETE FROM auth_sessions WHERE token=%s", (token,))
-        raise HTTPException(status_code=401, detail="Login required")
-    with get_db() as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                "SELECT student_id, display_name FROM students WHERE student_id=%s",
-                (row["student_id"],),
-            )
-            student = cur.fetchone()
-    if not student:
-        raise HTTPException(status_code=401, detail="Login required")
-    return {"student_id": student["student_id"], "display_name": student["display_name"]}
-
-
-def require_admin_api_key(x_admin_api_key: str | None = Header(default=None)) -> None:
-    if not ADMIN_API_KEY:
-        raise HTTPException(status_code=500, detail="ADMIN_API_KEY is not configured on the server.")
-    if not x_admin_api_key or x_admin_api_key.strip() != ADMIN_API_KEY:
-        raise HTTPException(status_code=401, detail="Unauthorized")
-
-
-# ── 对话 / 消息 ──
-
-def _get_conversation_owner(conversation_id: str) -> str | None:
-    with get_db() as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                "SELECT student_id FROM conversations WHERE id=%s", (conversation_id,)
-            )
-            row = cur.fetchone()
-    return row["student_id"] if row else None
-
-
-def _ensure_conversation(conversation_id: str, title: str = "New chat", student_id: str = "") -> None:
-    now = int(time.time())
-    with get_db() as conn:
-        with conn.cursor() as cur:
-            cur.execute("SELECT id FROM conversations WHERE id=%s", (conversation_id,))
-            exists = cur.fetchone()
-            if not exists:
-                cur.execute(
-                    "INSERT INTO conversations (id, student_id, title, updated_at) VALUES (%s,%s,%s,%s)",
-                    (conversation_id, student_id, title, now),
-                )
-
-
-def _update_conversation_title(conversation_id: str, title: str) -> None:
-    with get_db() as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                "UPDATE conversations SET title=%s, updated_at=%s WHERE id=%s",
-                (title, int(time.time()), conversation_id),
-            )
-
-
-def _save_messages(conversation_id: str, user_msg: str, assistant_msg: str) -> None:
-    now = int(time.time())
-    with get_db() as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                "INSERT INTO messages (conversation_id, role, content, created_at) VALUES (%s,%s,%s,%s)",
-                (conversation_id, "user", user_msg, now),
-            )
-            cur.execute(
-                "INSERT INTO messages (conversation_id, role, content, created_at) VALUES (%s,%s,%s,%s)",
-                (conversation_id, "assistant", assistant_msg, now),
-            )
-            # 只保留最近 40 条
-            cur.execute(
-                """
-                DELETE FROM messages WHERE conversation_id=%s
-                AND id NOT IN (
-                    SELECT id FROM (
-                        SELECT id FROM messages WHERE conversation_id=%s
-                        ORDER BY id DESC LIMIT 40
-                    ) AS t
-                )
-                """,
-                (conversation_id, conversation_id),
-            )
-
-
-def _get_recent_messages(conversation_id: str, max_turns: int = 5) -> list[dict[str, str]]:
-    limit = max_turns * 2
-    with get_db() as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                """
-                SELECT role, content FROM (
-                    SELECT id, role, content FROM messages
-                    WHERE conversation_id=%s ORDER BY id DESC LIMIT %s
-                ) AS t ORDER BY id ASC
-                """,
-                (conversation_id, limit),
-            )
-            rows = cur.fetchall()
-    return [{"role": r["role"], "content": r["content"]} for r in rows]
-
-
-def _prune_conversations(student_id: str) -> None:
-    with get_db() as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                "SELECT COUNT(*) AS cnt FROM conversations WHERE student_id=%s", (student_id,)
-            )
-            cnt = cur.fetchone()["cnt"]
-            if cnt > MAX_CONVERSATION_ITEMS:
-                cur.execute(
-                    """
-                    DELETE FROM conversations WHERE student_id=%s
-                    AND id NOT IN (
-                        SELECT id FROM (
-                            SELECT id FROM conversations WHERE student_id=%s
-                            ORDER BY updated_at DESC LIMIT %s
-                        ) AS t
-                    )
-                    """,
-                    (student_id, student_id, MAX_CONVERSATION_ITEMS),
-                )
-
-
-# ── FastAPI 生命周期 ──
+# ── 生命周期 ──
 
 @app.on_event("startup")
-async def _startup():
-    _init_db()
-    _cleanup_expired_sessions()
+async def _startup() -> None:
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
     start_scheduler()
 
 
 @app.on_event("shutdown")
-async def _shutdown():
+async def _shutdown() -> None:
     stop_scheduler()
 
 
 # ── 路由 ──
+
+@app.get("/api/health")
+async def health() -> JSONResponse:
+    return JSONResponse({"status": "ok"})
+
+
+@app.get("/api/config/status")
+async def config_status() -> JSONResponse:
+    """前端用来判断是否需要引导用户去设置 API Key。"""
+    return JSONResponse({"dashscope_configured": _dashscope_configured()})
+
 
 @app.get("/api/scheduler/status")
 async def scheduler_status_api() -> JSONResponse:
@@ -444,7 +178,10 @@ async def scheduler_status_api() -> JSONResponse:
 
 
 @app.get("/", response_class=HTMLResponse)
-async def index(request: Request) -> HTMLResponse:
+async def index(request: Request):
+    # 若未配置 API Key，自动跳转到设置页
+    if not _dashscope_configured():
+        return RedirectResponse("/settings", status_code=302)
     return templates.TemplateResponse(request, "index.html", {})
 
 
@@ -458,25 +195,22 @@ async def settings_page(request: Request) -> HTMLResponse:
     return templates.TemplateResponse(request, "settings.html", {})
 
 
-# ── Settings API（Admin Key 保护） ──
+# ── 设置（单机版，无保护） ──
 
 def _parse_env_file(env_path: Path) -> dict[str, str]:
-    """读取 .env 文件，返回 key-value 字典（跳过注释行）。"""
     result: dict[str, str] = {}
     if not env_path.exists():
         return result
     for line in env_path.read_text(encoding="utf-8").splitlines():
         line = line.strip()
-        if not line or line.startswith("#"):
+        if not line or line.startswith("#") or "=" not in line:
             continue
-        if "=" in line:
-            k, _, v = line.partition("=")
-            result[k.strip()] = v.strip()
+        k, _, v = line.partition("=")
+        result[k.strip()] = v.strip()
     return result
 
 
 def _write_env_file(env_path: Path, updates: dict[str, str]) -> None:
-    """把 updates 写入 .env，已有 key 原地更新，新 key 追加到末尾。"""
     lines: list[str] = []
     written: set[str] = set()
     if env_path.exists():
@@ -497,104 +231,179 @@ def _write_env_file(env_path: Path, updates: dict[str, str]) -> None:
 
 class SettingsPayload(BaseModel):
     dashscope_api_key: str = Field(default="")
-    admin_api_key: str = Field(default="")
+    dashscope_base_url: str = Field(default="")
+    chat_model_name: str = Field(default="")
 
 
 @app.get("/api/settings")
-async def get_settings(x_admin_api_key: str = Header(default="")) -> JSONResponse:
-    if ADMIN_API_KEY and x_admin_api_key != ADMIN_API_KEY:
-        raise HTTPException(status_code=403, detail="Invalid admin key.")
-    env = _parse_env_file(BASE_DIR / ".env")
+async def get_settings() -> JSONResponse:
+    env = _parse_env_file(_env_path)
+    from model.factory import resolve_chat_model_name
     return JSONResponse({
-        "dashscope_api_key": env.get("DASHSCOPE_API_KEY", ""),
-        "admin_api_key":     env.get("ADMIN_API_KEY", ""),
+        "dashscope_api_key":  env.get("DASHSCOPE_API_KEY", ""),
+        "dashscope_base_url": env.get("DASHSCOPE_BASE_URL", ""),
+        "chat_model_name":    env.get("CHAT_MODEL_NAME", "") or resolve_chat_model_name(),
     })
 
 
 @app.post("/api/settings")
-async def save_settings(
-    payload: SettingsPayload,
-    x_admin_api_key: str = Header(default=""),
-) -> JSONResponse:
-    if ADMIN_API_KEY and x_admin_api_key != ADMIN_API_KEY:
-        raise HTTPException(status_code=403, detail="Invalid admin key.")
+async def save_settings(payload: SettingsPayload) -> JSONResponse:
     updates: dict[str, str] = {}
     if payload.dashscope_api_key:
         updates["DASHSCOPE_API_KEY"] = payload.dashscope_api_key
-    if payload.admin_api_key:
-        updates["ADMIN_API_KEY"] = payload.admin_api_key
-    if updates:
-        _write_env_file(BASE_DIR / ".env", updates)
-        # 立即生效到当前进程环境变量
-        for k, v in updates.items():
+    # 空字符串表示恢复默认（base_url 不设 = 国内版；模型名不设 = rag.yml 默认值）
+    updates["DASHSCOPE_BASE_URL"] = payload.dashscope_base_url.strip()
+    updates["CHAT_MODEL_NAME"] = payload.chat_model_name.strip()
+
+    _write_env_file(_env_path, updates)
+    for k, v in updates.items():
+        if v:
             os.environ[k] = v
-    return JSONResponse({"ok": True, "updated": list(updates.keys())})
+        else:
+            os.environ.pop(k, None)
+
+    _reset_agent()
+    return JSONResponse({"ok": True})
 
 
-@app.get("/api/health")
-async def health() -> JSONResponse:
-    return JSONResponse({"status": "ok"})
+@app.get("/api/models")
+async def list_models() -> JSONResponse:
+    """
+    返回按地区精选的 Qwen 对话模型列表，并用一次轻量 completions 调用验证 API Key 是否有效。
+    DashScope 的 compatible-mode 不支持 /v1/models 端点，所以用官方文档整理的静态列表。
+    """
+    import httpx
+
+    env = _parse_env_file(_env_path)
+    api_key = env.get("DASHSCOPE_API_KEY", "").strip() or os.getenv("DASHSCOPE_API_KEY", "").strip()
+    base_url = env.get("DASHSCOPE_BASE_URL", "").strip() or os.getenv("DASHSCOPE_BASE_URL", "").strip()
+
+    is_intl = bool(base_url and "intl" in base_url)
+
+    # ── 官方文档整理的精选列表（2026-04，来自 help.aliyun.com/zh/model-studio/getting-started/models）
+    _CHINA_MODELS = [
+        # Qwen3 系列（2025 最新旗舰）
+        "qwen3-max",
+        "qwen3-max-latest",
+        "qwen3-max-preview",
+        "qwen3.6-max-preview",
+        # 经典旗舰
+        "qwen-max",
+        "qwen-max-latest",
+        # Plus 系列
+        "qwen3.6-plus",
+        "qwen3.5-plus",
+        "qwen-plus",
+        "qwen-plus-latest",
+        # Turbo 系列（快速低成本）
+        "qwen-turbo",
+        "qwen-turbo-latest",
+        # Long 系列（超长上下文）
+        "qwen-long",
+        "qwen-long-latest",
+    ]
+    _INTL_MODELS = [
+        # 国际版独有 / 同步可用
+        "qwen3.6-max-preview",
+        "qwen3.6-plus",
+        "qwen3.5-plus",
+        "qwen-plus",
+        "qwen-plus-latest",
+        "qwen-turbo",
+        "qwen-turbo-latest",
+    ]
+
+    models = _INTL_MODELS if is_intl else _CHINA_MODELS
+
+    # ── 用一次极简 completions 请求验证 Key ──
+    key_valid: bool | None = None
+    key_error: str = ""
+
+    if api_key:
+        compat_base = (
+            "https://dashscope-intl.aliyuncs.com/compatible-mode/v1"
+            if is_intl
+            else "https://dashscope.aliyuncs.com/compatible-mode/v1"
+        )
+        try:
+            async with httpx.AsyncClient(timeout=10) as client:
+                resp = await client.post(
+                    f"{compat_base}/chat/completions",
+                    headers={"Authorization": f"Bearer {api_key}"},
+                    json={
+                        "model": "qwen-turbo",
+                        "messages": [{"role": "user", "content": "hi"}],
+                        "max_tokens": 1,
+                    },
+                )
+            if resp.status_code in (200, 400):
+                # 400 也算 Key 有效（请求格式问题，非认证问题）
+                key_valid = True
+            elif resp.status_code == 401:
+                key_valid = False
+                key_error = "API Key 无效，请检查是否填写正确。"
+            else:
+                key_valid = None
+                key_error = f"验证请求返回 {resp.status_code}，无法确认。"
+        except Exception as exc:
+            key_valid = None
+            key_error = f"网络请求失败：{exc}"
+    else:
+        key_valid = False
+        key_error = "API Key 未配置。"
+
+    return JSONResponse({
+        "models": models,
+        "key_valid": key_valid,
+        "key_error": key_error,
+        "region": "intl" if is_intl else "china",
+    })
 
 
-@app.get("/api/auth/me")
-async def auth_me(student: dict[str, str] = Depends(require_student)) -> JSONResponse:
-    return JSONResponse({"authenticated": True, "student": student})
+# ── 对话 ──
 
-
-@app.post("/api/auth/register")
-async def auth_register(payload: StudentAuthRequest, response: Response) -> JSONResponse:
-    student_id = _normalize_student_id(payload.student_id)
-    display_name = (payload.display_name or student_id).strip() or student_id
-    with get_db() as conn:
-        with conn.cursor() as cur:
-            cur.execute("SELECT student_id FROM students WHERE student_id=%s", (student_id,))
-            exists = cur.fetchone()
-            if exists:
-                raise HTTPException(status_code=409, detail="Student account already exists.")
-            cur.execute(
-                "INSERT INTO students (student_id, display_name, password_hash, created_at) VALUES (%s,%s,%s,%s)",
-                (student_id, display_name, _hash_password(payload.password), int(time.time())),
-            )
-    res = JSONResponse(
-        {"authenticated": True, "student": {"student_id": student_id, "display_name": display_name}}
+@app.post("/api/conversations")
+async def create_conversation() -> JSONResponse:
+    conversation_id = str(uuid4())
+    conv = conv_store.create(conversation_id)
+    return JSONResponse(
+        {
+            "id": conv["id"],
+            "title": conv["title"],
+            "updated_at": conv["updated_at"],
+            "messages": [],
+        }
     )
-    _create_student_session(res, student_id)
-    return res
 
 
-@app.post("/api/auth/login")
-async def auth_login(payload: StudentAuthRequest) -> JSONResponse:
-    student_id = _normalize_student_id(payload.student_id)
-    with get_db() as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                "SELECT student_id, display_name, password_hash FROM students WHERE student_id=%s",
-                (student_id,),
-            )
-            record = cur.fetchone()
-    if not record or not _verify_password(payload.password, record["password_hash"]):
-        raise HTTPException(status_code=401, detail="Invalid student ID or password.")
-    res = JSONResponse(
-        {"authenticated": True, "student": {"student_id": record["student_id"], "display_name": record["display_name"]}}
+@app.get("/api/conversations")
+async def list_conversations() -> JSONResponse:
+    items = conv_store.list_items(limit=MAX_EXPOSED_CONVERSATIONS)
+    return JSONResponse({"items": items})
+
+
+@app.get("/api/conversations/{conversation_id}")
+async def get_conversation(conversation_id: str) -> JSONResponse:
+    conv = conv_store.get(conversation_id)
+    if not conv:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    return JSONResponse(
+        {
+            "id": conv["id"],
+            "title": conv.get("title", "New chat"),
+            "updated_at": conv.get("updated_at", 0),
+            "messages": [
+                {"role": m["role"], "content": m["content"]}
+                for m in conv.get("messages", [])
+            ],
+        }
     )
-    _create_student_session(res, student_id)
-    return res
 
 
-@app.post("/api/auth/logout")
-async def auth_logout(request: Request) -> JSONResponse:
-    res = JSONResponse({"authenticated": False})
-    _clear_student_session(request, res)
-    return res
-
-
-# ── Knowledge Base endpoints ──
+# ── 知识库文件管理 ──
 
 @app.post("/api/upload")
-async def upload_documents(
-    files: list[UploadFile] = File(...),
-    _: None = Depends(require_admin_api_key),
-) -> JSONResponse:
+async def upload_documents(files: list[UploadFile] = File(...)) -> JSONResponse:
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     saved: list[str] = []
     errors: list[dict[str, str]] = []
@@ -620,9 +429,7 @@ async def upload_documents(
         finally:
             await file.close()
 
-    training_started = False
-    if saved:
-        training_started = _start_training()
+    training_started = _start_training() if saved else False
     return JSONResponse({"saved": saved, "errors": errors, "training_started": training_started})
 
 
@@ -643,10 +450,7 @@ async def list_documents() -> JSONResponse:
 
 
 @app.delete("/api/documents/{filename}")
-async def delete_document(
-    filename: str,
-    _: None = Depends(require_admin_api_key),
-) -> JSONResponse:
+async def delete_document(filename: str) -> JSONResponse:
     safe_name = Path(filename).name
     file_path = DATA_DIR / safe_name
     if not file_path.exists() or not file_path.is_file():
@@ -661,18 +465,11 @@ async def delete_document(
 @app.get("/api/training/status")
 async def training_status() -> JSONResponse:
     with _TRAINING_LOCK:
-        return JSONResponse(
-            {
-                "running": _TRAINING_STATE["running"],
-                "pending": _TRAINING_STATE["pending"],
-                "last_result": _TRAINING_STATE["last_result"],
-                "last_error": _TRAINING_STATE["last_error"],
-            }
-        )
+        return JSONResponse(dict(_TRAINING_STATE))
 
 
 @app.post("/api/training/start")
-async def training_start(_: None = Depends(require_admin_api_key)) -> JSONResponse:
+async def training_start() -> JSONResponse:
     started = _start_training()
     return JSONResponse(
         {
@@ -682,93 +479,38 @@ async def training_start(_: None = Depends(require_admin_api_key)) -> JSONRespon
     )
 
 
-@app.post("/api/conversations")
-async def create_conversation(student: dict[str, str] = Depends(require_student)) -> JSONResponse:
-    conversation_id = str(uuid4())
-    _ensure_conversation(conversation_id, student_id=student["student_id"])
-    return JSONResponse(
-        {"id": conversation_id, "title": "New chat", "updated_at": int(time.time()), "messages": []}
-    )
-
-
-@app.get("/api/conversations")
-async def list_conversations(student: dict[str, str] = Depends(require_student)) -> JSONResponse:
-    with get_db() as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                """
-                SELECT id, title, updated_at FROM conversations
-                WHERE student_id=%s ORDER BY updated_at DESC LIMIT %s
-                """,
-                (student["student_id"], MAX_EXPOSED_CONVERSATIONS),
-            )
-            rows = cur.fetchall()
-    return JSONResponse({"items": [{"id": r["id"], "title": r["title"], "updated_at": r["updated_at"]} for r in rows]})
-
-
-@app.get("/api/conversations/{conversation_id}")
-async def get_conversation(
-    conversation_id: str,
-    student: dict[str, str] = Depends(require_student),
-) -> JSONResponse:
-    with get_db() as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                "SELECT id, student_id, title, updated_at FROM conversations WHERE id=%s",
-                (conversation_id,),
-            )
-            conv = cur.fetchone()
-    if not conv or conv["student_id"] != student["student_id"]:
-        raise HTTPException(status_code=404, detail="Conversation not found")
-    with get_db() as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                "SELECT role, content FROM messages WHERE conversation_id=%s ORDER BY id ASC",
-                (conversation_id,),
-            )
-            msgs = cur.fetchall()
-    return JSONResponse(
-        {
-            "id": conv["id"],
-            "title": conv["title"],
-            "updated_at": conv["updated_at"],
-            "messages": [{"role": m["role"], "content": m["content"]} for m in msgs],
-        }
-    )
-
-
 @app.get("/api/cache/stats")
 async def cache_stats() -> JSONResponse:
     return JSONResponse(semantic_cache.stats())
 
 
+# ── 聊天 ──
+
 @app.post("/api/chat")
-async def chat(
-    payload: ChatRequest,
-    student: dict[str, str] = Depends(require_student),
-) -> StreamingResponse:
+async def chat(payload: ChatRequest) -> StreamingResponse:
+    if not _dashscope_configured():
+        raise HTTPException(
+            status_code=400,
+            detail="DASHSCOPE_API_KEY is not configured. Please set it in /settings.",
+        )
+
     message = payload.message.strip()
     if not message:
         raise HTTPException(status_code=400, detail="Message is required.")
+
     conversation_id = payload.conversation_id or str(uuid4())
 
-    owner = _get_conversation_owner(conversation_id)
-    if owner and owner != student["student_id"]:
-        raise HTTPException(status_code=404, detail="Conversation not found")
-    if payload.new_chat or not owner:
-        _ensure_conversation(conversation_id, student_id=student["student_id"])
-
     def save_history(answer: str) -> None:
-        title = message.strip()
-        if len(title) > 40:
-            title = f"{title[:40]}..."
-        _save_messages(conversation_id, message, answer)
-        _update_conversation_title(conversation_id, title or "New chat")
-        _prune_conversations(student["student_id"])
+        title = message if len(message) <= 40 else f"{message[:40]}..."
+        conv_store.append_turn(
+            conversation_id,
+            user_content=message,
+            assistant_content=answer,
+            title=title or "New chat",
+        )
 
     def stream_response():
         hit, cached_answer = semantic_cache.get(message)
-        # 若缓存内容包含控制标记（历史脏数据），跳过缓存重新走 agent
         if hit and cached_answer and "__THINK" not in cached_answer:
             yield "__THINK__Answering from cache...__ENDTHINK__"
             save_history(cached_answer)
@@ -777,20 +519,24 @@ async def chat(
                 time.sleep(CHAR_STREAM_DELAY_SECONDS)
             return
 
-        recent_history = _get_recent_messages(conversation_id, MAX_HISTORY_TURNS)
-
+        recent_history = conv_store.recent_messages(conversation_id, MAX_HISTORY_TURNS)
         result_chunks: list[str] = []
-        for chunk in agent.execute_stream(message, history=recent_history):
-            if not chunk:
-                continue
-            # 工具调用提示标记直接转发，不逐字符、不计入最终答案
-            if chunk.startswith("__THINK__"):
-                yield chunk
-                continue
-            result_chunks.append(chunk)
-            for char in chunk:
+        try:
+            for chunk in _get_agent().execute_stream(message, history=recent_history):
+                if not chunk:
+                    continue
+                if chunk.startswith("__THINK__"):
+                    yield chunk
+                    continue
+                result_chunks.append(chunk)
+                for char in chunk:
+                    yield char
+                    time.sleep(CHAR_STREAM_DELAY_SECONDS)
+        except Exception as exc:
+            err_msg = f"\n\n[Error] {exc}"
+            result_chunks.append(err_msg)
+            for char in err_msg:
                 yield char
-                time.sleep(CHAR_STREAM_DELAY_SECONDS)
 
         final_answer = "".join(result_chunks).strip()
         if final_answer:
