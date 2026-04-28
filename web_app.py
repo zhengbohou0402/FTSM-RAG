@@ -97,6 +97,9 @@ def _training_worker() -> None:
             from rag.vector_store import VectorStoreService
             vs = VectorStoreService()
             vs.load_document()
+            # 知识库更新后重置 RAG 单例，确保 BM25 索引随新文档重建
+            from agent.tools.agent_tools import reset_rag_service
+            reset_rag_service()
             with _TRAINING_LOCK:
                 _TRAINING_STATE["running"] = False
                 _TRAINING_STATE["last_result"] = "success"

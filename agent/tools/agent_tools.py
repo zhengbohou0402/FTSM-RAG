@@ -13,6 +13,7 @@ def get_rag_service() -> RagSummarizeService:
 
 
 def reset_rag_service() -> None:
+    """重置 RAG 服务单例，下次调用时重新构建（含 BM25 索引）。"""
     global _rag
     _rag = None
 
