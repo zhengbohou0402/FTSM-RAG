@@ -9,7 +9,6 @@ def stream_chat_answer(
     semantic_cache: Any,
     get_agent: Callable[[], Any],
     max_history_turns: int,
-    char_stream_delay_seconds: float = 0.0,  # 保留参数，不再使用
 ) -> Iterator[str]:
     def save_history(answer: str) -> None:
         title = message if len(message) <= 40 else f"{message[:40]}..."

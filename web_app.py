@@ -67,7 +67,6 @@ MAX_UPLOAD_SIZE_MB = 50
 
 MAX_EXPOSED_CONVERSATIONS = 50
 MAX_HISTORY_TURNS = 5
-CHAR_STREAM_DELAY_SECONDS = 0.006
 
 conv_store = ConversationStore(DATA_DIR)
 
@@ -162,7 +161,6 @@ def _dashscope_configured() -> bool:
 class ChatRequest(BaseModel):
     message: str
     conversation_id: str | None = Field(default=None)
-    new_chat: bool = Field(default=False)
 
 
 # ── 生命周期 ──
@@ -653,7 +651,6 @@ async def chat(payload: ChatRequest) -> StreamingResponse:
             semantic_cache=semantic_cache,
             get_agent=_get_agent,
             max_history_turns=MAX_HISTORY_TURNS,
-            char_stream_delay_seconds=CHAR_STREAM_DELAY_SECONDS,
         ),
         media_type="text/plain; charset=utf-8",
         headers={

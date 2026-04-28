@@ -123,12 +123,6 @@ class RagSummarizeService(object):
                 self._bm25_docs = []
                 self._bm25 = None
 
-    def reset_bm25(self) -> None:
-        """知识库变更后调用，强制下次查询时重建 BM25 索引。"""
-        with self._bm25_lock:
-            self._bm25 = None
-            self._bm25_docs = []
-
     def _bm25_retrieve(self, query: str, top_k: int) -> list[Document]:
         """BM25 关键词检索，返回 top_k 条。"""
         self._ensure_bm25()

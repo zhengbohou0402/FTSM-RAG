@@ -340,7 +340,7 @@ async function streamReply(prompt) {
   const res = await fetch("/api/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message: prompt, conversation_id: conversationId, new_chat: false }),
+    body: JSON.stringify({ message: prompt, conversation_id: conversationId }),
   });
 
   if (!res.ok || !res.body) {
