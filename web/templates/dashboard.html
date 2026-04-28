@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FTSM-RAG – Dashboard</title>
+    <link rel="icon" type="image/svg+xml" href="/static/assets/ftsm-rag-icon.svg" />
+    <link rel="alternate icon" type="image/x-icon" href="/static/assets/favicon.ico" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/static/styles.css" />
+    <style>
+        body { background: #f5f6fa; font-family: 'Inter', sans-serif; margin: 0; }
+
+        .dash-shell {
+            max-width: 1040px; margin: 0 auto;
+            padding: 36px 20px 60px;
+        }
+
+        /* ── Header ── */
+        .dash-header {
+            display: flex; align-items: flex-start; justify-content: space-between;
+            flex-wrap: wrap; gap: 16px; margin-bottom: 32px;
+        }
+        .dash-kicker {
+            font-size: 11px; font-weight: 700; letter-spacing: 1px;
+            text-transform: uppercase; color: #2e6da4; margin-bottom: 4px;
+        }
+        .dash-title { font-size: 26px; font-weight: 700; color: #1a1a2e; margin: 0; }
+        .dash-subtitle { font-size: 13px; color: #888; margin: 4px 0 0; }
+        .dash-nav { display: flex; gap: 8px; flex-wrap: wrap; }
+        .dash-nav a {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 7px 14px; border-radius: 8px; font-size: 13px;
+            font-weight: 600; text-decoration: none; transition: background .15s, color .15s;
+            border: 1.5px solid #2e6da4; color: #2e6da4; background: #fff;
+        }
+        .dash-nav a:hover { background: #2e6da4; color: #fff; }
+        .dash-refresh-btn {
+            padding: 7px 14px; border-radius: 8px; font-size: 13px;
+            font-weight: 600; cursor: pointer; transition: background .15s;
+            border: 1.5px solid #e5e7eb; color: #444; background: #fff;
+        }
+        .dash-refresh-btn:hover { background: #f0f4ff; border-color: #2e6da4; color: #2e6da4; }
+
+        /* ── Section ── */
+        .dash-section { margin-bottom: 28px; }
+        .dash-section-title {
+            font-size: 12px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: .7px; color: #888; margin-bottom: 12px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .dash-section-title::after {
+            content: ''; flex: 1; height: 1px; background: #e5e7eb;
+        }
+
+        /* ── Card grid ── */
+        .dash-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 12px;
+        }
+        .dash-card {
+            background: #fff; border: 1px solid #e5e7eb;
+            border-radius: 12px; padding: 18px 20px;
+            display: flex; flex-direction: column; gap: 6px;
+            transition: box-shadow .15s;
+        }
+        .dash-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,.07); }
+        .dash-card-value {
+            font-size: 28px; font-weight: 700; color: #1a1a2e; line-height: 1;
+        }
+        .dash-card-label {
+            font-size: 12px; font-weight: 600; color: #888;
+            text-transform: uppercase; letter-spacing: .5px;
+        }
+        .dash-card-sub { font-size: 11px; color: #aaa; }
+
+        /* accent left border */
+        .c-blue   { border-left: 3px solid #2e6da4; }
+        .c-green  { border-left: 3px solid #22c55e; }
+        .c-amber  { border-left: 3px solid #f59e0b; }
+        .c-purple { border-left: 3px solid #8b5cf6; }
+        .c-red    { border-left: 3px solid #ef4444; }
+
+        /* ── Status badge ── */
+        .status-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 6px 12px; border-radius: 20px;
+            font-size: 13px; font-weight: 600;
+        }
+        .status-badge .dot {
+            width: 8px; height: 8px; border-radius: 50%;
+        }
+        .badge-ok     { background: #dcfce7; color: #166534; }
+        .badge-ok .dot { background: #22c55e; }
+        .badge-running { background: #fef3c7; color: #92400e; }
+        .badge-running .dot { background: #f59e0b; animation: pulse .9s infinite; }
+        .badge-idle   { background: #f3f4f6; color: #555; }
+        .badge-idle .dot { background: #9ca3af; }
+        .badge-error  { background: #fee2e2; color: #991b1b; }
+        .badge-error .dot { background: #ef4444; }
+
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+        /* ── Wide info card ── */
+        .dash-info-card {
+            background: #fff; border: 1px solid #e5e7eb; border-radius: 12px;
+            padding: 18px 20px; display: flex; flex-wrap: wrap; gap: 20px;
+            align-items: center;
+        }
+        .dash-info-field { display: flex; flex-direction: column; gap: 2px; }
+        .dash-info-label { font-size: 11px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: .4px; }
+        .dash-info-value { font-size: 14px; font-weight: 600; color: #1a1a2e; }
+
+        /* ── Hit-rate bar ── */
+        .hit-rate-bar-wrap { display: flex; align-items: center; gap: 10px; margin-top: 4px; }
+        .hit-rate-bar-bg {
+            flex: 1; height: 8px; background: #f3f4f6; border-radius: 4px; overflow: hidden;
+        }
+        .hit-rate-bar-fill {
+            height: 100%; border-radius: 4px;
+            background: linear-gradient(90deg, #22c55e, #2e6da4);
+            transition: width .4s ease;
+        }
+        .hit-rate-pct { font-size: 13px; font-weight: 700; color: #1a1a2e; min-width: 40px; text-align: right; }
+
+        /* ── Last updated ── */
+        .dash-last-updated { font-size: 12px; color: #aaa; margin-top: 24px; text-align: right; }
+
+        /* ── Pipeline steps ── */
+        .pipeline {
+            display: flex; align-items: center; flex-wrap: wrap; gap: 0;
+            background: #fff; border: 1px solid #e5e7eb; border-radius: 12px;
+            padding: 18px 20px; overflow: hidden;
+        }
+        .pipeline-step {
+            display: flex; flex-direction: column; align-items: center;
+            padding: 8px 14px; gap: 4px;
+        }
+        .pipeline-step-icon {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: #f0f4ff; border: 1.5px solid #d0d9f5;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px;
+        }
+        .pipeline-step-label { font-size: 11px; font-weight: 600; color: #555; text-align: center; }
+        .pipeline-step-sub   { font-size: 10px; color: #aaa; text-align: center; }
+        .pipeline-arrow { color: #d0d9f5; font-size: 18px; padding: 0 2px; align-self: center; }
+    </style>
+</head>
+<body>
+<div class="dash-shell">
+
+    <!-- Header -->
+    <div class="dash-header">
+        <div>
+            <div class="dash-kicker">FTSM-RAG</div>
+            <h1 class="dash-title">System Dashboard</h1>
+            <p class="dash-subtitle">Real-time metrics for knowledge base, cache and indexing.</p>
+        </div>
+        <div class="dash-nav">
+            <button class="dash-refresh-btn" id="btn-refresh">↻ Refresh</button>
+            <a href="/manage">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>
+                Manage
+            </a>
+            <a href="/settings">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                Settings
+            </a>
+            <a href="/">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+                Chat
+            </a>
+        </div>
+    </div>
+
+    <!-- Retrieval Pipeline -->
+    <div class="dash-section">
+        <div class="dash-section-title">Retrieval Pipeline</div>
+        <div class="pipeline">
+            <div class="pipeline-step">
+                <div class="pipeline-step-icon">❓</div>
+                <div class="pipeline-step-label">User Query</div>
+                <div class="pipeline-step-sub">+ multi-query expansion</div>
+            </div>
+            <div class="pipeline-arrow">›</div>
+            <div class="pipeline-step">
+                <div class="pipeline-step-icon">🔍</div>
+                <div class="pipeline-step-label">Vector Search</div>
+                <div class="pipeline-step-sub">ChromaDB k=12</div>
+            </div>
+            <div class="pipeline-arrow">+</div>
+            <div class="pipeline-step">
+                <div class="pipeline-step-icon">📝</div>
+                <div class="pipeline-step-label">BM25 Search</div>
+                <div class="pipeline-step-sub">keyword k=12</div>
+            </div>
+            <div class="pipeline-arrow">›</div>
+            <div class="pipeline-step">
+                <div class="pipeline-step-icon">⚖️</div>
+                <div class="pipeline-step-label">RRF Fusion</div>
+                <div class="pipeline-step-sub">merge &amp; re-rank</div>
+            </div>
+            <div class="pipeline-arrow">›</div>
+            <div class="pipeline-step">
+                <div class="pipeline-step-icon">🏆</div>
+                <div class="pipeline-step-label">Reranker</div>
+                <div class="pipeline-step-sub">gte-rerank-v2 top-6</div>
+            </div>
+            <div class="pipeline-arrow">›</div>
+            <div class="pipeline-step">
+                <div class="pipeline-step-icon">🤖</div>
+                <div class="pipeline-step-label">LLM Answer</div>
+                <div class="pipeline-step-sub">qwen3-max</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Knowledge Base -->
+    <div class="dash-section">
+        <div class="dash-section-title">Knowledge Base</div>
+        <div class="dash-grid">
+            <div class="dash-card c-blue">
+                <div class="dash-card-value" id="d-docs">—</div>
+                <div class="dash-card-label">Documents</div>
+                <div class="dash-card-sub">uploaded files</div>
+            </div>
+            <div class="dash-card c-purple">
+                <div class="dash-card-value" id="d-chunks">—</div>
+                <div class="dash-card-label">Vector Chunks</div>
+                <div class="dash-card-sub">indexed in Chroma</div>
+            </div>
+            <div class="dash-card c-blue">
+                <div class="dash-card-value" id="d-records">—</div>
+                <div class="dash-card-label">Manifest Records</div>
+                <div class="dash-card-sub">processed docs</div>
+            </div>
+            <div class="dash-card">
+                <div class="dash-card-value" id="d-last">—</div>
+                <div class="dash-card-label">Last Indexed</div>
+                <div class="dash-card-sub" id="d-last-full"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Semantic Cache -->
+    <div class="dash-section">
+        <div class="dash-section-title">Semantic Cache</div>
+        <div class="dash-card" style="grid-column:1/-1;margin-bottom:12px;">
+            <div class="dash-card-label" style="margin-bottom:8px;">Cache Hit Rate (since last restart)</div>
+            <div class="hit-rate-bar-wrap">
+                <div class="hit-rate-bar-bg">
+                    <div class="hit-rate-bar-fill" id="hit-bar" style="width:0%"></div>
+                </div>
+                <div class="hit-rate-pct" id="hit-pct">—</div>
+            </div>
+        </div>
+        <div class="dash-grid">
+            <div class="dash-card c-green">
+                <div class="dash-card-value" id="d-hits">—</div>
+                <div class="dash-card-label">Cache Hits</div>
+                <div class="dash-card-sub">saved LLM calls</div>
+            </div>
+            <div class="dash-card c-amber">
+                <div class="dash-card-value" id="d-misses">—</div>
+                <div class="dash-card-label">Cache Misses</div>
+                <div class="dash-card-sub">new LLM calls</div>
+            </div>
+            <div class="dash-card">
+                <div class="dash-card-value" id="d-cache-size">—</div>
+                <div class="dash-card-label">Cached Entries</div>
+                <div class="dash-card-sub" id="d-cache-valid">— valid</div>
+            </div>
+            <div class="dash-card c-blue">
+                <div class="dash-card-value" id="d-threshold">—</div>
+                <div class="dash-card-label">Similarity Threshold</div>
+                <div class="dash-card-sub">cosine similarity</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Indexing Worker -->
+    <div class="dash-section">
+        <div class="dash-section-title">Indexing Worker</div>
+        <div class="dash-info-card">
+            <div class="dash-info-field">
+                <div class="dash-info-label">Status</div>
+                <div id="d-train-badge"><span class="status-badge badge-idle"><span class="dot"></span>Idle</span></div>
+            </div>
+            <div class="dash-info-field">
+                <div class="dash-info-label">Last Result</div>
+                <div class="dash-info-value" id="d-train-result">—</div>
+            </div>
+            <div class="dash-info-field">
+                <div class="dash-info-label">Last Error</div>
+                <div class="dash-info-value" id="d-train-error" style="color:#ef4444;font-size:12px;max-width:300px;word-break:break-all;">—</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Conversations & Scheduler -->
+    <div class="dash-section">
+        <div class="dash-section-title">Conversations &amp; Scheduler</div>
+        <div class="dash-grid">
+            <div class="dash-card c-blue">
+                <div class="dash-card-value" id="d-convs">—</div>
+                <div class="dash-card-label">Conversations</div>
+                <div class="dash-card-sub">stored on disk</div>
+            </div>
+            <div class="dash-card">
+                <div class="dash-card-value" id="d-sched-enabled">—</div>
+                <div class="dash-card-label">Crawler Scheduler</div>
+                <div class="dash-card-sub" id="d-sched-sub">—</div>
+            </div>
+            <div class="dash-card">
+                <div class="dash-card-value" id="d-last-crawl">—</div>
+                <div class="dash-card-label">Last Crawl</div>
+                <div class="dash-card-sub" id="d-next-crawl">—</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="dash-last-updated">Last updated: <span id="d-updated-at">—</span></div>
+</div>
+
+<script>
+function fmt(iso) {
+    if (!iso) return "—";
+    const diff = (Date.now() - new Date(iso)) / 1000;
+    if (diff < 60)   return "just now";
+    if (diff < 3600) return Math.floor(diff / 60) + "m ago";
+    if (diff < 86400) return Math.floor(diff / 3600) + "h ago";
+    return Math.floor(diff / 86400) + "d ago";
+}
+
+function trainBadge(data) {
+    if (data.running)            return '<span class="status-badge badge-running"><span class="dot"></span>Indexing…</span>';
+    if (data.pending)            return '<span class="status-badge badge-running"><span class="dot"></span>Queued</span>';
+    if (data.last_result === "success") return '<span class="status-badge badge-ok"><span class="dot"></span>Idle</span>';
+    if (data.last_error)         return '<span class="status-badge badge-error"><span class="dot"></span>Error</span>';
+    return '<span class="status-badge badge-idle"><span class="dot"></span>Idle</span>';
+}
+
+async function loadAll() {
+    try {
+        const [kb, cache, train, sched, convs] = await Promise.all([
+            fetch("/api/knowledge/stats").then(r => r.json()),
+            fetch("/api/cache/stats").then(r => r.json()),
+            fetch("/api/training/status").then(r => r.json()),
+            fetch("/api/scheduler/status").then(r => r.json()),
+            fetch("/api/conversations").then(r => r.json()),
+        ]);
+
+        // KB
+        document.getElementById("d-docs").textContent    = kb.document_count ?? "—";
+        document.getElementById("d-chunks").textContent  = kb.total_chunks    ?? "—";
+        document.getElementById("d-records").textContent = kb.manifest_records ?? "—";
+        document.getElementById("d-last").textContent    = fmt(kb.last_indexed);
+        document.getElementById("d-last-full").textContent =
+            kb.last_indexed ? new Date(kb.last_indexed).toLocaleString() : "";
+
+        // Cache
+        const rate = typeof cache.hit_rate === "number" ? cache.hit_rate : 0;
+        const pct  = (rate * 100).toFixed(1) + "%";
+        document.getElementById("hit-bar").style.width = (rate * 100) + "%";
+        document.getElementById("hit-pct").textContent = pct;
+        document.getElementById("d-hits").textContent        = cache.hit_count  ?? "—";
+        document.getElementById("d-misses").textContent      = cache.miss_count ?? "—";
+        document.getElementById("d-cache-size").textContent  = cache.size       ?? "—";
+        document.getElementById("d-cache-valid").textContent = `${cache.valid ?? "—"} valid`;
+        document.getElementById("d-threshold").textContent   = cache.threshold  ?? "—";
+
+        // Training
+        document.getElementById("d-train-badge").innerHTML  = trainBadge(train);
+        document.getElementById("d-train-result").textContent = train.last_result || "—";
+        document.getElementById("d-train-error").textContent  = train.last_error  || "—";
+
+        // Conversations
+        document.getElementById("d-convs").textContent = (convs.items || []).length;
+
+        // Scheduler
+        document.getElementById("d-sched-enabled").textContent =
+            sched.enabled ? "Enabled" : "Disabled";
+        document.getElementById("d-sched-sub").textContent =
+            sched.enabled ? `every ${sched.interval_hours}h` : "frozen / disabled";
+        document.getElementById("d-last-crawl").textContent = fmt(sched.last_run);
+        document.getElementById("d-next-crawl").textContent =
+            sched.next_run ? "next: " + fmt(sched.next_run) : "—";
+
+        document.getElementById("d-updated-at").textContent = new Date().toLocaleTimeString();
+    } catch (e) {
+        console.error("Dashboard load error:", e);
+    }
+}
+
+document.getElementById("btn-refresh").addEventListener("click", loadAll);
+loadAll();
+// Auto-refresh every 30 seconds
+setInterval(loadAll, 30000);
+</script>
+</body>
+</html>

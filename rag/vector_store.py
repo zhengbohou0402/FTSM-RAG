@@ -1,4 +1,5 @@
 import time
+from pathlib import Path
 
 import urllib3
 from langchain_chroma import Chroma
@@ -51,14 +52,44 @@ class VectorStoreService:
             return image_loader(read_path)
         return []
 
-    def _delete_chunk_ids(self, chunk_ids: list[str], doc_id: str) -> None:
+    def _delete_chunk_ids(self, chunk_ids: list[str], doc_id: str) -> bool:
         if not chunk_ids:
-            return
+            return True
         try:
             self.vector_store.delete(ids=chunk_ids)
             logger.info(f"[knowledge load] Deleted {len(chunk_ids)} old chunks for {doc_id}.")
+            return True
         except Exception as exc:
             logger.warning(f"[knowledge load] Failed to delete old chunks for {doc_id}: {exc}")
+            return False
+
+    def delete_document_by_path(self, file_path: str | Path) -> dict:
+        manifest = load_manifest()
+        manifest.setdefault("documents", {})
+
+        doc_id = stable_file_doc_id(file_path)
+        record = manifest["documents"].get(doc_id)
+        if not record:
+            logger.info(f"[knowledge delete] No manifest record for {doc_id}.")
+            return {
+                "doc_id": doc_id,
+                "manifest_found": False,
+                "vector_delete_ok": None,
+                "deleted_chunks": 0,
+            }
+
+        chunk_ids = record.get("chunk_ids", [])
+        vector_delete_ok = self._delete_chunk_ids(chunk_ids, doc_id)
+        del manifest["documents"][doc_id]
+        save_manifest(manifest)
+        logger.info(f"[knowledge delete] Removed {doc_id} from manifest.")
+
+        return {
+            "doc_id": doc_id,
+            "manifest_found": True,
+            "vector_delete_ok": vector_delete_ok,
+            "deleted_chunks": len(chunk_ids),
+        }
 
     @staticmethod
     def _metadata_for_chunk(source, chunk_index: int, loader_metadata: dict) -> dict:

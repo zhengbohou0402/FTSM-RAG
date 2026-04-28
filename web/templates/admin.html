@@ -13,6 +13,56 @@
             rel="stylesheet"
         />
         <link rel="stylesheet" href="/static/styles.css" />
+        <style>
+            /* ── Index status bar ── */
+            .index-status-bar {
+                display: flex; align-items: center; gap: 8px;
+                padding: 10px 16px; border-radius: 8px;
+                background: #f0f4ff; border: 1px solid #d0d9f5;
+                margin-bottom: 14px; font-size: 13px; color: #444;
+            }
+            .index-status-dot {
+                width: 9px; height: 9px; border-radius: 50%;
+                background: #ccc; flex-shrink: 0;
+            }
+            .index-status-dot.dot-running { background: #f59e0b; animation: pulse-dot 1.1s infinite; }
+            .index-status-dot.dot-ok      { background: #22c55e; }
+            .index-status-dot.dot-fail    { background: #ef4444; }
+            @keyframes pulse-dot {
+                0%, 100% { opacity: 1; } 50% { opacity: 0.35; }
+            }
+            .index-status-error { color: #ef4444; font-size: 12px; margin-left: 4px; }
+
+            /* ── Stats grid ── */
+            .stats-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                gap: 10px; margin-bottom: 18px;
+            }
+            .stat-card {
+                background: #fff; border: 1px solid #e5e7eb;
+                border-radius: 10px; padding: 14px 16px;
+                display: flex; flex-direction: column; gap: 4px;
+            }
+            .stat-card-value {
+                font-size: 22px; font-weight: 700; color: #1a1a2e; line-height: 1;
+            }
+            .stat-card-label {
+                font-size: 11px; font-weight: 600; color: #888;
+                text-transform: uppercase; letter-spacing: .5px;
+            }
+            .stat-card-sub {
+                font-size: 11px; color: #aaa; margin-top: 2px;
+            }
+            .stat-card.stat-hit  { border-left: 3px solid #22c55e; }
+            .stat-card.stat-miss { border-left: 3px solid #f59e0b; }
+            .stat-card.stat-rate { border-left: 3px solid #2e6da4; }
+
+            .manage-section-label {
+                font-size: 11px; font-weight: 700; text-transform: uppercase;
+                letter-spacing: .6px; color: #888; margin-bottom: 8px;
+            }
+        </style>
     </head>
     <body class="manage-page">
         <main class="manage-shell">
@@ -25,6 +75,13 @@
                     </p>
                 </div>
                 <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                    <a class="manage-back" href="/dashboard">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+                            <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+                        </svg>
+                        Dashboard
+                    </a>
                     <a class="manage-back" href="/settings">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
@@ -39,6 +96,59 @@
                     </a>
                 </div>
             </section>
+
+            <!-- 索引状态条 -->
+            <div class="index-status-bar" id="index-status-bar" style="display:none;">
+                <span class="index-status-dot" id="index-status-dot"></span>
+                <span id="index-status-text">Checking index status…</span>
+                <span class="index-status-error" id="index-status-error"></span>
+            </div>
+
+            <!-- 知识库统计 -->
+            <div id="stats-section" style="display:none;">
+                <p class="manage-section-label">Knowledge Base</p>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-card-value" id="kbs-docs">—</div>
+                        <div class="stat-card-label">Documents</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-value" id="kbs-chunks">—</div>
+                        <div class="stat-card-label">Vector Chunks</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-value" id="kbs-records">—</div>
+                        <div class="stat-card-label">Indexed Records</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-value" id="kbs-last">—</div>
+                        <div class="stat-card-label">Last Indexed</div>
+                        <div class="stat-card-sub" id="kbs-last-sub"></div>
+                    </div>
+                </div>
+
+                <!-- 缓存命中率 -->
+                <p class="manage-section-label">Semantic Cache</p>
+                <div class="stats-grid">
+                    <div class="stat-card stat-rate">
+                        <div class="stat-card-value" id="cache-rate">—</div>
+                        <div class="stat-card-label">Hit Rate</div>
+                    </div>
+                    <div class="stat-card stat-hit">
+                        <div class="stat-card-value" id="cache-hits">—</div>
+                        <div class="stat-card-label">Cache Hits</div>
+                    </div>
+                    <div class="stat-card stat-miss">
+                        <div class="stat-card-value" id="cache-misses">—</div>
+                        <div class="stat-card-label">Cache Misses</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-value" id="cache-size">—</div>
+                        <div class="stat-card-label">Cached Entries</div>
+                        <div class="stat-card-sub" id="cache-valid-sub"></div>
+                    </div>
+                </div>
+            </div>
 
             <section class="manage-grid">
                 <div class="manage-card">

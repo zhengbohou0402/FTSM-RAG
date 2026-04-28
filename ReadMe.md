@@ -1,38 +1,89 @@
 # FTSM-RAG
 
-FTSM-RAG is a FastAPI-based Retrieval-Augmented Generation (RAG) assistant for UKM FTSM student information. It answers questions about FTSM and UKM student life by retrieving local knowledge base documents from Chroma and generating grounded responses with a Tongyi/DashScope chat model.
+FTSM-RAG is a FastAPI-based **Retrieval-Augmented Generation (RAG)** assistant for UKM FTSM student information. It answers questions about FTSM and UKM student life by retrieving local knowledge-base documents and generating grounded responses with a Tongyi/DashScope chat model.
 
-- FastAPI backend + static HTML/JS chat UI
-- LangChain agent with a `rag_summarize` retrieval tool
-- Chroma persistent vector store (shipped with the app)
-- DashScope Tongyi chat model + DashScope embeddings
-- **Zero-config single-user mode** — conversations stored in a local JSON file, no database required
-- **Native desktop window** — bundled into a onedir executable that opens in its own window (Edge WebView2), no browser required. Users just double-click `FTSM-RAG.exe` and fill in their API key in the settings page.
+## Key Features
+
+- **Three-stage retrieval pipeline** — Multi-query vector search (ChromaDB) + BM25 keyword search, fused with Reciprocal Rank Fusion (RRF), then re-ranked by DashScope `gte-rerank-v2`
+- **Semantic cache** — Cosine-similarity cache (threshold 0.92) avoids redundant LLM calls; tracks hit/miss rate at runtime
+- **LangChain ReAct agent** — Tools include `rag_summarize` (retrieval + answer) and a web-search fallback
+- **Streaming responses** — SSE-based character streaming; no WebSocket complexity needed
+- **Collapsible source cards** — Each answer shows cited sources with file name, chunk index, and excerpt
+- **Conversation history (backend)** — Per-file JSON storage under `data/ukm_ftsm/conversations/`; unified DELETE API
+- **Indexing status polling** — Upload → auto-index; management page shows live running / pending / success / error
+- **Knowledge base stats** — `/api/knowledge/stats` returns doc count, chunk count, last indexed time, cache size
+- **Cache stats** — `/api/cache/stats` returns hit count, miss count, hit rate; shown on management page
+- **API key masking** — Settings page shows `sk-****xxxx`; only updated if user inputs a new key
+- **RAG evaluation suite** — MRR, Precision@K, Recall@K, Latency P50/P90; export to JSON / Markdown / CSV
+- **System dashboard** — `/dashboard` aggregates all runtime metrics in one page
+- **Desktop app** — Bundled as a Windows EXE via PyInstaller + Edge WebView2 (no browser required)
+- **Scheduled crawler disabled in EXE** — Dev-only Playwright crawler is automatically skipped when running as a packaged executable
 
 ## Project Layout
 
 ```text
 .
-|-- launcher.py             # exe entry point
-|-- ftsm_rag.spec           # PyInstaller spec (onedir)
-|-- web_app.py              # FastAPI app
-|-- agent/                  # LangChain agent and tools
-|-- rag/                    # Retrieval and vector-store services
-|-- model/                  # Chat and embedding model factories
-|-- config/                 # YAML config (models, chroma, scheduler)
-|-- prompts/                # System and RAG prompt templates
-|-- scripts/                # FTSM website crawler (dev-only, not bundled)
-|-- utils/                  # Config, scheduler, cache, file helpers
-|-- web/                    # Static frontend and Jinja templates
-|-- data/ukm_ftsm/          # Local knowledge base + conversations.json
-|-- chroma_db_ftsm/         # Chroma vector DB (shipped with the release)
+├── launcher.py              # EXE entry point (PyInstaller)
+├── ftsm_rag.spec            # PyInstaller spec (onedir)
+├── web_app.py               # FastAPI application + all API routes
+├── agent/                   # LangChain ReAct agent and tool definitions
+├── rag/
+│   ├── rag_service.py       # BM25 + Vector + RRF + Reranker pipeline
+│   ├── vector_store.py      # ChromaDB wrapper, incremental indexing
+│   └── ingestion.py         # Document loading, chunking, manifest
+├── model/                   # Chat and embedding model factories
+├── config/                  # YAML config (rag.yml, chroma.yml, scheduler.yml)
+├── prompts/                 # System and RAG prompt templates
+├── scripts/
+│   ├── scrape_ftsm_website.py   # FTSM website crawler (dev-only, not bundled)
+│   └── evaluate_rag.py          # RAG evaluation: MRR, P@K, R@K, Latency
+├── services/                # Thin service layer (chat, documents, settings)
+├── utils/                   # Config, scheduler, semantic cache, conversation store
+├── web/                     # Static frontend (HTML/CSS/JS) + Jinja2 templates
+├── data/ukm_ftsm/
+│   ├── conversations/       # Per-file conversation JSON + index.json
+│   └── semantic_cache.json  # Persisted semantic cache
+└── chroma_db_ftsm/          # ChromaDB vector store (shipped with the release)
 ```
+
+## Runtime Stack
+
+| Component | Implementation |
+| --- | --- |
+| Web backend | FastAPI + Uvicorn |
+| Frontend | Static HTML/CSS/JS (SSE streaming, no framework) |
+| Agent framework | LangChain ReAct (`create_react_agent`) |
+| Retrieval | ChromaDB (vector) + BM25 → RRF → DashScope `gte-rerank-v2` |
+| Chat model | DashScope Tongyi (default `qwen3-max`, switchable in UI) |
+| Embedding model | DashScope `text-embedding-v4` |
+| Vector store | Chroma via `langchain-chroma` |
+| Semantic cache | Cosine similarity cache, persisted to JSON |
+| Conversation storage | Per-file JSON directory (no database required) |
+| Image text extraction | DashScope Qwen-VL + Pillow |
+| Scheduled crawling | Playwright (dev-only; auto-disabled in packaged EXE) |
+
+## API Endpoints
+
+| Method | Path | Description |
+| --- | --- | --- |
+| GET | `/api/health` | Health check |
+| GET | `/api/config/status` | Whether DashScope API key is set |
+| GET/POST | `/api/settings` | Read / save settings (key shown masked) |
+| GET | `/api/models` | List available Qwen models + validate key |
+| POST | `/api/chat` | Streaming chat (SSE) |
+| GET/POST | `/api/conversations` | List / create conversations |
+| GET | `/api/conversations/{id}` | Get conversation with messages |
+| DELETE | `/api/conversations/{id}` | Delete a conversation |
+| GET/POST | `/api/documents` | List / upload knowledge-base files |
+| DELETE | `/api/documents/{filename}` | Delete a document + its vector chunks |
+| GET/POST | `/api/training/status` `/api/training/start` | Indexing status and trigger |
+| GET | `/api/knowledge/stats` | Doc count, chunk count, last indexed time, cache size |
+| GET | `/api/cache/stats` | Cache hit count, miss count, hit rate |
+| GET | `/api/scheduler/status` | Crawler scheduler state |
 
 ## Development (running from source)
 
-Requirements:
-- Python 3.12
-- A DashScope API key
+**Requirements:** Python 3.12, a DashScope API key
 
 ```powershell
 python -m venv .venv
@@ -42,97 +93,76 @@ pip install -r requirements.txt
 # Optional: install Chromium for the crawler
 python -m playwright install chromium
 
-# Create your env file (can also be filled from the /settings UI on first run)
+# Create your env file (or fill via the /settings UI on first run)
 Copy-Item .env.example .env
-# Edit .env and set DASHSCOPE_API_KEY=...
+# Edit .env: set DASHSCOPE_API_KEY=sk-...
 
-# Run the server
 uvicorn web_app:app --host 127.0.0.1 --port 8000
 ```
 
-Open <http://127.0.0.1:8000/>. If no API key is configured, you will be redirected to `/settings` automatically.
+Open <http://127.0.0.1:8000/>. If no API key is set, you are redirected to `/settings` automatically.
 
-## Packaging as a standalone EXE (Windows)
+## Running the RAG Evaluation
 
-The project is configured for a **onedir** PyInstaller build: the final artifact is a folder containing `FTSM-RAG.exe` plus an `_internal/` dependency folder. Users double-click the exe and the app opens in a dedicated desktop window (no browser, no console).
+```powershell
+# Retrieval-only (fast)
+python scripts/evaluate_rag.py
+
+# Full evaluation with LLM answers + all exports
+python scripts/evaluate_rag.py --with-answer \
+    --output results/rag_eval.json \
+    --markdown results/rag_eval.md \
+    --csv results/rag_eval.csv
+```
+
+Metrics reported: Source Hit Rate, MRR, Precision@5, Recall@5, Latency P50/P90.
+
+## Packaging as a Standalone EXE (Windows)
 
 ```powershell
 # From the activated .venv
 pyinstaller ftsm_rag.spec
 ```
 
-Output: `dist/FTSM-RAG/`. You can:
-1. Zip the whole `dist/FTSM-RAG/` folder and send it to a user.
-2. On first run, the user is taken to the in-app settings page to enter their DashScope API key.
-3. The bundled Chroma vector store (`chroma_db_ftsm/`) is copied to the exe directory on first start, so answers work offline without re-indexing.
+Output: `dist/FTSM-RAG/` — zip the entire folder and distribute. Users double-click `FTSM-RAG.exe`; the app opens in a dedicated desktop window. On first run the settings page loads for API key input.
 
-### What the exe actually does on first run
+**Packaged EXE differences from source:**
+- Scheduled Playwright crawler is **automatically disabled** (Playwright not bundled)
+- ChromaDB vector store and knowledge-base files are copied next to the EXE on first run
+- Edge WebView2 runtime required (pre-installed on Windows 11 / recent Windows 10)
 
-- Creates `chroma_db_ftsm/`, `data/`, `config/`, and `.env` next to the exe (copied from the bundle).
-- Starts a local FastAPI server on `127.0.0.1` on an auto-chosen free port.
-- Opens a native desktop window (Edge WebView2) pointing at the server.
-- If the API key is missing, the window lands on `/settings` automatically.
-
-### System requirement: Edge WebView2 runtime
-
-The desktop window is rendered by **Microsoft Edge WebView2**, which is **pre-installed on Windows 11** and on most up-to-date Windows 10 machines. If the user's machine is missing it, the exe will automatically fall back to the default browser. To install it manually (free from Microsoft), grab the "Evergreen Standalone Installer" from <https://developer.microsoft.com/microsoft-edge/webview2/>.
-
-If a user wants to force browser mode for any reason, set the environment variable `FTSM_BROWSER_MODE=1` before launching the exe.
-
-## Runtime Stack
-
-| Component | Implementation |
-| --- | --- |
-| Web backend | FastAPI + Uvicorn |
-| Frontend | Static HTML/CSS/JS served by FastAPI |
-| Agent framework | LangChain `create_agent` |
-| Chat model | DashScope Tongyi (default `qwen3-max`, switchable in UI) |
-| Embedding model | DashScope `text-embedding-v4` |
-| Vector store | Chroma via `langchain-chroma` |
-| Conversation storage | Local `data/ukm_ftsm/conversations.json` (no database) |
-| Image text extraction | DashScope Qwen-VL + Pillow |
-| Scheduled crawling (dev) | Playwright crawler |
-
-Model names and vector-store settings live in:
-
-- `config/rag.yml`   — chat/embedding/image model names (can be edited at runtime via `/settings`)
-- `config/chroma.yml`
-- `config/scheduler.yml`
-
-## Settings UI
-
-Open `/settings` in the browser to configure:
-
-- **DashScope API Key** — saved into `.env`
-- **Service Region** — toggle between China (default) and International endpoint (needed for `qwen3.6-plus`)
-- **Chat Model** — pick one of `qwen3-max`, `qwen-plus`, `qwen-turbo`, `qwen3.6-plus`
-
-Changes apply immediately; no restart required.
+If WebView2 is unavailable, the EXE falls back to the default browser. Force browser mode: set `FTSM_BROWSER_MODE=1`.
 
 ## Adding Documents
 
-- Drag & drop files in `/manage` (no authentication required in the standalone build)
-- Or place files into `data/ukm_ftsm/` and run `python rag/vector_store.py` when developing
+1. Open `/manage` in the browser → drag & drop files → indexing starts automatically
+2. Or place files into `data/ukm_ftsm/` and run `python rag/vector_store.py` from source
 
-Supported file types: TXT, PDF, PNG, JPG, JPEG, WEBP, GIF.
+Supported: TXT, PDF, PNG, JPG, JPEG, WEBP, GIF (max 50 MB each).
 
-## Notes on the Crawler
+## Settings UI (`/settings`)
 
-`scripts/scrape_ftsm_website.py` uses Playwright and is **excluded from the exe bundle** (it requires a Chromium install that is too large to ship). Run it from source if you need to re-crawl the FTSM site:
+- **API Key** — saved to `.env`; displayed masked (`sk-****xxxx`); only overwritten when you enter a new key
+- **Service Region** — China (`dashscope.aliyuncs.com`) or International (`dashscope-intl.aliyuncs.com`)
+- **Chat Model** — pick from `qwen3-max`, `qwen-plus`, `qwen-turbo`, `qwen3.6-plus`, etc.
 
-```powershell
-python scripts/scrape_ftsm_website.py --max-pages 80
-```
+Changes apply immediately without restart.
 
-## Ignored local files
+## System Dashboard (`/dashboard`)
 
-These are generated at runtime and ignored by git:
+Real-time view of:
+- Knowledge base statistics (documents, indexed chunks, last indexed)
+- Semantic cache performance (hit rate, hit/miss counts, valid entries)
+- Indexing worker status (running / idle / last result)
+- Scheduler status (next crawl time)
+
+## Ignored Local Files
+
+Generated at runtime, excluded from git:
 
 - `.venv/`
-- `logs/`
-- `dist/`, `build/` (PyInstaller output)
+- `logs/`, `dist/`, `build/`
 - `.env`
-- `data/ukm_ftsm/conversations.json`
-- `data/ukm_ftsm/chat_sessions.json`
+- `data/ukm_ftsm/conversations/`
 - `data/ukm_ftsm/semantic_cache.json`
 - `data/ukm_ftsm/.last_crawl`

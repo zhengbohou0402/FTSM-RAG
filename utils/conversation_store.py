@@ -85,6 +85,22 @@ class ConversationStore:
             self._save_conv(conv)
         return conv
 
+    def delete(self, conversation_id: str) -> bool:
+        """删除一个对话文件及其索引项。返回 True 表示成功，False 表示未找到。"""
+        with self._lock:
+            path = self._conv_path(conversation_id)
+            found = path is not None and path.exists()
+            if path and path.exists():
+                try:
+                    path.unlink()
+                except OSError:
+                    pass
+            index = self._load_index()
+            new_index = [i for i in index if i.get("id") != conversation_id]
+            if len(new_index) != len(index):
+                self._save_index(new_index)
+        return found
+
     def append_turn(
         self,
         conversation_id: str,

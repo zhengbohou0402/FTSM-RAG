@@ -1,8 +1,10 @@
+import hashlib
+import hmac
 import os
+import secrets
 import shutil
 import sys
 import threading
-import time
 from pathlib import Path
 from typing import Any
 from uuid import uuid4
@@ -34,6 +36,17 @@ load_dotenv(_env_path)
 
 # ── 必须在 load_dotenv 之后再 import agent / 模型工厂（它们读环境变量）──
 from agent.react_agent import ReactAgent  # noqa: E402
+from services.chat_service import stream_chat_answer  # noqa: E402
+from services.document_service import (  # noqa: E402
+    delete_knowledge_document,
+    list_knowledge_documents,
+    save_uploads,
+)
+from services.settings_service import (  # noqa: E402
+    apply_runtime_env,
+    parse_env_file,
+    write_env_file,
+)
 from utils.config_handler import chroma_conf  # noqa: E402
 from utils.conversation_store import ConversationStore  # noqa: E402
 from utils.path_tool import get_abs_path  # noqa: E402
@@ -130,8 +143,11 @@ def _get_agent() -> ReactAgent:
 def _reset_agent() -> None:
     """保存设置后调用，下次聊天时会用新 key/模型重新创建 agent。"""
     global _agent
+    from agent.tools.agent_tools import reset_rag_service
     from model.factory import reset_models
     reset_models()
+    reset_rag_service()
+    semantic_cache.clear()
     with _agent_lock:
         _agent = None
 
@@ -190,6 +206,11 @@ async def manage(request: Request) -> HTMLResponse:
     return templates.TemplateResponse(request, "admin.html", {})
 
 
+@app.get("/dashboard", response_class=HTMLResponse)
+async def dashboard(request: Request) -> HTMLResponse:
+    return templates.TemplateResponse(request, "dashboard.html", {})
+
+
 @app.get("/settings", response_class=HTMLResponse)
 async def settings_page(request: Request) -> HTMLResponse:
     return templates.TemplateResponse(request, "settings.html", {})
@@ -198,35 +219,11 @@ async def settings_page(request: Request) -> HTMLResponse:
 # ── 设置（单机版，无保护） ──
 
 def _parse_env_file(env_path: Path) -> dict[str, str]:
-    result: dict[str, str] = {}
-    if not env_path.exists():
-        return result
-    for line in env_path.read_text(encoding="utf-8").splitlines():
-        line = line.strip()
-        if not line or line.startswith("#") or "=" not in line:
-            continue
-        k, _, v = line.partition("=")
-        result[k.strip()] = v.strip()
-    return result
+    return parse_env_file(env_path)
 
 
 def _write_env_file(env_path: Path, updates: dict[str, str]) -> None:
-    lines: list[str] = []
-    written: set[str] = set()
-    if env_path.exists():
-        for line in env_path.read_text(encoding="utf-8").splitlines():
-            stripped = line.strip()
-            if stripped and not stripped.startswith("#") and "=" in stripped:
-                k = stripped.partition("=")[0].strip()
-                if k in updates:
-                    lines.append(f"{k}={updates[k]}")
-                    written.add(k)
-                    continue
-            lines.append(line)
-    for k, v in updates.items():
-        if k not in written:
-            lines.append(f"{k}={v}")
-    env_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    write_env_file(env_path, updates)
 
 
 class SettingsPayload(BaseModel):
@@ -235,12 +232,21 @@ class SettingsPayload(BaseModel):
     chat_model_name: str = Field(default="")
 
 
+def _mask_api_key(key: str) -> str:
+    """返回掩码形式，仅保留末 4 位，如 sk-****abcd"""
+    if not key:
+        return ""
+    visible = key[-4:] if len(key) >= 4 else key
+    return f"sk-****{visible}"
+
+
 @app.get("/api/settings")
 async def get_settings() -> JSONResponse:
     env = _parse_env_file(_env_path)
     from model.factory import resolve_chat_model_name
+    raw_key = env.get("DASHSCOPE_API_KEY", "")
     return JSONResponse({
-        "dashscope_api_key":  env.get("DASHSCOPE_API_KEY", ""),
+        "dashscope_api_key":  _mask_api_key(raw_key),
         "dashscope_base_url": env.get("DASHSCOPE_BASE_URL", ""),
         "chat_model_name":    env.get("CHAT_MODEL_NAME", "") or resolve_chat_model_name(),
     })
@@ -249,20 +255,146 @@ async def get_settings() -> JSONResponse:
 @app.post("/api/settings")
 async def save_settings(payload: SettingsPayload) -> JSONResponse:
     updates: dict[str, str] = {}
-    if payload.dashscope_api_key:
-        updates["DASHSCOPE_API_KEY"] = payload.dashscope_api_key
+    raw_key = payload.dashscope_api_key.strip()
+    # 如果前端回传的仍是掩码（sk-****xxxx），说明用户未修改，跳过覆盖
+    is_masked = raw_key.startswith("sk-****") and len(raw_key) <= 12
+    if raw_key and not is_masked:
+        updates["DASHSCOPE_API_KEY"] = raw_key
     # 空字符串表示恢复默认（base_url 不设 = 国内版；模型名不设 = rag.yml 默认值）
     updates["DASHSCOPE_BASE_URL"] = payload.dashscope_base_url.strip()
     updates["CHAT_MODEL_NAME"] = payload.chat_model_name.strip()
 
     _write_env_file(_env_path, updates)
-    for k, v in updates.items():
-        if v:
-            os.environ[k] = v
-        else:
-            os.environ.pop(k, None)
+    apply_runtime_env(updates)
 
     _reset_agent()
+    return JSONResponse({"ok": True})
+
+
+# ── 本地密码锁 ──────────────────────────────────────────────────────────────
+# 密码哈希格式：pbkdf2_sha256$<hex-salt>$<hex-hash>  存在 .env APP_PASSWORD_HASH
+
+_HASH_PREFIX = "pbkdf2_sha256$"
+_ITERATIONS = 260_000
+# 会话令牌集合（进程内存；窗口关闭/重启后清空，相当于自动注销）
+_session_tokens: set[str] = set()
+
+
+def _hash_password(password: str, salt: bytes | None = None) -> str:
+    if salt is None:
+        salt = secrets.token_bytes(32)
+    h = hashlib.pbkdf2_hmac("sha256", password.encode(), salt, _ITERATIONS)
+    return f"{_HASH_PREFIX}{salt.hex()}${h.hex()}"
+
+
+def _verify_password(password: str, stored: str) -> bool:
+    if not stored.startswith(_HASH_PREFIX):
+        return False
+    try:
+        _, salt_hex, hash_hex = stored.split("$")
+        salt = bytes.fromhex(salt_hex)
+        h = hashlib.pbkdf2_hmac("sha256", password.encode(), salt, _ITERATIONS)
+        return hmac.compare_digest(h.hex(), hash_hex)
+    except Exception:
+        return False
+
+
+def _get_password_hash() -> str:
+    return _parse_env_file(_env_path).get("APP_PASSWORD_HASH", "")
+
+
+class PasswordPayload(BaseModel):
+    password: str = Field(default="")
+    new_password: str = Field(default="")
+    token: str = Field(default="")
+
+
+@app.get("/api/auth/status")
+async def auth_status() -> JSONResponse:
+    """密码是否已设置。"""
+    return JSONResponse({"has_password": bool(_get_password_hash())})
+
+
+@app.post("/api/auth/setup")
+async def auth_setup(payload: PasswordPayload) -> JSONResponse:
+    """首次设置密码（仅当尚未设置时有效）。"""
+    if _get_password_hash():
+        raise HTTPException(status_code=400, detail="Password already set. Use /api/auth/change.")
+    if len(payload.password) < 4:
+        raise HTTPException(status_code=422, detail="Password must be at least 4 characters.")
+    _write_env_file(_env_path, {"APP_PASSWORD_HASH": _hash_password(payload.password)})
+    token = secrets.token_hex(32)
+    _session_tokens.add(token)
+    return JSONResponse({"ok": True, "token": token})
+
+
+@app.post("/api/auth/unlock")
+async def auth_unlock(payload: PasswordPayload) -> JSONResponse:
+    """验证密码，成功后返回会话令牌。"""
+    stored = _get_password_hash()
+    if not stored:
+        token = secrets.token_hex(32)
+        _session_tokens.add(token)
+        return JSONResponse({"ok": True, "token": token})
+    if not _verify_password(payload.password, stored):
+        raise HTTPException(status_code=401, detail="Incorrect password.")
+    token = secrets.token_hex(32)
+    _session_tokens.add(token)
+    return JSONResponse({"ok": True, "token": token})
+
+
+@app.post("/api/auth/verify")
+async def auth_verify(payload: PasswordPayload) -> JSONResponse:
+    """前端页面切换时校验 sessionStorage 里的令牌。"""
+    return JSONResponse({"valid": payload.token in _session_tokens})
+
+
+@app.post("/api/auth/change")
+async def auth_change(payload: PasswordPayload) -> JSONResponse:
+    """修改密码：需提供旧密码。"""
+    stored = _get_password_hash()
+    if stored and not _verify_password(payload.password, stored):
+        raise HTTPException(status_code=401, detail="Current password is incorrect.")
+    if len(payload.new_password) < 4:
+        raise HTTPException(status_code=422, detail="New password must be at least 4 characters.")
+    _write_env_file(_env_path, {"APP_PASSWORD_HASH": _hash_password(payload.new_password)})
+    _session_tokens.clear()
+    token = secrets.token_hex(32)
+    _session_tokens.add(token)
+    return JSONResponse({"ok": True, "token": token})
+
+
+@app.post("/api/auth/remove")
+async def auth_remove(payload: PasswordPayload) -> JSONResponse:
+    """移除密码锁：需验证当前密码。"""
+    stored = _get_password_hash()
+    if stored and not _verify_password(payload.password, stored):
+        raise HTTPException(status_code=401, detail="Incorrect password.")
+    _write_env_file(_env_path, {"APP_PASSWORD_HASH": ""})
+    _session_tokens.clear()
+    return JSONResponse({"ok": True})
+
+
+@app.post("/api/auth/reset")
+async def auth_reset() -> JSONResponse:
+    """
+    忘记密码：删除所有对话记录，清除密码哈希，恢复到首次使用状态。
+    此操作不可逆，无需旧密码（因为用户已无法输入）。
+    """
+    import shutil as _shutil
+
+    # 清除密码
+    _write_env_file(_env_path, {"APP_PASSWORD_HASH": ""})
+    _session_tokens.clear()
+
+    # 删除所有对话文件
+    conv_dir = DATA_DIR / "conversations"
+    if conv_dir.exists():
+        _shutil.rmtree(conv_dir, ignore_errors=True)
+    legacy = DATA_DIR / "conversations.json"
+    if legacy.exists():
+        legacy.unlink(missing_ok=True)
+
     return JSONResponse({"ok": True})
 
 
@@ -382,6 +514,14 @@ async def list_conversations() -> JSONResponse:
     return JSONResponse({"items": items})
 
 
+@app.delete("/api/conversations/{conversation_id}")
+async def delete_conversation(conversation_id: str) -> JSONResponse:
+    found = conv_store.delete(conversation_id)
+    if not found:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    return JSONResponse({"ok": True})
+
+
 @app.get("/api/conversations/{conversation_id}")
 async def get_conversation(conversation_id: str) -> JSONResponse:
     conv = conv_store.get(conversation_id)
@@ -404,62 +544,33 @@ async def get_conversation(conversation_id: str) -> JSONResponse:
 
 @app.post("/api/upload")
 async def upload_documents(files: list[UploadFile] = File(...)) -> JSONResponse:
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
-    saved: list[str] = []
-    errors: list[dict[str, str]] = []
-
-    for file in files:
-        fname = Path(file.filename or "").name
-        if not fname:
-            errors.append({"name": file.filename or "(unknown)", "error": "Invalid filename"})
-            continue
-        ext = fname.rsplit(".", 1)[-1].lower() if "." in fname else ""
-        if ext not in ALLOWED_UPLOAD_EXTENSIONS:
-            errors.append({"name": fname, "error": f"Unsupported file type: .{ext}"})
-            continue
-        try:
-            content = await file.read()
-            if len(content) > MAX_UPLOAD_SIZE_MB * 1024 * 1024:
-                errors.append({"name": fname, "error": f"File exceeds {MAX_UPLOAD_SIZE_MB} MB limit"})
-                continue
-            (DATA_DIR / fname).write_bytes(content)
-            saved.append(fname)
-        except Exception as exc:
-            errors.append({"name": fname, "error": str(exc)})
-        finally:
-            await file.close()
-
+    saved, errors = await save_uploads(
+        files,
+        DATA_DIR,
+        ALLOWED_UPLOAD_EXTENSIONS,
+        MAX_UPLOAD_SIZE_MB,
+    )
+    if saved:
+        semantic_cache.clear()
     training_started = _start_training() if saved else False
     return JSONResponse({"saved": saved, "errors": errors, "training_started": training_started})
 
 
 @app.get("/api/documents")
 async def list_documents() -> JSONResponse:
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
-    docs: list[dict[str, Any]] = []
-    for f in DATA_DIR.iterdir():
-        if not f.is_file():
-            continue
-        ext = f.suffix.lstrip(".").lower()
-        if ext not in ALLOWED_UPLOAD_EXTENSIONS:
-            continue
-        stat = f.stat()
-        docs.append({"name": f.name, "size": stat.st_size, "modified": int(stat.st_mtime)})
-    docs.sort(key=lambda x: x["modified"], reverse=True)
-    return JSONResponse({"documents": docs})
+    return JSONResponse({"documents": list_knowledge_documents(DATA_DIR, ALLOWED_UPLOAD_EXTENSIONS)})
 
 
 @app.delete("/api/documents/{filename}")
 async def delete_document(filename: str) -> JSONResponse:
-    safe_name = Path(filename).name
-    file_path = DATA_DIR / safe_name
-    if not file_path.exists() or not file_path.is_file():
+    try:
+        result = delete_knowledge_document(filename, DATA_DIR, ALLOWED_UPLOAD_EXTENSIONS)
+    except FileNotFoundError:
         raise HTTPException(status_code=404, detail="File not found")
-    ext = safe_name.rsplit(".", 1)[-1].lower() if "." in safe_name else ""
-    if ext not in ALLOWED_UPLOAD_EXTENSIONS:
-        raise HTTPException(status_code=400, detail="File type not allowed")
-    file_path.unlink()
-    return JSONResponse({"deleted": safe_name})
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    semantic_cache.clear()
+    return JSONResponse(result)
 
 
 @app.get("/api/training/status")
@@ -471,6 +582,7 @@ async def training_status() -> JSONResponse:
 @app.post("/api/training/start")
 async def training_start() -> JSONResponse:
     started = _start_training()
+    semantic_cache.clear()
     return JSONResponse(
         {
             "started": started,
@@ -482,6 +594,36 @@ async def training_start() -> JSONResponse:
 @app.get("/api/cache/stats")
 async def cache_stats() -> JSONResponse:
     return JSONResponse(semantic_cache.stats())
+
+
+@app.get("/api/knowledge/stats")
+async def knowledge_stats() -> JSONResponse:
+    """知识库概览：文档数、manifest 记录数、chunk 总数、最近索引时间、缓存条目数。"""
+    from rag.ingestion import load_manifest
+
+    manifest = load_manifest()
+    docs_in_manifest = manifest.get("documents", {})
+
+    total_chunks = sum(
+        len(record.get("chunk_ids", []))
+        for record in docs_in_manifest.values()
+    )
+
+    last_indexed: str | None = None
+    for record in docs_in_manifest.values():
+        at = record.get("indexed_at")
+        if at and (last_indexed is None or at > last_indexed):
+            last_indexed = at
+
+    file_docs = list_knowledge_documents(DATA_DIR, ALLOWED_UPLOAD_EXTENSIONS)
+
+    return JSONResponse({
+        "document_count": len(file_docs),
+        "manifest_records": len(docs_in_manifest),
+        "total_chunks": total_chunks,
+        "last_indexed": last_indexed,
+        "cache_entries": semantic_cache.stats().get("size", 0),
+    })
 
 
 # ── 聊天 ──
@@ -500,51 +642,16 @@ async def chat(payload: ChatRequest) -> StreamingResponse:
 
     conversation_id = payload.conversation_id or str(uuid4())
 
-    def save_history(answer: str) -> None:
-        title = message if len(message) <= 40 else f"{message[:40]}..."
-        conv_store.append_turn(
-            conversation_id,
-            user_content=message,
-            assistant_content=answer,
-            title=title or "New chat",
-        )
-
-    def stream_response():
-        hit, cached_answer = semantic_cache.get(message)
-        if hit and cached_answer and "__THINK" not in cached_answer:
-            yield "__THINK__Answering from cache...__ENDTHINK__"
-            save_history(cached_answer)
-            for char in cached_answer:
-                yield char
-                time.sleep(CHAR_STREAM_DELAY_SECONDS)
-            return
-
-        recent_history = conv_store.recent_messages(conversation_id, MAX_HISTORY_TURNS)
-        result_chunks: list[str] = []
-        try:
-            for chunk in _get_agent().execute_stream(message, history=recent_history):
-                if not chunk:
-                    continue
-                if chunk.startswith("__THINK__"):
-                    yield chunk
-                    continue
-                result_chunks.append(chunk)
-                for char in chunk:
-                    yield char
-                    time.sleep(CHAR_STREAM_DELAY_SECONDS)
-        except Exception as exc:
-            err_msg = f"\n\n[Error] {exc}"
-            result_chunks.append(err_msg)
-            for char in err_msg:
-                yield char
-
-        final_answer = "".join(result_chunks).strip()
-        if final_answer:
-            semantic_cache.set(message, final_answer)
-            save_history(final_answer)
-
     return StreamingResponse(
-        stream_response(),
+        stream_chat_answer(
+            message=message,
+            conversation_id=conversation_id,
+            conversation_store=conv_store,
+            semantic_cache=semantic_cache,
+            get_agent=_get_agent,
+            max_history_turns=MAX_HISTORY_TURNS,
+            char_stream_delay_seconds=CHAR_STREAM_DELAY_SECONDS,
+        ),
         media_type="text/plain; charset=utf-8",
         headers={
             "Cache-Control": "no-cache",

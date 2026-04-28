@@ -6,9 +6,7 @@ const welcome = document.getElementById("welcome");
 const historyList = document.getElementById("history-list");
 const sidebar = document.getElementById("sidebar");
 
-const STORAGE_KEY = "ukm_ftsm_chat_v4";
 const THEME_KEY = "ukm_ftsm_theme";
-const MAX_HISTORY = 20;
 
 const ICONS = {
   calendar: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2"></rect><path d="M8 2v4M16 2v4M3 10h18"></path></svg>',
@@ -39,7 +37,6 @@ const SUGGESTIONS = [
   { icon: "exam", title: "Exam Schedule", desc: "Ask about exam timing", prompt: "Where can I check my final exam schedule?" },
 ];
 
-let chatHistory = [];
 let conversationId = null;
 let busy = false;
 
@@ -146,30 +143,17 @@ function refreshWelcomeSuggestions() {
   bindSuggestionCards(grid);
 }
 
-// Sidebar history
+// Sidebar history — unified backend storage
 
-function loadHistory() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveHistory() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(chatHistory));
-}
-
-function renderHistory() {
+function renderHistory(items) {
   historyList.innerHTML = "";
-  chatHistory.forEach((c) => {
+  (items || []).forEach((c) => {
     const item = document.createElement("div");
     item.className = "history-item-wrap";
 
     const btn = document.createElement("button");
     btn.className = "history-item";
-    btn.textContent = c.title;
+    btn.textContent = c.title || "New chat";
     btn.dataset.id = c.id;
 
     const deleteBtn = document.createElement("button");
@@ -184,46 +168,99 @@ function renderHistory() {
   });
 }
 
-function deleteConversation(id) {
-  chatHistory = chatHistory.filter((c) => c.id !== id);
-  saveHistory();
-  renderHistory();
+async function fetchAndRenderHistory() {
+  try {
+    const res = await fetch("/api/conversations");
+    if (!res.ok) return;
+    const data = await res.json();
+    renderHistory(data.items || []);
+  } catch {}
 }
 
-function upsertConversation() {
-  const msgs = [];
-  chatLog.querySelectorAll(".msg").forEach((el) => {
-    const bubble = el.querySelector(".bubble");
-    if (!bubble) return;
-    if (el.classList.contains("msg-user")) {
-      msgs.push({ role: "user", text: bubble.textContent.trim() });
-    } else if (el.classList.contains("msg-assistant")) {
-      msgs.push({ role: "assistant", text: bubble.textContent.trim() });
-    }
-  });
-  if (!msgs.length) return;
-
-  const first = msgs.find((m) => m.role === "user");
-  const title = summarize(first ? first.text : "New chat");
-  const id = conversationId || Date.now().toString();
-  conversationId = id;
-
-  chatHistory = chatHistory.filter((c) => c.id !== id);
-  chatHistory.unshift({ id, title, msgs, ts: Date.now() });
-  chatHistory = chatHistory.slice(0, MAX_HISTORY);
-  saveHistory();
-  renderHistory();
+async function deleteConversation(id) {
+  try {
+    await fetch(`/api/conversations/${id}`, { method: "DELETE" });
+  } catch {}
+  await fetchAndRenderHistory();
 }
 
-function loadConversation(conv) {
-  chatLog.innerHTML = "";
-  if (welcome) welcome.remove();
-  conv.msgs.forEach((m) => createMsg(m.role, m.text));
-  conversationId = conv.id;
-  scrollToBottom();
+async function upsertConversation() {
+  // 后端已在 stream_chat_answer 里 append_turn，只需刷新侧边栏
+  await fetchAndRenderHistory();
 }
 
-// Messages
+async function loadConversation(id) {
+  try {
+    const res = await fetch(`/api/conversations/${id}`);
+    if (!res.ok) return;
+    const conv = await res.json();
+    chatLog.innerHTML = "";
+    const welcomeEl = document.getElementById("welcome");
+    if (welcomeEl) welcomeEl.remove();
+    (conv.messages || []).forEach((m) => createMsg(m.role, m.content));
+    conversationId = conv.id;
+    scrollToBottom();
+  } catch {}
+}
+
+// ── Source cards ──────────────────────────────────────────────────────────────
+
+/**
+ * 把回复末尾 "Sources:\n- [N] name, chunk K: excerpt" 拆成折叠卡片。
+ * 返回 { answerHtml, sourcesHtml }。
+ */
+function splitAnswerAndSources(rawText) {
+  const match = rawText.match(/\n\nSources:\n([\s\S]+)$/);
+  if (!match) return { answerHtml: renderMd(rawText.trim()), sourcesHtml: "" };
+
+  const answerPart = rawText.slice(0, rawText.length - match[0].length).trim();
+  const sourcesRaw = match[1];
+
+  const lineRe = /^- \[(\d+)\] ([^:]+?)(?:, chunk (\d+))?: (.+)$/;
+  const cards = sourcesRaw
+    .split("\n")
+    .filter((l) => l.startsWith("- ["))
+    .map((line) => {
+      const m = line.match(lineRe);
+      if (!m) return null;
+      return { num: m[1], name: m[2].trim(), chunk: m[3] || null, excerpt: m[4].trim() };
+    })
+    .filter(Boolean);
+
+  if (!cards.length) return { answerHtml: renderMd(rawText.trim()), sourcesHtml: "" };
+
+  const listId = `src-${Date.now()}`;
+  const cardItems = cards
+    .map(
+      (c) => `<div class="source-card">
+        <div class="source-card-header">
+          <span class="source-card-num">${escapeHtml(c.num)}</span>
+          <span class="source-card-name" title="${escapeHtml(c.name)}">${escapeHtml(c.name)}</span>
+          ${c.chunk !== null ? `<span class="source-card-chunk">chunk ${escapeHtml(c.chunk)}</span>` : ""}
+        </div>
+        <div class="source-card-excerpt">${escapeHtml(c.excerpt)}</div>
+      </div>`,
+    )
+    .join("");
+
+  const sourcesHtml = `<div class="source-cards">
+    <button class="source-cards-toggle" data-target="${listId}" onclick="toggleSourceCards(this)">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      ${cards.length} source${cards.length > 1 ? "s" : ""}
+    </button>
+    <div class="source-cards-list" id="${listId}">${cardItems}</div>
+  </div>`;
+
+  return { answerHtml: renderMd(answerPart), sourcesHtml };
+}
+
+function toggleSourceCards(btn) {
+  btn.classList.toggle("open");
+  const list = document.getElementById(btn.dataset.target);
+  if (list) list.classList.toggle("open");
+}
+
+// ── Messages ──────────────────────────────────────────────────────────────────
 
 function createMsg(role, text) {
   const welcomeEl = document.getElementById("welcome");
@@ -326,7 +363,6 @@ const STREAM_MARKERS = ["__THINK__", "__ENDTHINK__"];
 const MAX_MARKER_LEN = Math.max(...STREAM_MARKERS.map((m) => m.length));
 
 function splitSafeText(buf) {
-  // Case 1: a full marker is somewhere in buf → only consume up to it as text.
   let earliest = -1;
   for (const m of STREAM_MARKERS) {
     const idx = buf.indexOf(m);
@@ -335,7 +371,6 @@ function splitSafeText(buf) {
   if (earliest >= 0) {
     return { safe: buf.substring(0, earliest), pending: buf.substring(earliest) };
   }
-  // Case 2: no full marker yet — check if the tail could be the start of one.
   const maxCheck = Math.min(MAX_MARKER_LEN - 1, buf.length);
   for (let n = maxCheck; n > 0; n--) {
     const tail = buf.substring(buf.length - n);
@@ -368,7 +403,6 @@ async function send(prompt) {
 
       buf += dec.decode(value, { stream: true });
 
-      // Drain any complete __THINK__...__ENDTHINK__ pairs first.
       while (buf.includes("__THINK__") && buf.includes("__ENDTHINK__")) {
         const si = buf.indexOf("__THINK__");
         const ei = buf.indexOf("__ENDTHINK__");
@@ -382,7 +416,6 @@ async function send(prompt) {
         }
       }
 
-      // Consume text that is definitely safe (not inside / prefix of a marker).
       const { safe, pending } = splitSafeText(buf);
       if (safe) result += safe;
       buf = pending;
@@ -398,10 +431,15 @@ async function send(prompt) {
       scrollToBottom();
     }
 
-    // Flush whatever is left (incomplete markers fall through as text).
     if (buf) result += buf;
     if (!answerStarted) hideThinking(bubble);
-    bubble.innerHTML = renderMd(result.trim() || "No answer returned.");
+
+    // 流结束后把 Sources 段渲染为折叠卡片
+    const finalText = result.trim() || "No answer returned.";
+    const { answerHtml, sourcesHtml } = splitAnswerAndSources(finalText);
+    bubble.innerHTML = answerHtml;
+    if (sourcesHtml) bubble.insertAdjacentHTML("afterend", sourcesHtml);
+
     upsertConversation();
   } catch (err) {
     hideThinking(bubble);
@@ -441,8 +479,7 @@ historyList.addEventListener("click", (e) => {
   }
   const btn = e.target.closest(".history-item");
   if (!btn) return;
-  const conv = chatHistory.find((c) => c.id === btn.dataset.id);
-  if (conv) loadConversation(conv);
+  loadConversation(btn.dataset.id);
   if (window.innerWidth <= 768) sidebar.classList.add("collapsed");
 });
 
@@ -471,21 +508,18 @@ function newChat() {
 }
 document.getElementById("new-chat-btn").addEventListener("click", newChat);
 
-// Check config status on startup — if no API key configured, show hint
 async function checkConfig() {
   try {
     const res = await fetch("/api/config/status");
     const data = await res.json();
     if (!data.dashscope_configured) {
-      // Should have been redirected server-side, but show a banner just in case
       showToast("Please configure your DashScope API key in Settings.");
     }
   } catch {}
 }
 
 // Init
-chatHistory = loadHistory();
-renderHistory();
+fetchAndRenderHistory();
 autoResize();
 refreshWelcomeSuggestions();
 checkConfig();

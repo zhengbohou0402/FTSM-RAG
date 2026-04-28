@@ -109,6 +109,10 @@ _scheduler_thread: threading.Thread | None = None
 def start_scheduler() -> None:
     """随应用启动，启动后台定时线程"""
     global _scheduler_thread
+    import sys
+    if getattr(sys, "frozen", False):
+        logger.info("[Scheduler] 打包模式：定时爬虫已自动禁用（依赖 Playwright，EXE 不可用）")
+        return
     if not ENABLED:
         logger.info("[Scheduler] 定时任务已禁用（enabled=false）")
         return

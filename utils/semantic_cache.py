@@ -57,6 +57,8 @@ class SemanticCache:
         self._lock = Lock()
         # entries: list of {"question": str, "answer": str, "vector": list[float], "created_at": int}
         self._entries: list[dict] = []
+        self._hit_count: int = 0
+        self._miss_count: int = 0
         self._load()
 
     # ------------------------------------------------------------------ #
@@ -91,9 +93,13 @@ class SemanticCache:
 
         if best_score >= self.threshold and best_answer:
             logger.info(f"[SemanticCache] HIT  similarity={best_score:.4f}  q={question[:60]}")
+            with self._lock:
+                self._hit_count += 1
             return True, best_answer
 
         logger.info(f"[SemanticCache] MISS similarity={best_score:.4f}  q={question[:60]}")
+        with self._lock:
+            self._miss_count += 1
         return False, None
 
     def set(self, question: str, answer: str) -> None:
@@ -129,7 +135,27 @@ class SemanticCache:
                 1 for e in self._entries
                 if now - e.get("created_at", 0) <= CACHE_TTL_SECONDS
             )
-        return {"total": total, "valid": valid, "threshold": self.threshold}
+            hit = self._hit_count
+            miss = self._miss_count
+        total_queries = hit + miss
+        hit_rate = round(hit / total_queries, 4) if total_queries else 0.0
+        return {
+            "size": total,
+            "valid": valid,
+            "threshold": self.threshold,
+            "hit_count": hit,
+            "miss_count": miss,
+            "hit_rate": hit_rate,
+        }
+
+    def clear(self) -> None:
+        """Clear cached answers after knowledge-base or model changes."""
+        with self._lock:
+            self._entries = []
+            self._hit_count = 0
+            self._miss_count = 0
+            self._save()
+        logger.info("[SemanticCache] CLEARED")
 
     # ------------------------------------------------------------------ #
     #  内部方法                                                             #
