@@ -14,9 +14,11 @@ nul
 build/
 dist/
 *.manifest
+ftsm_rag_onefile.spec
 
 data/ukm_ftsm/chat_sessions.json
 data/ukm_ftsm/conversations.json
+data/ukm_ftsm/conversations.legacy.json
 data/ukm_ftsm/semantic_cache.json
 data/ukm_ftsm/.last_crawl
 data/ukm_ftsm/ingestion_manifest.json

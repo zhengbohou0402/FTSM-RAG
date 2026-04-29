@@ -269,7 +269,6 @@ async def save_settings(payload: SettingsPayload) -> JSONResponse:
     return JSONResponse({"ok": True})
 
 
-# ── 本地密码锁 ──────────────────────────────────────────────────────────────
 @app.get("/api/models")
 async def list_models() -> JSONResponse:
     """
