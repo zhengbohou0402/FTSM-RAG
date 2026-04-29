@@ -9,13 +9,18 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from model.factory import get_embed_model
 from rag.ingestion import (
     build_file_source_document,
-    stable_file_doc_id,
     load_manifest,
     save_manifest,
     source_to_manifest_record,
+    stable_file_doc_id,
 )
 from utils.config_handler import chroma_conf
-from utils.file_handler import image_loader, listdir_with_allowed_type, pdf_loader, txt_loader
+from utils.file_handler import (
+    image_loader,
+    listdir_with_allowed_type,
+    pdf_loader,
+    txt_loader,
+)
 from utils.logger_handler import logger
 from utils.path_tool import get_abs_path
 
@@ -39,8 +44,10 @@ class VectorStoreService:
             length_function=len,
         )
 
-    def get_retriever(self):
-        return self.vector_store.as_retriever(search_kwargs={"k": chroma_conf["k"]})
+    def get_retriever(self, k: int | None = None):
+        return self.vector_store.as_retriever(
+            search_kwargs={"k": k or chroma_conf["k"]}
+        )
 
     def _get_file_documents(self, read_path: str) -> list[Document]:
         lower_path = read_path.lower()
@@ -48,7 +55,10 @@ class VectorStoreService:
             return txt_loader(read_path)
         if lower_path.endswith(".pdf"):
             return pdf_loader(read_path)
-        if any(lower_path.endswith(ext) for ext in [".png", ".jpg", ".jpeg", ".webp", ".gif"]):
+        if any(
+            lower_path.endswith(ext)
+            for ext in [".png", ".jpg", ".jpeg", ".webp", ".gif"]
+        ):
             return image_loader(read_path)
         return []
 
@@ -57,10 +67,14 @@ class VectorStoreService:
             return True
         try:
             self.vector_store.delete(ids=chunk_ids)
-            logger.info(f"[knowledge load] Deleted {len(chunk_ids)} old chunks for {doc_id}.")
+            logger.info(
+                f"[knowledge load] Deleted {len(chunk_ids)} old chunks for {doc_id}."
+            )
             return True
         except Exception as exc:
-            logger.warning(f"[knowledge load] Failed to delete old chunks for {doc_id}: {exc}")
+            logger.warning(
+                f"[knowledge load] Failed to delete old chunks for {doc_id}: {exc}"
+            )
             return False
 
     def delete_document_by_path(self, file_path: str | Path) -> dict:
@@ -149,12 +163,16 @@ class VectorStoreService:
 
                 documents: list[Document] = self._get_file_documents(path)
                 if not documents:
-                    logger.warning(f"[knowledge load] No valid text found in {path}. Skipping.")
+                    logger.warning(
+                        f"[knowledge load] No valid text found in {path}. Skipping."
+                    )
                     continue
 
                 split_document: list[Document] = self.spliter.split_documents(documents)
                 if not split_document:
-                    logger.warning(f"[knowledge load] No valid chunks produced from {path}. Skipping.")
+                    logger.warning(
+                        f"[knowledge load] No valid chunks produced from {path}. Skipping."
+                    )
                     continue
 
                 chunk_ids: list[str] = []
@@ -165,31 +183,39 @@ class VectorStoreService:
 
                 total_batches = (len(split_document) - 1) // BATCH_SIZE + 1
                 for i in range(0, len(split_document), BATCH_SIZE):
-                    batch = split_document[i:i + BATCH_SIZE]
-                    batch_ids = chunk_ids[i:i + BATCH_SIZE]
+                    batch = split_document[i : i + BATCH_SIZE]
+                    batch_ids = chunk_ids[i : i + BATCH_SIZE]
                     batch_no = i // BATCH_SIZE + 1
 
                     for attempt in range(3):
                         try:
                             self.vector_store.add_documents(batch, ids=batch_ids)
-                            logger.info(f"[knowledge load] batch {batch_no}/{total_batches} OK ({source.title})")
+                            logger.info(
+                                f"[knowledge load] batch {batch_no}/{total_batches} OK ({source.title})"
+                            )
                             break
                         except Exception as batch_err:
                             if attempt < 2:
-                                logger.warning(f"[knowledge load] batch {batch_no} retry {attempt + 1}: {batch_err}")
+                                logger.warning(
+                                    f"[knowledge load] batch {batch_no} retry {attempt + 1}: {batch_err}"
+                                )
                                 time.sleep(5)
                             else:
                                 raise
                     time.sleep(1)
 
-                manifest["documents"][source.doc_id] = source_to_manifest_record(source, chunk_ids)
+                manifest["documents"][source.doc_id] = source_to_manifest_record(
+                    source, chunk_ids
+                )
                 save_manifest(manifest)
                 logger.info(
                     f"[knowledge load] Loaded {len(chunk_ids)} chunks from {path} "
                     f"(doc_id={source.doc_id})."
                 )
             except Exception as e:
-                logger.error(f"[knowledge load] Failed to load {path}: {str(e)}", exc_info=True)
+                logger.error(
+                    f"[knowledge load] Failed to load {path}: {str(e)}", exc_info=True
+                )
                 continue
 
 

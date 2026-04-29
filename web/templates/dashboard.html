@@ -131,13 +131,13 @@
 
         /* ── Pipeline steps ── */
         .pipeline {
-            display: flex; align-items: center; flex-wrap: wrap; gap: 0;
+            display: flex; align-items: center; flex-wrap: wrap; gap: 4px 0;
             background: #fff; border: 1px solid #e5e7eb; border-radius: 12px;
             padding: 18px 20px; overflow: hidden;
         }
         .pipeline-step {
             display: flex; flex-direction: column; align-items: center;
-            padding: 8px 14px; gap: 4px;
+            padding: 10px 14px; gap: 5px;
         }
         .pipeline-step-icon {
             width: 36px; height: 36px; border-radius: 50%;
@@ -145,9 +145,9 @@
             display: flex; align-items: center; justify-content: center;
             font-size: 16px;
         }
-        .pipeline-step-label { font-size: 11px; font-weight: 600; color: #555; text-align: center; }
-        .pipeline-step-sub   { font-size: 10px; color: #aaa; text-align: center; }
-        .pipeline-arrow { color: #d0d9f5; font-size: 18px; padding: 0 2px; align-self: center; }
+        .pipeline-step-label { font-size: 12px; font-weight: 700; color: #2b3440; text-align: center; }
+        .pipeline-step-sub   { font-size: 11px; font-weight: 500; color: #6b7280; text-align: center; }
+        .pipeline-arrow { color: #8aa0c8; font-size: 20px; font-weight: 700; padding: 0 4px; align-self: center; }
     </style>
 </head>
 <body>
@@ -184,7 +184,7 @@
             <div class="pipeline-step">
                 <div class="pipeline-step-icon">❓</div>
                 <div class="pipeline-step-label">User Query</div>
-                <div class="pipeline-step-sub">+ multi-query expansion</div>
+                <div class="pipeline-step-sub">multi-query expansion</div>
             </div>
             <div class="pipeline-arrow">›</div>
             <div class="pipeline-step">
@@ -192,7 +192,7 @@
                 <div class="pipeline-step-label">Vector Search</div>
                 <div class="pipeline-step-sub">ChromaDB k=12</div>
             </div>
-            <div class="pipeline-arrow">+</div>
+            <div class="pipeline-arrow">›</div>
             <div class="pipeline-step">
                 <div class="pipeline-step-icon">📝</div>
                 <div class="pipeline-step-label">BM25 Search</div>
@@ -214,7 +214,7 @@
             <div class="pipeline-step">
                 <div class="pipeline-step-icon">🤖</div>
                 <div class="pipeline-step-label">LLM Answer</div>
-                <div class="pipeline-step-sub">qwen3-max</div>
+                <div class="pipeline-step-sub">Qwen</div>
             </div>
         </div>
     </div>
@@ -327,13 +327,22 @@
 </div>
 
 <script>
-function fmt(iso) {
+function fmtPast(iso) {
     if (!iso) return "—";
-    const diff = (Date.now() - new Date(iso)) / 1000;
-    if (diff < 60)   return "just now";
+    const diff = Math.max(0, (Date.now() - new Date(iso)) / 1000);
+    if (diff < 60) return "just now";
     if (diff < 3600) return Math.floor(diff / 60) + "m ago";
     if (diff < 86400) return Math.floor(diff / 3600) + "h ago";
     return Math.floor(diff / 86400) + "d ago";
+}
+
+function fmtFuture(iso) {
+    if (!iso) return "—";
+    const diff = (new Date(iso) - Date.now()) / 1000;
+    if (diff <= 0) return "due now";
+    if (diff < 3600) return "in " + Math.ceil(diff / 60) + "m";
+    if (diff < 86400) return "in " + Math.ceil(diff / 3600) + "h";
+    return "in " + Math.ceil(diff / 86400) + "d";
 }
 
 function trainBadge(data) {
@@ -358,7 +367,7 @@ async function loadAll() {
         document.getElementById("d-docs").textContent    = kb.document_count ?? "—";
         document.getElementById("d-chunks").textContent  = kb.total_chunks    ?? "—";
         document.getElementById("d-records").textContent = kb.manifest_records ?? "—";
-        document.getElementById("d-last").textContent    = fmt(kb.last_indexed);
+        document.getElementById("d-last").textContent    = fmtPast(kb.last_indexed);
         document.getElementById("d-last-full").textContent =
             kb.last_indexed ? new Date(kb.last_indexed).toLocaleString() : "";
 
@@ -386,9 +395,9 @@ async function loadAll() {
             sched.enabled ? "Enabled" : "Disabled";
         document.getElementById("d-sched-sub").textContent =
             sched.enabled ? `every ${sched.interval_hours}h` : "frozen / disabled";
-        document.getElementById("d-last-crawl").textContent = fmt(sched.last_run);
+        document.getElementById("d-last-crawl").textContent = fmtPast(sched.last_run);
         document.getElementById("d-next-crawl").textContent =
-            sched.next_run ? "next: " + fmt(sched.next_run) : "—";
+            sched.next_run ? "next: " + fmtFuture(sched.next_run) : "—";
 
         document.getElementById("d-updated-at").textContent = new Date().toLocaleTimeString();
     } catch (e) {
