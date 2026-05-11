@@ -212,7 +212,12 @@ def main() -> None:
     _prepare_runtime_dir()
     _log(f"=== launcher start (frozen={getattr(sys, 'frozen', False)}) ===")
 
-    port = _find_free_port()
+    env_port = os.getenv("FTSM_PORT", "").strip()
+    if env_port and env_port.isdigit():
+        port = int(env_port)
+        _log(f"using FTSM_PORT={port}")
+    else:
+        port = _find_free_port()
     url = f"http://{HOST}:{port}"
     _log(f"chose url={url}")
 
@@ -235,6 +240,17 @@ def main() -> None:
         sys.exit(1)
 
     _log("server up; about to open window")
+
+    # Tauri / external launcher: just keep the server alive, don't open a window
+    if os.getenv("FTSM_SERVER_ONLY", "").strip() == "1":
+        _log("FTSM_SERVER_ONLY=1; keeping server alive")
+        try:
+            while True:
+                time.sleep(3600)
+        except KeyboardInterrupt:
+            pass
+        return
+
     force_browser = os.getenv("FTSM_BROWSER_MODE", "").strip() == "1"
     if force_browser:
         _log("FTSM_BROWSER_MODE=1; opening in browser")

@@ -5,24 +5,33 @@ DashScope chat / embedding 模型工厂。
 - 通过 DASHSCOPE_BASE_URL 环境变量切换国内/国际 endpoint。
 - 通过 reset_models() 在用户更新 .env 后重建客户端。
 """
+
 import os
 from abc import ABC, abstractmethod
 from typing import Optional
 
 import dashscope
-from langchain_core.embeddings import Embeddings
 from langchain_community.chat_models.tongyi import BaseChatModel, ChatTongyi
 from langchain_community.embeddings import DashScopeEmbeddings
+from langchain_core.embeddings import Embeddings
 
 from utils.config_handler import rag_conf
 
 
 def _apply_endpoint() -> None:
-    """每次创建客户端前同步当前环境里的 base url。"""
+    """每次创建客户端前同步当前环境里的 base url。
+
+    注意：若 DASHSCOPE_BASE_URL 为空字符串，必须从 os.environ 中删除，
+    否则 DashScope SDK 会直接读取空字符串拼出无效 URL，导致 400 url error。
+    """
     base_url = os.getenv("DASHSCOPE_BASE_URL", "").strip()
-    dashscope.base_http_api_url = (
-        base_url or "https://dashscope.aliyuncs.com/api/v1"
-    )
+    if base_url:
+        dashscope.base_http_api_url = base_url
+        os.environ["DASHSCOPE_BASE_URL"] = base_url
+    else:
+        # 删除空值，让 DashScope SDK 用自己的硬编码默认值
+        os.environ.pop("DASHSCOPE_BASE_URL", None)
+        dashscope.base_http_api_url = "https://dashscope.aliyuncs.com/api/v1"
 
 
 class BaseModelFactory(ABC):

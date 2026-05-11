@@ -206,7 +206,16 @@ class RagSummarizeService(object):
 
     @staticmethod
     def _source_excerpt(text: str) -> str:
-        excerpt = " ".join((text or "").split())
+        """单行摘录：去掉纯分隔线行，避免 UI 里出现大段 ===。"""
+        parts: list[str] = []
+        for line in (text or "").splitlines():
+            s = line.strip()
+            if not s:
+                continue
+            if len(s) >= 8 and set(s) <= {"=", "-", "_", "*", "#"}:
+                continue
+            parts.append(s)
+        excerpt = " ".join(parts)
         if len(excerpt) > MAX_SOURCE_EXCERPT_CHARS:
             excerpt = excerpt[:MAX_SOURCE_EXCERPT_CHARS].rstrip() + "..."
         return excerpt

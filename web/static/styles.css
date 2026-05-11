@@ -670,6 +670,146 @@ input {
     position: relative;
 }
 
+/* ── RAG source references (below assistant bubble) ── */
+.msg-assistant .source-cards {
+    margin-top: 12px;
+    width: 100%;
+    max-width: 100%;
+}
+
+details.source-cards {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: rgba(16, 163, 127, 0.06);
+    overflow: hidden;
+}
+
+[data-theme="dark"] details.source-cards {
+    background: rgba(16, 163, 127, 0.1);
+}
+
+.source-cards-summary {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 14px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    user-select: none;
+}
+
+.source-cards-summary::-webkit-details-marker {
+    display: none;
+}
+
+.source-cards-summary::marker {
+    content: "";
+}
+
+.source-summary-chevron {
+    display: flex;
+    align-items: center;
+    color: var(--text-muted);
+    transition: transform 0.2s ease;
+}
+
+details.source-cards[open] .source-summary-chevron {
+    transform: rotate(90deg);
+}
+
+.source-summary-label {
+    flex: 1;
+}
+
+.source-summary-count {
+    font-size: 12px;
+    font-weight: 700;
+    min-width: 24px;
+    height: 24px;
+    line-height: 24px;
+    text-align: center;
+    border-radius: 999px;
+    background: var(--accent);
+    color: #fff;
+}
+
+.source-cards-list {
+    padding: 0 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.source-card {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--bg);
+    overflow: hidden;
+}
+
+.source-card-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px 8px;
+    border-bottom: 1px solid var(--border);
+}
+
+.source-card-ico {
+    flex-shrink: 0;
+    color: var(--accent);
+    margin-top: 2px;
+}
+
+.source-card-meta {
+    min-width: 0;
+    flex: 1;
+}
+
+.source-card-title {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.35;
+    word-break: break-word;
+}
+
+.source-card-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 6px;
+}
+
+.source-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: var(--composer-bg);
+    color: var(--text-muted);
+}
+
+.source-badge-index {
+    background: rgba(16, 163, 127, 0.18);
+    color: var(--accent);
+}
+
+.source-card-body {
+    padding: 10px 12px 12px;
+    font-size: 12px;
+    line-height: 1.55;
+    color: var(--text-muted);
+    max-height: 140px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
 /* Copy button for assistant messages */
 .msg-assistant .msg-actions {
     display: flex;

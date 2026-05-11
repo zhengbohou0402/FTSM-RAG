@@ -28,3 +28,10 @@ data/ukm_ftsm/ScreenShot_*.png
 .env
 .env.*
 !.env.example
+
+# Desktop/Tauri build artifacts
+desktop/node_modules/
+desktop/dist/
+desktop/python-backend/
+desktop/src-tauri/python-backend/
+desktop/src-tauri/target/

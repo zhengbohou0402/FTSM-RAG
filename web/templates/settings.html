@@ -181,19 +181,16 @@
 
         <div class="field">
             <label>Chat Model</label>
-            <div class="field-desc">Pick a Qwen model. Larger models are smarter but slower.</div>
+            <div class="field-desc">Models match your saved region (China / International). The list is loaded from the server when you open this page; use the button to re-fetch and validate your API Key.</div>
             <div class="input-row">
                 <select id="input-model">
-                    <optgroup label="Built-in (default)" id="optgroup-builtin">
-                        <option value="qwen3-max">qwen3-max (highest quality)</option>
-                        <option value="qwen-plus">qwen-plus (balanced)</option>
-                        <option value="qwen-turbo">qwen-turbo (fastest)</option>
+                    <optgroup label="Available models" id="optgroup-models">
+                        <option value="" disabled selected>Loading model list…</option>
                     </optgroup>
-                    <optgroup label="Fetched from DashScope" id="optgroup-remote" style="display:none"></optgroup>
                 </select>
-                <button class="refresh-btn" id="btn-refresh-models" title="Validate API Key and load model list">↻ Verify &amp; Sync</button>
+                <button class="refresh-btn" id="btn-refresh-models" title="Validate API Key and reload model list">↻ Verify &amp; Sync</button>
             </div>
-            <div class="model-hint" id="model-hint">Click <strong>↻ Verify &amp; Sync</strong> to validate your API Key and load the full model list.</div>
+            <div class="model-hint" id="model-hint">Loading…</div>
         </div>
 
         <div class="save-row">
@@ -217,7 +214,10 @@
     }
 
     document.querySelectorAll(".region-opt").forEach(el => {
-        el.addEventListener("click", () => setRegion(el.dataset.region, el.dataset.baseUrl));
+        el.addEventListener("click", async () => {
+            setRegion(el.dataset.region, el.dataset.baseUrl);
+            await refreshModels(true);
+        });
     });
 
     document.querySelectorAll(".toggle-btn").forEach(btn => {
@@ -240,22 +240,27 @@
     }
 
     function _populateModels(models, savedName) {
-        const remoteGroup = document.getElementById("optgroup-remote");
-        const builtinGroup = document.getElementById("optgroup-builtin");
-        if (!models || models.length === 0) return;
-
-        remoteGroup.innerHTML = "";
-        models.forEach(m => {
+        const group = document.getElementById("optgroup-models");
+        const sel = document.getElementById("input-model");
+        group.innerHTML = "";
+        if (!models || models.length === 0) {
+            const opt = document.createElement("option");
+            opt.value = "";
+            opt.disabled = true;
+            opt.textContent = "No models in list";
+            opt.selected = true;
+            group.appendChild(opt);
+            return;
+        }
+        models.forEach((m) => {
             const opt = document.createElement("option");
             opt.value = m;
             opt.textContent = m;
-            remoteGroup.appendChild(opt);
+            group.appendChild(opt);
         });
-        remoteGroup.style.display = "";
-        builtinGroup.style.display = "none";
-
-        if (!_trySelectModel(savedName || _savedModelName)) {
-            document.getElementById("input-model").value = models[0];
+        const pick = (savedName || _savedModelName || "").trim();
+        if (!_trySelectModel(pick)) {
+            sel.value = models[0];
         }
     }
 
@@ -268,21 +273,31 @@
         if (!silent) hint.innerHTML = "Loading model list and validating API Key…";
 
         try {
-            const res = await fetch("/api/models");
+            const res = await fetch(`/api/models?list_region=${encodeURIComponent(selectedRegion === "intl" ? "intl" : "china")}`);
             const data = await res.json();
             const models = data.models || [];
 
             _populateModels(models, _savedModelName);
 
             if (data.key_valid === true) {
-                hint.innerHTML = `<span style="color:#1a7a3c">✅ API Key valid — ${models.length} ${data.region === "intl" ? "international" : "mainland CN"} models loaded.</span>`;
+                hint.innerHTML = `<span style="color:#1a7a3c">✅ API Key valid — ${models.length} ${data.region === "intl" ? "international" : "mainland CN"} models in the list above.</span>`;
             } else if (data.key_valid === false) {
-                hint.innerHTML = `<span style="color:#d93025">❌ ${data.key_error || "Invalid API Key. Please check and try again."}</span>`;
+                hint.innerHTML = `<span style="color:#d93025">❌ ${data.key_error || "Invalid API Key. Please check and try again."}</span> <span style="color:#666">Model names are still shown for your saved region.</span>`;
             } else {
-                hint.innerHTML = `<span style="color:#b37400">⚠️ Key validation incomplete (${data.key_error}), but model list is available.</span>`;
+                hint.innerHTML = `<span style="color:#b37400">⚠️ Key validation incomplete (${data.key_error}), but the model list is shown.</span>`;
             }
         } catch (e) {
-            if (!silent) hint.innerHTML = `<span style="color:#d93025">Request failed: ${e.message}</span>`;
+            hint.innerHTML = `<span style="color:#d93025">${silent ? "Could not load model list" : "Request failed"}: ${e.message}</span>`;
+            const group = document.getElementById("optgroup-models");
+            if (group) {
+                group.innerHTML = "";
+                const opt = document.createElement("option");
+                opt.value = "";
+                opt.disabled = true;
+                opt.textContent = "Load failed — click Verify & Sync";
+                opt.selected = true;
+                group.appendChild(opt);
+            }
         } finally {
             btn.disabled = false;
             btn.textContent = "↻ Verify & Sync";
@@ -309,15 +324,10 @@
                 setRegion("china", "");
             }
 
-            // Pre-select with built-in list first
-            _trySelectModel(_savedModelName);
-
             if (!data.dashscope_api_key) {
                 document.getElementById("first-run-banner").classList.add("visible");
-            } else {
-                // Key already set — silently refresh model list
-                refreshModels(true);
             }
+            await refreshModels(true);
         } catch {}
     }
 

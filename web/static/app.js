@@ -205,8 +205,19 @@ async function loadConversation(id) {
 
 // ── Source cards ──────────────────────────────────────────────────────────────
 
+/** 展示前再压掉残余的长分隔符，避免 excerpt 里出现 ========== */
+function polishSourceExcerpt(excerpt) {
+  let s = (excerpt || "").replace(/(?:[=\-_*#]){12,}/g, " ").replace(/\s{2,}/g, " ").trim();
+  return s;
+}
+
+function displayFileTitle(name) {
+  const base = (name || "").replace(/\.txt$/i, "");
+  return base.length > 48 ? `${base.slice(0, 46)}…` : base || "Document";
+}
+
 /**
- * 把回复末尾 "Sources:\n- [N] name, chunk K: excerpt" 拆成折叠卡片。
+ * 把回复末尾 "Sources:\n- [N] name, chunk K: excerpt" 拆成正文 + 折叠引用区。
  * 返回 { answerHtml, sourcesHtml }。
  */
 function splitAnswerAndSources(rawText) {
@@ -223,41 +234,71 @@ function splitAnswerAndSources(rawText) {
     .map((line) => {
       const m = line.match(lineRe);
       if (!m) return null;
-      return { num: m[1], name: m[2].trim(), chunk: m[3] || null, excerpt: m[4].trim() };
+      return { num: m[1], name: m[2].trim(), chunk: m[3] || null, excerpt: polishSourceExcerpt(m[4].trim()) };
     })
     .filter(Boolean);
 
   if (!cards.length) return { answerHtml: renderMd(rawText.trim()), sourcesHtml: "" };
 
-  const listId = `src-${Date.now()}`;
+  const n = cards.length;
   const cardItems = cards
     .map(
-      (c) => `<div class="source-card">
-        <div class="source-card-header">
-          <span class="source-card-num">${escapeHtml(c.num)}</span>
-          <span class="source-card-name" title="${escapeHtml(c.name)}">${escapeHtml(c.name)}</span>
-          ${c.chunk !== null ? `<span class="source-card-chunk">chunk ${escapeHtml(c.chunk)}</span>` : ""}
-        </div>
-        <div class="source-card-excerpt">${escapeHtml(c.excerpt)}</div>
-      </div>`,
+      (c) => `<article class="source-card">
+        <header class="source-card-head">
+          <span class="source-card-ico" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+              <path d="M8 7h8M8 11h6"/>
+            </svg>
+          </span>
+          <div class="source-card-meta">
+            <span class="source-card-title" title="${escapeHtml(c.name)}">${escapeHtml(displayFileTitle(c.name))}</span>
+            <span class="source-card-badges">
+              <span class="source-badge source-badge-index">#${escapeHtml(c.num)}</span>
+              ${
+                c.chunk !== null
+                  ? `<span class="source-badge">chunk ${escapeHtml(c.chunk)}</span>`
+                  : ""
+              }
+            </span>
+          </div>
+        </header>
+        <div class="source-card-body">${escapeHtml(c.excerpt)}</div>
+      </article>`,
     )
     .join("");
 
-  const sourcesHtml = `<div class="source-cards">
-    <button class="source-cards-toggle" data-target="${listId}" onclick="toggleSourceCards(this)">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-      ${cards.length} source${cards.length > 1 ? "s" : ""}
-    </button>
-    <div class="source-cards-list" id="${listId}">${cardItems}</div>
-  </div>`;
+  const sourcesHtml = `<details class="source-cards">
+    <summary class="source-cards-summary">
+      <span class="source-summary-chevron" aria-hidden="true">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+      </span>
+      <span class="source-summary-label">Sources</span>
+      <span class="source-summary-count">${n}</span>
+    </summary>
+    <div class="source-cards-list">${cardItems}</div>
+  </details>`;
 
   return { answerHtml: renderMd(answerPart), sourcesHtml };
 }
 
-function toggleSourceCards(btn) {
-  btn.classList.toggle("open");
-  const list = document.getElementById(btn.dataset.target);
-  if (list) list.classList.toggle("open");
+/** 去掉气泡后已插入的引用块（流式结束再次渲染时用） */
+function removeSourceCardsAfter(bubble) {
+  let el = bubble.nextElementSibling;
+  while (el && el.classList && el.classList.contains("source-cards")) {
+    const next = el.nextElementSibling;
+    el.remove();
+    el = next;
+  }
+}
+
+function renderAssistantMarkdown(bubble, rawText) {
+  const text = (rawText || "").trim() || "No answer returned.";
+  removeSourceCardsAfter(bubble);
+  const { answerHtml, sourcesHtml } = splitAnswerAndSources(text);
+  bubble.innerHTML = answerHtml;
+  if (sourcesHtml) bubble.insertAdjacentHTML("afterend", sourcesHtml);
 }
 
 // ── Messages ──────────────────────────────────────────────────────────────────
@@ -273,7 +314,11 @@ function createMsg(role, text) {
   bubble.className = "bubble";
 
   if (role === "assistant") {
-    bubble.innerHTML = text ? renderMd(text) : "";
+    if (text) {
+      renderAssistantMarkdown(bubble, text);
+    } else {
+      bubble.innerHTML = "";
+    }
 
     const actions = document.createElement("div");
     actions.className = "msg-actions";
@@ -436,9 +481,7 @@ async function send(prompt) {
 
     // 流结束后把 Sources 段渲染为折叠卡片
     const finalText = result.trim() || "No answer returned.";
-    const { answerHtml, sourcesHtml } = splitAnswerAndSources(finalText);
-    bubble.innerHTML = answerHtml;
-    if (sourcesHtml) bubble.insertAdjacentHTML("afterend", sourcesHtml);
+    renderAssistantMarkdown(bubble, finalText);
 
     upsertConversation();
   } catch (err) {

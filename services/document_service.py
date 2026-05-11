@@ -80,13 +80,12 @@ def delete_knowledge_document(
         from rag.vector_store import VectorStoreService
 
         cleanup = VectorStoreService().delete_document_by_path(file_path)
+        if cleanup.get("vector_delete_ok") is False:
+            raise RuntimeError("Vector index cleanup failed")
     except Exception as exc:
-        cleanup = {
-            "manifest_found": False,
-            "deleted_chunks": 0,
-            "cleanup_error": str(exc),
-        }
+        raise RuntimeError(
+            f"Document was not deleted because index cleanup failed: {exc}"
+        ) from exc
 
     file_path.unlink()
     return {"deleted": safe_name, **cleanup}
-

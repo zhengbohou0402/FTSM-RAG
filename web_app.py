@@ -7,7 +7,8 @@ from typing import Any
 from uuid import uuid4
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, File, HTTPException, Request, UploadFile
+from fastapi import FastAPI, File, HTTPException, Query, Request, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -22,8 +23,16 @@ else:
     BASE_DIR = Path(__file__).resolve().parent
     _BUNDLE_DIR = BASE_DIR
 
+# Tauri `cargo run` 调试时启动的是 dist 下的 PyInstaller exe，默认同级 .env 在 dist/FTSM-RAG/；
+# 通过 FTSM_PROJECT_ROOT 让后端改用仓库根目录的 .env，与源码开发一致。
+_env_override = os.environ.get("FTSM_PROJECT_ROOT", "").strip()
+if _env_override:
+    _env_root = Path(_env_override)
+    _env_path = (_env_root / ".env") if _env_root.is_dir() else BASE_DIR / ".env"
+else:
+    _env_path = BASE_DIR / ".env"
+
 # 首次启动：若本地没有 .env，从 bundle 里的 .env.example 复制一份
-_env_path = BASE_DIR / ".env"
 if not _env_path.exists():
     example = _BUNDLE_DIR / ".env.example"
     if example.exists():
@@ -122,6 +131,13 @@ def _start_training() -> bool:
 
 # ── FastAPI app ──
 app = FastAPI(title="FTSM-RAG")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 app.mount("/static", StaticFiles(directory=WEB_DIR / "static"), name="static")
 templates = Jinja2Templates(directory=str(WEB_DIR / "templates"))
 
@@ -152,7 +168,13 @@ def _reset_agent() -> None:
 
 
 def _dashscope_configured() -> bool:
-    return bool(os.getenv("DASHSCOPE_API_KEY", "").strip())
+    """是否已在应用目录的 .env 中写入 API Key。
+
+    不能只用 os.getenv：load_dotenv 默认不覆盖已有环境变量，若系统在用户/终端里
+    已导出 DASHSCOPE_API_KEY，会导致误以为「应用内已配置」，桌面端首次引导弹窗不出现。
+    """
+    env = parse_env_file(_env_path)
+    return bool(env.get("DASHSCOPE_API_KEY", "").strip())
 
 
 class ChatRequest(BaseModel):
@@ -270,10 +292,13 @@ async def save_settings(payload: SettingsPayload) -> JSONResponse:
 
 
 @app.get("/api/models")
-async def list_models() -> JSONResponse:
+async def list_models(list_region: str | None = Query(default=None)) -> JSONResponse:
     """
     返回按地区精选的 Qwen 对话模型列表，并用一次轻量 completions 调用验证 API Key 是否有效。
     DashScope 的 compatible-mode 不支持 /v1/models 端点，所以用官方文档整理的静态列表。
+
+    list_region: 可选 china | intl，仅影响返回的模型名字列表（例如设置页切换地区时尚未保存）。
+    不传则按 .env 中的 DASHSCOPE_BASE_URL 判断。
     """
     import httpx
 
@@ -281,7 +306,13 @@ async def list_models() -> JSONResponse:
     api_key = env.get("DASHSCOPE_API_KEY", "").strip() or os.getenv("DASHSCOPE_API_KEY", "").strip()
     base_url = env.get("DASHSCOPE_BASE_URL", "").strip() or os.getenv("DASHSCOPE_BASE_URL", "").strip()
 
-    is_intl = bool(base_url and "intl" in base_url)
+    env_is_intl = bool(base_url and "intl" in base_url)
+    if list_region == "intl":
+        list_is_intl = True
+    elif list_region == "china":
+        list_is_intl = False
+    else:
+        list_is_intl = env_is_intl
 
     # ── 官方文档整理的精选列表（2026-04，来自 help.aliyun.com/zh/model-studio/getting-started/models）
     _CHINA_MODELS = [
@@ -316,16 +347,16 @@ async def list_models() -> JSONResponse:
         "qwen-turbo-latest",
     ]
 
-    models = _INTL_MODELS if is_intl else _CHINA_MODELS
+    models = _INTL_MODELS if list_is_intl else _CHINA_MODELS
 
-    # ── 用一次极简 completions 请求验证 Key ──
+    # ── 用一次极简 completions 请求验证 Key（始终按已保存地域的 endpoint）──
     key_valid: bool | None = None
     key_error: str = ""
 
     if api_key:
         compat_base = (
             "https://dashscope-intl.aliyuncs.com/compatible-mode/v1"
-            if is_intl
+            if env_is_intl
             else "https://dashscope.aliyuncs.com/compatible-mode/v1"
         )
         try:
@@ -359,7 +390,7 @@ async def list_models() -> JSONResponse:
         "models": models,
         "key_valid": key_valid,
         "key_error": key_error,
-        "region": "intl" if is_intl else "china",
+        "region": "intl" if list_is_intl else "china",
     })
 
 
@@ -440,6 +471,8 @@ async def delete_document(filename: str) -> JSONResponse:
         raise HTTPException(status_code=404, detail="File not found")
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
+    except RuntimeError as exc:
+        raise HTTPException(status_code=409, detail=str(exc))
     semantic_cache.clear()
     return JSONResponse(result)
 
