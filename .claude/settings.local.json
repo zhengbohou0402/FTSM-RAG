@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tauri *)",
+      "Bash(export CARGO=\"$HOME/.cargo/bin/cargo\")",
+      "Bash(export PATH=\"$HOME/.cargo/bin:$HOME/.rustup/bin:$PATH\")",
+      "Bash(cargo --version)",
+      "Read(//c/Users/侯政博/.cargo/bin/**)",
+      "Bash(\"C:/Users/侯政博/.cargo/bin/cargo\" --version)",
+      "Bash(export PATH=\"/c/Users/侯政博/.cargo/bin:$PATH\")",
+      "Bash(npm run *)",
+      "Bash(cargo build *)",
+      "Bash(python -c ' *)",
+      "Bash(taskkill //F //IM node.exe)",
+      "Bash(taskkill //F //IM ftsm-rag.exe)",
+      "Bash(taskkill //F //IM python.exe)",
+      "Bash(python *)",
+      "Bash(npx --version)",
+      "Bash(pyinstaller ftsm_rag.spec)"
+    ]
+  }
+}

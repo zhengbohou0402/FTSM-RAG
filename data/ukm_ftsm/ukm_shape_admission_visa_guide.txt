@@ -1,0 +1,149 @@
+UKMShape International Student Guide (Visa, Housing, Medical & Calendar)
+Source: UKMShape Official Website (Crawled Automatically)
+Crawled at: 2026-05-20T14:59:35.850817
+Language: English (UKM Official International Page)
+================================================================================
+
+[Topic 1] Visa & Student Pass Guide
+Source URL: https://www.ukm.my/ukmshape/visa-and-student-pass/
+Crawled Status: Success
+Page Title: VISA and Student Pass | Pusat Pembentukan Pendidikan Lanjutan & Profesional
+
+--- Critical Reference Points ---
+- VAL (Visa Approval Letter) requirements.
+- Single Entry Visa (SEV) requirements before entering Malaysia.
+- Student Pass endorsement steps upon arrival.
+- Dependent Pass regulations for student families.
+- Renewal applications: must be submitted at least 3 months (90 days) before expiry.
+
+--- Crawled Website Details ---
+| International Student Visa Procedures
+E-BULLETIN
+🛂 For all undergraduate student, please note that starting 1st April 2024 UKMShape will no longer bear the other half of your Renewal Application fee to EMGS. Therefore, all application fee must be borne by the student and must be paid directly to the EMGS.
+Important Announcement :
+🛂 Please be informed that our office will be closed for the entire day on 30th April 2025 due to the EMGS Townhall event, and on 1st May 2025 for Labour Day. We  will resume operations on 2nd May 2025.
+🛂 Please be informed that upon arrival in Malaysia, all students are required to proceed to
+immigration checkpoint counters 59 and 60
+to obtain an entry stamp.      It is mandatory for students to receive an entry stamp in their passport.      Please avoid using the E-gate immigration counter.
+🛂 Kindly be informed that we have moved out from Bangunan Wawasan (FKA PKP) to the International Office (Pusanika LeveL 4). Currently we are yet to establish any telephone line for reaching out purposes. For any enquiry you may email us at visashape@ukm.edu.my or pay a visit to our new office. We apologize for any inconvenience caused.
+Attention: Once your EMGS status reaches 100 percent, you can only collect your passport on the next working day. Please bring passport submission acknowledgement letter for passport collection.
+NEW APPLICATION
+RENEWAL APPLICATION
+ENDORSEMENT TRANSFER
+(Transfer Student Pass Into The New Passport)
+SHORTEN/CANCEL STUDENT PASS
+SPECIAL PASS APPLICATION
+DEPENDENT PASS APPLICATION
+PERSONAL BOND & REFUND
+VISA  ADMINISTRATIVE FEE & FINE/PENALTY
+Visa and Student Pass Address
+PUSANIKA UKM (Level 4), UNIVERSITI KEBANGSAAN
+MALAYSIA, 43600 Bangi, Selangor
+📱016-3566066
+visashape@ukm.edu.my
+Counter Operation Hour
+Monday – Thursday
+8.15 am – 12.30 pm
+2.15 pm – 4.00 pm
+Friday
+8:15 am – 12:00 pm
+(strictly no passport submission)
+Weekend and Public Holiday
+Closed
+For more information on student visa and pass procedures, please refer to
+Guidelines
+Visa & Student Pass Map
+
+================================================================================
+
+[Topic 2] Medical Check-Up Guide
+Source URL: https://www.ukm.my/ukmshape/medical-check-up/
+Crawled Status: HTTP 404
+Page Title: N/A
+
+--- Critical Reference Points ---
+- Mandatory medical screening within 7 days of arrival in Malaysia.
+- Must be done at EMGS panel clinics or UKM Health Centre (Pusat Kesihatan UKM).
+- Required documents: Passport, Medical Examination Form, and Letter of Offer.
+- Failure to pass the medical checkup may lead to student visa cancellation.
+
+--- Crawled Website Details ---
+Could not retrieve text content directly. Please refer to the Source URL.
+
+================================================================================
+
+[Topic 3] Student Accommodation
+Source URL: https://www.ukm.my/ukmshape/student-housing/
+Crawled Status: HTTP 404
+Page Title: N/A
+
+--- Critical Reference Points ---
+- On-campus residential colleges (Kolej Kediaman) details.
+- Off-campus private rental options around Bangi, Kajang, and Semenyih.
+- Booking procedures, fees, and rules for international students.
+
+--- Crawled Website Details ---
+Could not retrieve text content directly. Please refer to the Source URL.
+
+================================================================================
+
+[Topic 4] Academic Calendar
+Source URL: https://www.ukm.my/ukmshape/academic-calendar/
+Crawled Status: Success
+Page Title: Academic Calendar | Pusat Pembentukan Pendidikan Lanjutan & Profesional
+
+--- Critical Reference Points ---
+- Semester structures for undergraduate and postgraduate studies.
+- Important periods: Course registration, lecture weeks, mid-semester breaks, and exam weeks.
+
+--- Crawled Website Details ---
+| Academic Calendar
+Main Stream
+FlexEd
+Faculty of Education School Holiday Mode
+Main Stream
+List of faculty:
+Faculty of Information Sciences & Technology (FTSM)
+Faculty of Law (FUU)
+Faculty of Medicine (FPER)
+Faculty of Engineering & Built Environment (FKAB)
+Fuel Cell Institute (SELFUEL)
+Doctor Of Higher Education Program, Faculty of Education (FPEND).
+📅 [04|03|26] Academic Calendar  2026/2027
+📅 [15|04|25] Academic Calendar 2025/2026
+📅 [14|03|24] Academic Calendar 2024/2025
+📅 [29|02|24] Academic Calendar 2023/2024
+📅[24|09|22]  Academic Calendar 2022/2023
+📅[08|01|21]  Academic Calendar 2021/2022
+FlexEd
+📅 Academic Calendar 2026/2027
+[05|05|26] Postgraduate Diploma in Dietetics Programme, FSK
+📅 Academic Calendar 2025/2026
+[26|09|25] ASASIpintar UKM Local
+ASASIpintar UKM Local
+[26|09|25] ASASIpintar UKM International
+[26|09|25] Post Basic Program (Renal, Diabetes & Intensive Care Nursing)
+[21|05|25] Executive Mode & Long Distance Learning Programs
+[21|05|25] Master of Social Science (Policing Studies)
+📅 Academic Calendar 2024/2025
+[08|04|25] Executive Mode & Long Distance Learning Programs
+[04|10|24] Master of Social Science (Policing Studies)
+📅Academic Calendar  2023/2024
+📅 Academic Calendar  2022/2023
+📅 Academic Calendar  2021/2022
+Faculty of Education
+📅 Academic Calendar 2025/2026
+[0110|2025] Postgraduate Program (School Holiday Mode)
+[21|05|2025] International Master in Education Program (School Holiday Mode)
+📅 Academic Calendar 2024/2025
+[14|11|2024] Postgraduate Program (School Holiday Mode)
+[04|07|2024] International Master in Education Program (School Holiday Mode)
+📅 Academic Calendar 2023/2024
+[21|02|2024] Postgraduate Diploma In Education (DPLI) (School Holiday Mode)
+[21|02|2024] International Master in Education Program (School Holiday Mode)
+[21|02|2024] Master of Education Program (School Holiday Mode)
+📅 Academic Calendar 2022/2023
+📅 Academic Calendar 2021/2022
+
+================================================================================
+

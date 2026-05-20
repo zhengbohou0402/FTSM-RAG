@@ -1,0 +1,122 @@
+UKM Essential Student Systems and Portals Guide
+Source: Student community contribution & real-time automated portal crawling
+Generated at: 2026-05-20T14:54:11.951515
+Language: Bilingual (Chinese & English)
+================================================================================
+
+[System Portal 1] 教务系统 SMP (Academic System)
+ID: smp
+Official URL: https://smplucee.ukm.my
+Redirected Login URL: https://sso.ukm.my/module.php/core/loginuserpass.php?AuthState=_1a623ae88e9a115e79f486cdffe597608a9baab975%3Ahttps%3A%2F%2Fsso.ukm.my%2Fsaml2%2Fidp%2FSSOService.php%3Fspentityid%3Dhttps%253A%252F%252Fsmplucee.ukm.my%252Fcfsaml%26RelayState%3Dhttps%253A%252F%252Fsmplucee.ukm.my%253A443%252Fsmpweb%252Findex.cfm%253Flogin%26cookieTime%3D1779260048
+Public Portal Status: HTTP 200
+Public Page Title: Enter your username and password
+System Purpose: 学校学生主页。主要用于每学期开始时的选课（Course Registration）以及期末查询成绩（Check Results/Exam Grades）。
+
+--- User Tips & Practical Guidance / 学生使用建议与省钱避坑指南 ---
+- 每学期选课阶段服务器可能会比较拥堵，建议提前登录守候。
+- 期末查成绩需要先在SPPP（教评系统）中完成对老师的评价，否则无法在SMP中看到成绩。
+- 选课时注意检查先修课程（Prerequisites）要求是否已满足。
+
+--- Public Page Crawled Snippet / 公开网页抓取片段 ---
+Enter your username and password SSO@UKM https://smplucee.ukm.my/smpweb requested you to authenticate yourself. Please enter your Matric Number / UKMPer / Identification and password in the form below. Sign in Sign in With MyDigital ID Forgot Password? The National University of Malaysia 2026 | UKM Extended Authentication System | Disclaimer MyDigital ID Call Centre +603-8687 2772 | MyDigital ID Portal : https://www.digital-id.my E-Mail : helpdeskdigital@ukm.edu.my
+
+================================================================================
+
+[System Portal 2] 财务系统 EKEWANGAN (Financial System)
+ID: ekewangan
+Official URL: https://ekewangan.ukm.my/
+Redirected Login URL: https://smp.ukm.my/simplesaml/module.php/core/loginuserpass.php?AuthState=_036854c54ac4f5f1ba56442134e5d153f56a99d2c6%3Ahttps%3A%2F%2Fsmp.ukm.my%2Fsimplesaml%2Fsaml2%2Fidp%2FSSOService.php%3Fspentityid%3Dhttps%253A%252F%252Fekewangan.ukm.my%252Fsimplesaml%252Fmodule.php%252Fsaml%252Fsp%252Fmetadata.php%252FsmuSSO-sp%26cookieTime%3D1779260051%26RelayState%3Dhttps%253A%252F%252Fekewangan.ukm.my%252Fsignin
+Public Portal Status: HTTP 200
+Public Page Title: Masukkan UKMper / No.Matrik dan Kata Laluan Anda
+System Purpose: 用于查询学生账单、缴纳学费及其他学杂费。
+
+--- User Tips & Practical Guidance / 学生使用建议与省钱避坑指南 ---
+- 交学费时，推荐使用能够直接兑换马币（MYR）的银行卡/信用卡付款，这样相比于通过美元（USD）结算会更便宜，能省下一笔汇率差价。
+- 交费完成后，务必下载并妥善保存好 PDF 格式的官方付款收据（Receipt），因为后续签证续签或注册时可能需要上传此凭证作为缴费证明。
+
+--- Public Page Crawled Snippet / 公开网页抓取片段 ---
+Masukkan UKMper / No.Matrik dan Kata Laluan Anda Toggle navigation SignOn@SMU Bahasa Melayu English https://ekewangan.ukm.my/signin meminta anda untuk membuat pengesahan diri. Sila masukkan Nombor Matrik / UKMPer / Pengenalan dan kata laluan anda pada borang di bawah. UKMper / No.Matrik Kata Laluan Lupa Kata laluan Universiti Kebangsaan Malaysia 2026 Penafian
+
+================================================================================
+
+[System Portal 3] 上课系统 FOLIO (Learning Management System)
+ID: folio
+Official URL: https://ukmfolio.ukm.my/
+Public Portal Status: HTTP 200
+Public Page Title: Pelantar e-Pembelajaran UKM
+System Purpose: UKM 的官方在线学习管理系统。老师会在此系统发布课件资料（Courseware）、课程大纲、作业提交通知、小测验以及期末在线考试等。
+
+--- User Tips & Practical Guidance / 学生使用建议与省钱避坑指南 ---
+- 部分课程的老师可能会选用 Microsoft Teams 或者 Google Classroom 进行授课或通知，开学第一堂课务必向老师确认使用的授课平台。
+- 建议每周定期登录 FOLIO 检查是否有新作业或课程通知，避免遗漏重要截止日期（Deadlines）。
+
+--- Public Page Crawled Snippet / 公开网页抓取片段 ---
+Pelantar e-Pembelajaran UKM Skip to main content Log in You are not logged in. ( Log in ) UKMFolio LibGuides ALL FGG FEP FPEND FKAB FTSM FUU FFAR FST FIZIK BIOLOGI & BIOTECH KIMIA SAINS BUMI & PERSEKITARAN SAINS MAKANAN SAINS MATEMATIK FSSK GEOGRAFI SAINS POLITIK PSIKOLOGI FPER PRA KLINIKAL ANATOMI BIOKIMIA FARMAKOLOGI FISIOLOGI KLINIKAL KEJURURAWATAN O&G PEDIATRIK PSIKIATRI KESIHATAN AM RADIOLOGI SURGERI FSK FPI CITRA KURSUS SENARAI KURSUS JOM MULAKAN - PENSYARAH JOM MULAKAN - PELAJAR STATUS BLENDED ARKIB ARKIB SEM 1 SESI 2025/2026 ARKIB SEM 3 SESI 2024/2025 ARKIB SEM 2 SESI 2024/2025 ARKIB SEM 1 SESI 2024/2025 ARKIB SEM 3 SESI 2023/2024 ARKIB SEM 2 SESI 2023/2024 ARKIB SEM 1 SESI 2023/2024 ARKIB SEM 3 SESI 2022/2023 ARKIB SEM 2 SESI 2022/2023 ARKIB SEM 1 SESI 2022/2023 ARKIB SEM 3 SESI 2021/2022 ARKIB SEM 2 SESI 2021/2022 ARKIB SEM 1 SESI 2021/2022 ADUAN UKMFOLIO SOALAN LAZIM (FAQ)
+
+================================================================================
+
+[System Portal 4] 图书馆系统 (PTSL Library System)
+ID: library
+Official URL: https://eresourcesptsl.ukm.remotexs.co/user/login?destination=database
+Public Portal Status: HTTP 200
+Public Page Title: RemoteXs
+System Purpose: UKM 图书馆电子资源系统，提供海量学术论文、电子书、数据库（如 IEEE, ScienceDirect）的检索与下载服务。
+
+--- User Tips & Practical Guidance / 学生使用建议与省钱避坑指南 ---
+- 请使用你的 UKM 学生账号（学号）和密码进行登录。
+- 在校外或宿舍使用时必须通过此 remotexs 代理网址登录，才能免费下载学校购买的付费数据库资源。
+
+--- Public Page Crawled Snippet / 公开网页抓取片段 ---
+RemoteXs You need to enable JavaScript to run this app.
+
+================================================================================
+
+[System Portal 5] 教评系统 SPPP (Course Evaluation System)
+ID: sppp
+Official URL: https://appsmu.ukm.my/sppp/
+Redirected Login URL: https://smp.ukm.my/simplesaml/module.php/core/loginuserpass.php?AuthState=_a705fb1a7066e66552392da29ccacbed0269abce2b%3Ahttps%3A%2F%2Fsmp.ukm.my%2Fsimplesaml%2Fsaml2%2Fidp%2FSSOService.php%3Fspentityid%3Dhttps%253A%252F%252Fappsmu.ukm.my%252Fsimplesaml%252Fmodule.php%252Fsaml%252Fsp%252Fmetadata.php%252FsmuSSO-sp%26cookieTime%3D1779260053%26RelayState%3Dhttps%253A%252F%252Fappsmu.ukm.my%252Fsppp%252F%252Fsignin
+Public Portal Status: HTTP 200
+Public Page Title: Masukkan UKMper / No.Matrik dan Kata Laluan Anda
+System Purpose: 每学期末学生对任课教师和课程教学质量进行在线评估的系统。
+
+--- User Tips & Practical Guidance / 学生使用建议与省钱避坑指南 ---
+- 【至关重要】在每学期期末考试前后，学校会开放 SPPP 系统。你必须在截止日期前，对当前学期的所有课程和老师完成教学评价（Evaluation）。
+- 如果未在截止日期前完成评价，系统会锁定你的成绩，导致你无法在教务系统（SMP）中查询期末考试成绩，甚至可能影响下学期选课。
+
+--- Public Page Crawled Snippet / 公开网页抓取片段 ---
+Masukkan UKMper / No.Matrik dan Kata Laluan Anda Toggle navigation SignOn@SMU Bahasa Melayu English https://appsmu.ukm.my/sppp meminta anda untuk membuat pengesahan diri. Sila masukkan Nombor Matrik / UKMPer / Pengenalan dan kata laluan anda pada borang di bawah. UKMper / No.Matrik Kata Laluan Lupa Kata laluan Universiti Kebangsaan Malaysia 2026 Penafian
+
+================================================================================
+
+[System Portal 6] 学生卡系统 UKMCARD
+ID: ukmcard
+Official URL: https://appsmu.ukm.my/ukmcard/
+Public Portal Status: HTTP 200
+Public Page Title: appsmu.ukm.my
+System Purpose: 用于查询、申请学生卡以及检查学生卡的制作和可领取状态。
+
+--- User Tips & Practical Guidance / 学生使用建议与省钱避坑指南 ---
+- 新生入学完成线上和线下注册后，可以在该系统查询自己学生卡的制作进度。
+- 显示为‘可领取（Ready for collection）’状态后，方可前往指定地点（通常是 Pusanika 4楼或学院行政办公室）领取实体学生卡。
+
+--- Public Page Crawled Snippet / 公开网页抓取片段 ---
+appsmu.ukm.my
+
+================================================================================
+
+[System Portal 7] 学生邮箱系统 SISWAMAIL / SPEEP
+ID: email
+Official URL: http://appsmu.ukm.my/speep/index.php
+Public Portal Status: HTTP 200
+Public Page Title: Sistem Permohonan E-mel Pelajar (SPeEP)
+System Purpose: 学生专属电子邮箱（后缀通常为 @siswa.ukm.edu.my）的注册和激活入口。
+
+--- User Tips & Practical Guidance / 学生使用建议与省钱避坑指南 ---
+- 新生在完成注册后，需要登录此 speep 网址进行学生邮箱的初始开通与密码设置。初始密码通常为你的护照号码（Passport Number）。
+- 邮箱成功开通后，日常登录可以直接使用 Gmail 登录入口（http://mail.google.com/a/siswa.ukm.edu.my）登录，收发学校官方通知和课程邮件。
+
+--- Public Page Crawled Snippet / 公开网页抓取片段 ---
+Sistem Permohonan E-mel Pelajar (SPeEP) LOGIN MATRIC NO PASSWORD User Manual Login Email Garis Panduan Permohonan & Penggunaan Emel UKM Akaun e-mel pelajar yang telah tamat pengajian atau berstatus tidak aktif akan ditamatkan selepas majlis konvokesyen. For any enquiries, please email to helpdeskdigital[at]ukm.edu.my Copyright © Pusat Teknologi Maklumat, UKM 2012 Best view in latest version Internet Explorer, Firefox, Chrome with resolution 1280x800.
+
+================================================================================
+
