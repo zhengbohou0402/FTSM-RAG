@@ -5,12 +5,13 @@ let _baseUrl: string | null = null;
 async function getBaseUrl(): Promise<string> {
   if (_baseUrl) return _baseUrl;
 
-  // Always ask the Tauri host which backend port it started for this session.
-  // This avoids accidentally talking to an unrelated service on port 8000.
   try {
+    // Desktop mode: ask the Tauri host which backend port it started.
     _baseUrl = await invoke<string>("get_server_url");
   } catch {
-    _baseUrl = "http://127.0.0.1:8000";
+    const location = window.location;
+    const isViteDevServer = ["5173", "5174"].includes(location.port);
+    _baseUrl = isViteDevServer ? "http://127.0.0.1:8000" : location.origin;
   }
   return _baseUrl;
 }
@@ -46,6 +47,7 @@ export interface Source {
   file: string;
   chunk_index: number;
   excerpt: string;
+  source_type?: string;
 }
 
 export interface Document {
@@ -67,6 +69,10 @@ export interface KnowledgeStats {
   total_chunks: number;
   last_indexed: string | null;
   cache_entries: number;
+  index_version: number;
+  index_updated_at: string | null;
+  index_last_error: string | null;
+  source_type_counts: Record<string, number>;
 }
 
 export interface CacheStats {

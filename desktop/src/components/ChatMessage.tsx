@@ -1,5 +1,5 @@
 import { Card, Collapse, Typography, Tag } from "antd";
-import { FileTextOutlined, SearchOutlined, DatabaseOutlined } from "@ant-design/icons";
+import { DatabaseOutlined, FileTextOutlined, SearchOutlined } from "@ant-design/icons";
 import ReactMarkdown from "react-markdown";
 import type { Message } from "../api/client";
 
@@ -16,9 +16,15 @@ function guessThinkingType(text: string): string {
   return "";
 }
 
+function processLabel(text: string): string {
+  const kind = guessThinkingType(text);
+  if (kind === "searching") return "Searching knowledge base";
+  if (kind === "cache") return "Answering from cache";
+  return text.replace(/\.+$/, "");
+}
+
 export default function ChatMessage({ message }: Props) {
   const isUser = message.role === "user";
-
   const hasThinking = message.thinking && message.thinking.length > 0;
   const hasContent = message.content && message.content.length > 0;
   const showThinkingPlaceholder = hasThinking && !hasContent;
@@ -26,17 +32,16 @@ export default function ChatMessage({ message }: Props) {
   return (
     <div className={`message-row ${isUser ? "message-user" : "message-assistant"}`}>
       <div className="message-bubble">
-        {/* Thinking indicator — compact one-liner */}
         {(hasThinking || showThinkingPlaceholder) && (
-          <div className="thinking-line">
-            <span className="thinking-dot" />
-            <span className="thinking-text">
+          <div className="process-capsules">
+            <span className="process-pill">
               {hasThinking
                 ? message.thinking!.map((t, i) => (
-                    <span key={i}>
+                    <span className="process-pill-item" key={i}>
                       {guessThinkingType(t) === "searching" && <SearchOutlined />}
                       {guessThinkingType(t) === "cache" && <DatabaseOutlined />}
-                      {i > 0 ? " · " : ""}{t}
+                      <span>{processLabel(t)}</span>
+                      {i < message.thinking!.length - 1 && <span className="process-divider">/</span>}
                     </span>
                   ))
                 : "Analyzing..."}
@@ -44,7 +49,6 @@ export default function ChatMessage({ message }: Props) {
           </div>
         )}
 
-        {/* Message content */}
         {isUser ? (
           <Text>{message.content}</Text>
         ) : hasContent ? (
@@ -55,21 +59,23 @@ export default function ChatMessage({ message }: Props) {
 
         {message.sources && message.sources.length > 0 && (
           <Collapse
+            className="sources-collapse"
             ghost
             size="small"
             items={[
               {
                 key: "sources",
                 label: (
-                  <Text type="secondary" style={{ fontSize: 12 }}>
+                  <Text type="secondary" className="sources-label">
                     <FileTextOutlined /> {message.sources.length} source{message.sources.length > 1 ? "s" : ""}
                   </Text>
                 ),
                 children: message.sources.map((s, i) => (
-                  <Card key={i} size="small" style={{ marginBottom: 8 }}>
+                  <Card className="source-card-react" key={i} size="small">
                     <Tag color="blue">{s.file}</Tag>
+                    {s.source_type && <Tag color="green">{s.source_type}</Tag>}
                     <Tag>Chunk {s.chunk_index}</Tag>
-                    <Paragraph ellipsis={{ rows: 3 }} style={{ marginTop: 4, fontSize: 12 }}>
+                    <Paragraph ellipsis={{ rows: 3 }} className="source-excerpt-react">
                       {s.excerpt}
                     </Paragraph>
                   </Card>

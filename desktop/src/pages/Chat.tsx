@@ -1,18 +1,18 @@
 import { useEffect, useRef } from "react";
 import { Button, Layout } from "antd";
 import {
-  SettingOutlined,
   AppstoreOutlined,
-  DashboardOutlined,
-  BulbOutlined,
   BulbFilled,
+  BulbOutlined,
+  DashboardOutlined,
+  SettingOutlined,
 } from "@ant-design/icons";
+import { Link } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import ChatMessage from "../components/ChatMessage";
 import Composer from "../components/Composer";
 import { useChat } from "../hooks/useChat";
 import { useConversations } from "../hooks/useConversations";
-import { Link } from "react-router-dom";
 
 const { Sider, Content, Header } = Layout;
 
@@ -68,21 +68,21 @@ export default function Chat({ isDark, onToggleTheme }: Props) {
             onNew={handleNewChat}
             onDelete={handleDeleteConv}
           />
-        <div className="sidebar-foot">
-          <Button type="text" icon={isDark ? <BulbFilled /> : <BulbOutlined />} onClick={onToggleTheme} />
-          <Link to="/settings">
-            <Button type="text" icon={<SettingOutlined />} />
-          </Link>
-          <Link to="/manage">
-            <Button type="text" icon={<AppstoreOutlined />} />
-          </Link>
-          <Link to="/dashboard">
-            <Button type="text" icon={<DashboardOutlined />} />
-          </Link>
-        </div>
+          <div className="sidebar-foot">
+            <Button type="text" icon={isDark ? <BulbFilled /> : <BulbOutlined />} onClick={onToggleTheme} />
+            <Link to="/settings">
+              <Button type="text" icon={<SettingOutlined />} />
+            </Link>
+            <Link to="/manage">
+              <Button type="text" icon={<AppstoreOutlined />} />
+            </Link>
+            <Link to="/dashboard">
+              <Button type="text" icon={<DashboardOutlined />} />
+            </Link>
+          </div>
         </div>
       </Sider>
-      <Layout>
+      <Layout className="chat-main">
         <Header className="chat-header">
           <span className="chat-header-title">FTSM-RAG Assistant</span>
         </Header>
@@ -90,9 +90,7 @@ export default function Chat({ isDark, onToggleTheme }: Props) {
           {messages.length === 0 ? (
             <div className="welcome">
               <h1>How can I help you today?</h1>
-              <p style={{ color: "#888" }}>
-                Ask questions about UKM FTSM — academic calendars, registration, visas, and more.
-              </p>
+              <p>Ask about UKM FTSM academic calendars, registration, visas, and student life.</p>
             </div>
           ) : (
             messages.map((msg, i) => <ChatMessage key={i} message={msg} />)

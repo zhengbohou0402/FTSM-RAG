@@ -15,6 +15,13 @@ from PyInstaller.utils.hooks import collect_all
 
 ROOT = Path(SPECPATH)
 
+
+def _collect_react_dist(root: Path) -> list[tuple[str, str]]:
+    react_dist = root / "desktop" / "dist"
+    if not (react_dist / "index.html").exists():
+        return []
+    return [(str(react_dist), "desktop/dist")]
+
 # 含 C 扩展的大包用 collect_all 全量收集，避免 hidden import 遗漏
 numpy_datas,  numpy_bins,  numpy_hiddens  = collect_all("numpy")
 chroma_datas, chroma_bins, chroma_hiddens = collect_all("chromadb")
@@ -30,7 +37,7 @@ datas = [
     (str(ROOT / "data"),            "data"),
     (str(ROOT / ".env.example"),    "."),
     (str(ROOT / "app.ico"),         "."),   # window icon
-] + numpy_datas + chroma_datas + onnx_datas + webview_datas
+] + _collect_react_dist(ROOT) + numpy_datas + chroma_datas + onnx_datas + webview_datas
 
 a = Analysis(
     [str(ROOT / "launcher.py")],

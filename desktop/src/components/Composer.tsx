@@ -10,18 +10,18 @@ interface Props {
 }
 
 const SUGGESTIONS = [
-  { title: "Academic Calendar", prompt: "Where can I view the academic calendar?" },
-  { title: "Course Timetable", prompt: "How do I check my course timetable?" },
-  { title: "Admission Info", prompt: "What are the admission requirements for FTSM postgraduate programs?" },
-  { title: "Visa Renewal", prompt: "How do I renew my student visa?" },
-  { title: "Campus Bus", prompt: "How can I check UKM campus bus routes?" },
-  { title: "Staff Directory", prompt: "How can I find FTSM academic staff and their expertise?" },
-  { title: "Registration", prompt: "What should I prepare for course registration renewal?" },
-  { title: "Industrial Training", prompt: "Where can I find industrial training information and contacts?" },
-  { title: "Facilities", prompt: "What facilities and services are available at FTSM?" },
-  { title: "Public Holidays", prompt: "What are the Malaysian public holidays for this academic year?" },
-  { title: "Student Systems", prompt: "Which UKM student systems should I use for academic matters?" },
-  { title: "Exam Schedule", prompt: "Where can I check my final exam schedule?" },
+  { title: "Academic Calendar", prompt: "Give me the key academic calendar dates for this academic year." },
+  { title: "Course Timetable", prompt: "Give me the information I need to understand my course timetable." },
+  { title: "Admission Info", prompt: "Summarize the admission requirements for FTSM postgraduate programs." },
+  { title: "Visa Renewal", prompt: "Explain the student visa renewal steps and required documents." },
+  { title: "Campus Bus", prompt: "Give me the UKM campus bus route information relevant to students." },
+  { title: "Staff Directory", prompt: "Give me information about FTSM academic staff and their expertise." },
+  { title: "Registration", prompt: "Explain what I should prepare for course registration renewal." },
+  { title: "Industrial Training", prompt: "Summarize the industrial training information and important contacts." },
+  { title: "Facilities", prompt: "List the facilities and services available at FTSM." },
+  { title: "Public Holidays", prompt: "Give me the Malaysian public holiday dates for this academic year." },
+  { title: "Student Systems", prompt: "Explain the UKM student systems used for academic matters." },
+  { title: "Exam Schedule", prompt: "Give me the final exam schedule information and what I should check." },
 ];
 
 export default function Composer({ onSend, disabled }: Props) {

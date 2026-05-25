@@ -67,6 +67,50 @@ WINDOW_HEIGHT = 820
 WINDOW_MIN_WIDTH = 900
 WINDOW_MIN_HEIGHT = 600
 SERVER_START_TIMEOUT = 60.0
+WEBVIEW_CREATE_TIMEOUT = 12.0
+
+
+def _show_error_message(message: str) -> None:
+    log_hint = f"\n\nLog file:\n{LOG_FILE}" if LOG_FILE else ""
+    try:
+        import ctypes
+        ctypes.windll.user32.MessageBoxW(
+            None,
+            message + log_hint,
+            WINDOW_TITLE,
+            0x10,  # MB_ICONERROR
+        )
+    except Exception:
+        try:
+            print(message + log_hint, file=sys.stderr)
+        except Exception:
+            pass
+
+
+def _check_packaged_layout() -> bool:
+    if not getattr(sys, "frozen", False):
+        return True
+
+    exe_dir = Path(sys.executable).parent
+    internal_dir = exe_dir / "_internal"
+    required = [
+        internal_dir,
+        internal_dir / "python312.dll",
+        internal_dir / "web",
+        internal_dir / "config",
+        internal_dir / "prompts",
+    ]
+    missing = [str(path) for path in required if not path.exists()]
+    if not missing:
+        return True
+
+    _log("packaged layout check failed; missing:\n" + "\n".join(missing))
+    _show_error_message(
+        "FTSM-RAG is incomplete and cannot start normally.\n\n"
+        "Please extract and run the whole FTSM-RAG folder, not only FTSM-RAG.exe.\n\n"
+        "Missing files:\n" + "\n".join(missing[:8])
+    )
+    return False
 
 
 # ── 首次启动：把 bundle 里的只读资源拷贝到 exe 同级目录 ──
@@ -181,6 +225,23 @@ def _open_in_browser(url: str) -> None:
 
 
 def _open_in_webview(url: str) -> None:
+    window_created = threading.Event()
+
+    def _browser_fallback_if_webview_stalls() -> None:
+        if window_created.wait(WEBVIEW_CREATE_TIMEOUT):
+            return
+        _log(
+            f"webview window was not created within {WEBVIEW_CREATE_TIMEOUT:.0f}s; "
+            "opening browser fallback"
+        )
+        try:
+            import webbrowser
+            webbrowser.open(url)
+        except Exception:
+            _log("browser fallback failed:\n" + traceback.format_exc())
+
+    threading.Thread(target=_browser_fallback_if_webview_stalls, daemon=True).start()
+
     import webview  # pywebview
     icon_path = _resolve_window_icon()
     _log(f"window icon: {icon_path}")
@@ -200,6 +261,8 @@ def _open_in_webview(url: str) -> None:
         min_size=(WINDOW_MIN_WIDTH, WINDOW_MIN_HEIGHT),
         confirm_close=False,
     )
+    window_created.set()
+    _log("webview window created; starting event loop")
     # gui=None 让 pywebview 自动选择（Windows 优先 Edge WebView2）
     webview.start(gui=None, debug=False)
     # webview.start() 是阻塞调用；窗口关闭后代码继续往下走
@@ -211,6 +274,8 @@ def _open_in_webview(url: str) -> None:
 def main() -> None:
     _prepare_runtime_dir()
     _log(f"=== launcher start (frozen={getattr(sys, 'frozen', False)}) ===")
+    if not _check_packaged_layout():
+        sys.exit(1)
 
     env_port = os.getenv("FTSM_PORT", "").strip()
     if env_port and env_port.isdigit():
@@ -226,17 +291,10 @@ def main() -> None:
 
     if not _wait_for_server(url, SERVER_START_TIMEOUT):
         _log("server failed to start within timeout")
-        # 把错误显示给用户；打包模式下 console=False 看不到 stderr
-        try:
-            import ctypes
-            ctypes.windll.user32.MessageBoxW(
-                None,
-                "Server failed to start within 60 seconds.\nCheck the logs folder for details.",
-                WINDOW_TITLE,
-                0x10,  # MB_ICONERROR
-            )
-        except Exception:
-            print("[launcher] Server did not start in time.", file=sys.stderr)
+        _show_error_message(
+            "Server failed to start within 60 seconds.\n"
+            "Please check the log file shown below."
+        )
         sys.exit(1)
 
     _log("server up; about to open window")

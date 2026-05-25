@@ -1,6 +1,15 @@
 import { useEffect, useState, useMemo } from "react";
-import { Input, Button, Select, Typography, Card, Space, message, Tag, Radio } from "antd";
-import { ArrowLeftOutlined, EyeOutlined, EyeInvisibleOutlined, ReloadOutlined } from "@ant-design/icons";
+import { Input, Button, Select, Typography, Space, message, Tag, Radio } from "antd";
+import {
+  AppstoreOutlined,
+  ArrowLeftOutlined,
+  BulbFilled,
+  BulbOutlined,
+  DashboardOutlined,
+  EyeInvisibleOutlined,
+  EyeOutlined,
+  ReloadOutlined,
+} from "@ant-design/icons";
 import { Link, useNavigate } from "react-router-dom";
 import { useSettings } from "../hooks/useSettings";
 
@@ -8,7 +17,12 @@ const { Text } = Typography;
 
 const BUILTIN_MODELS: string[] = ["qwen-turbo"];
 
-export default function Settings() {
+interface Props {
+  isDark: boolean;
+  onToggleTheme: () => void;
+}
+
+export default function Settings({ isDark, onToggleTheme }: Props) {
   const { settings: saved, models, saving, load, loadModels, save } = useSettings();
   const navigate = useNavigate();
 
@@ -24,11 +38,13 @@ export default function Settings() {
   const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
-    load();
-  }, []);
+    void load();
+  }, [load]);
 
   useEffect(() => {
-    if (saved && !initialized) {
+    if (!saved || initialized) return;
+
+    const timer = window.setTimeout(() => {
       setApiKey(saved.dashscope_api_key || "");
       const isIntl = (saved.dashscope_base_url || "").includes("dashscope-intl");
       setRegion(isIntl ? "intl" : "china");
@@ -42,31 +58,30 @@ export default function Settings() {
         setSelectedModel(savedModel);
       }
       setInitialized(true);
-    }
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, [saved, initialized]);
 
-  // Merge builtin + API models, deduplicate
   const modelOptions = useMemo(() => {
     const apiModels = models?.models || [];
     const merged = [...new Set([...BUILTIN_MODELS, ...apiModels])];
     return [
       ...merged.map((m) => ({ value: m, label: m })),
-      { value: "__custom__", label: "✏️ Custom model..." },
+      { value: "__custom__", label: "Custom model..." },
     ];
   }, [models]);
 
-  // Filter options based on search text, and add custom typed value
   const filteredOptions = useMemo(() => {
     if (!searchText) return modelOptions;
     const filtered = modelOptions.filter((opt) =>
       opt.label.toLowerCase().includes(searchText.toLowerCase())
     );
-    // If typed text doesn't match any existing option exactly, offer to add it
     const exactMatch = modelOptions.some(
       (opt) => opt.value.toLowerCase() === searchText.toLowerCase()
     );
     if (!exactMatch && searchText.trim()) {
-      filtered.push({ value: searchText.trim(), label: `✏️ Use "${searchText.trim()}"` });
+      filtered.push({ value: searchText.trim(), label: `Use "${searchText.trim()}"` });
     }
     return filtered;
   }, [searchText, modelOptions]);
@@ -76,7 +91,7 @@ export default function Settings() {
     if (data) {
       setKeyStatus({ valid: data.key_valid, error: data.key_error });
       if (data.key_valid) {
-        message.success(`API Key valid — ${data.models.length} models synced.`);
+        message.success(`API key valid. ${data.models.length} models synced.`);
       }
     }
   };
@@ -91,6 +106,11 @@ export default function Settings() {
       setSelectedModel(val);
       setSearchText("");
     }
+  };
+
+  const handleRegionChange = (nextRegion: "china" | "intl") => {
+    setRegion(nextRegion);
+    setBaseUrl(nextRegion === "intl" ? "https://dashscope-intl.aliyuncs.com/api/v1" : "");
   };
 
   const handleSave = async () => {
@@ -122,120 +142,133 @@ export default function Settings() {
   };
 
   return (
-    <div className="settings-shell">
-      <div className="settings-header">
-        <Text type="secondary" style={{ letterSpacing: 1, fontSize: 11, fontWeight: 700, textTransform: "uppercase" }}>
-          FTSM-RAG
-        </Text>
-        <h1>Settings</h1>
-        <p>Configure your DashScope API credentials and model.</p>
-        <Link to="/" className="settings-back">
-          <ArrowLeftOutlined /> Back to Chat
-        </Link>
+    <div className="admin-shell settings-shell">
+      <div className="admin-header settings-header">
+        <div>
+          <Text type="secondary" className="page-kicker">FTSM-RAG</Text>
+          <h1>Settings</h1>
+          <p>Configure the DashScope API key, service region, and Qwen chat model.</p>
+        </div>
+        <Space wrap>
+          <Button icon={isDark ? <BulbFilled /> : <BulbOutlined />} onClick={onToggleTheme}>
+            {isDark ? "Light" : "Dark"}
+          </Button>
+          <Link to="/dashboard"><Button icon={<DashboardOutlined />}>Dashboard</Button></Link>
+          <Link to="/manage"><Button icon={<AppstoreOutlined />}>Manage</Button></Link>
+          <Link to="/"><Button icon={<ArrowLeftOutlined />}>Back to Chat</Button></Link>
+        </Space>
       </div>
 
-      <Card className="settings-card">
-        <Space orientation="vertical" size="middle" style={{ width: "100%" }}>
-          <div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-              <Text strong>DashScope API Key</Text>
-              <Tag color="red">Required</Tag>
-            </div>
-            <Text type="secondary" style={{ fontSize: 12, display: "block", marginBottom: 8 }}>
-              Used for the chat model, embeddings, and image text extraction.
-            </Text>
-            <Input
-              type={showKey ? "text" : "password"}
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              placeholder="sk-xxxxxxxxxxxxxxxx"
-              suffix={
-                <Button
-                  type="text"
-                  size="small"
-                  icon={showKey ? <EyeInvisibleOutlined /> : <EyeOutlined />}
-                  onClick={() => setShowKey(!showKey)}
-                />
-              }
-            />
-          </div>
+      <div className="settings-layout">
+        <section className="admin-panel settings-card">
+          <Space orientation="vertical" size="large" className="settings-stack">
+            <section>
+              <div className="panel-title-row">
+                <Text strong>DashScope API Key</Text>
+                <Tag color="red">Required</Tag>
+              </div>
+              <Text type="secondary" className="field-help">
+                Used for the chat model, embeddings, and image text extraction.
+              </Text>
+              <Input
+                type={showKey ? "text" : "password"}
+                value={apiKey}
+                onChange={(e) => setApiKey(e.target.value)}
+                placeholder="sk-xxxxxxxxxxxxxxxx"
+                suffix={
+                  <Button
+                    type="text"
+                    size="small"
+                    icon={showKey ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+                    onClick={() => setShowKey(!showKey)}
+                  />
+                }
+              />
+            </section>
 
-          <div>
-            <Text strong style={{ display: "block", marginBottom: 8 }}>Service Region</Text>
-            <Radio.Group
-              value={region}
-              onChange={(e) => setRegion(e.target.value)}
-              buttonStyle="solid"
-            >
-              <Radio.Button value="china">China (dashscope.aliyuncs.com)</Radio.Button>
-              <Radio.Button value="intl">International (dashscope-intl.aliyuncs.com)</Radio.Button>
-            </Radio.Group>
-          </div>
-
-          <div>
-            <Text strong style={{ display: "block", marginBottom: 8 }}>Chat Model</Text>
-            <Space style={{ width: "100%" }}>
-              {useCustomModel ? (
-                <Input
-                  value={customModel}
-                  onChange={(e) => setCustomModel(e.target.value)}
-                  placeholder="Enter model name, e.g. qwen-plus"
-                  style={{ minWidth: 280 }}
-                  onBlur={() => {
-                    if (!customModel.trim()) {
-                      setUseCustomModel(false);
-                      setSelectedModel("");
-                    }
-                  }}
-                />
-              ) : (
-                <Select
-                  showSearch
-                  value={selectedModel || undefined}
-                  onChange={handleModelChange}
-                  onSearch={setSearchText}
-                  onBlur={() => setSearchText("")}
-                  placeholder="Select or type a model"
-                  style={{ minWidth: 280 }}
-                  options={filteredOptions}
-                  filterOption={false}
-                  notFoundContent={searchText ? `Type Enter to use "${searchText}"` : "No models found"}
-                />
-              )}
-              <Button icon={<ReloadOutlined />} onClick={handleVerify}>
-                Verify Key
-              </Button>
-            </Space>
-            {useCustomModel && (
-              <Button
-                type="link"
-                size="small"
-                onClick={() => { setUseCustomModel(false); setCustomModel(""); }}
-                style={{ padding: 0, marginTop: 4 }}
+            <section>
+              <Text strong className="field-label">Service Region</Text>
+              <Radio.Group
+                className="settings-region-group"
+                value={region}
+                onChange={(e) => handleRegionChange(e.target.value)}
+                optionType="button"
+                buttonStyle="solid"
               >
-                ← Back to preset models
-              </Button>
-            )}
-            {keyStatus.valid === true && (
-              <Text type="success" style={{ display: "block", marginTop: 4, fontSize: 12 }}>
-                API Key valid — models synced.
+                <Radio.Button value="china">China</Radio.Button>
+                <Radio.Button value="intl">International</Radio.Button>
+              </Radio.Group>
+              <Text type="secondary" className="field-help">
+                China uses the default DashScope endpoint. International uses DashScope Intl.
               </Text>
-            )}
-            {keyStatus.valid === false && (
-              <Text type="danger" style={{ display: "block", marginTop: 4, fontSize: 12 }}>
-                {keyStatus.error || "Invalid API Key."}
-              </Text>
-            )}
-            <Text type="secondary" style={{ display: "block", marginTop: 4, fontSize: 11 }}>
-              {BUILTIN_MODELS.length} preset models available. You can also type a custom model name.
-            </Text>
-          </div>
+            </section>
 
-          <Button type="primary" onClick={handleSave} loading={saving} block>
-            Save & apply
-          </Button>
-        </Space>
-      </Card>
+            <section>
+              <Text strong className="field-label">Chat Model</Text>
+              <Space.Compact className="settings-model-row">
+                {useCustomModel ? (
+                  <Input
+                    value={customModel}
+                    onChange={(e) => setCustomModel(e.target.value)}
+                    placeholder="Enter model name, e.g. qwen-plus"
+                    onBlur={() => {
+                      if (!customModel.trim()) {
+                        setUseCustomModel(false);
+                        setSelectedModel("");
+                      }
+                    }}
+                  />
+                ) : (
+                  <Select
+                    showSearch
+                    value={selectedModel || undefined}
+                    onChange={handleModelChange}
+                    onSearch={setSearchText}
+                    onBlur={() => setSearchText("")}
+                    placeholder="Select or type a model"
+                    options={filteredOptions}
+                    filterOption={false}
+                    notFoundContent={searchText ? `Type Enter to use "${searchText}"` : "No models found"}
+                  />
+                )}
+                <Button icon={<ReloadOutlined />} onClick={handleVerify}>
+                  Verify
+                </Button>
+              </Space.Compact>
+              {useCustomModel && (
+                <Button
+                  type="link"
+                  size="small"
+                  onClick={() => { setUseCustomModel(false); setCustomModel(""); }}
+                  className="settings-link-button"
+                >
+                  Back to preset models
+                </Button>
+              )}
+              {keyStatus.valid === true && (
+                <Text type="success" className="field-help">API key valid. Models synced.</Text>
+              )}
+              {keyStatus.valid === false && (
+                <Text type="danger" className="field-help">{keyStatus.error || "Invalid API key."}</Text>
+              )}
+            </section>
+
+            <Button type="primary" onClick={handleSave} loading={saving} block>
+              Save and apply
+            </Button>
+          </Space>
+        </section>
+
+        <aside className="admin-panel settings-side-panel">
+          <Text strong>Current Setup</Text>
+          <div className="info-grid settings-info-grid">
+            <div><Text type="secondary">Region</Text><strong>{region === "intl" ? "International" : "China"}</strong></div>
+            <div><Text type="secondary">Endpoint</Text><strong>{baseUrl || "Default"}</strong></div>
+            <div><Text type="secondary">Model</Text><strong>{useCustomModel ? customModel || "-" : selectedModel || "-"}</strong></div>
+            <div><Text type="secondary">Synced Models</Text><strong>{models?.models.length ?? 0}</strong></div>
+          </div>
+        </aside>
+      </div>
     </div>
   );
 }

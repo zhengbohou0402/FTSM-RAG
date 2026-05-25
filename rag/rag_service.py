@@ -8,6 +8,7 @@ RAG 摘要服务：检索参考文档，并将问题与上下文一并发送给�
 """
 
 import os
+import re
 import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
@@ -30,6 +31,63 @@ _VECTOR_K = 12
 _BM25_K = 12
 # Reranker 最终保留 top-N 给 LLM（0 = 禁用 reranker）
 _RERANK_TOP_N = 6
+
+NO_ANSWER_MESSAGE = (
+    "The available UKM FTSM knowledge base does not contain enough confirmed "
+    "information to answer this question. Please verify through the official "
+    "FTSM or UKM channels."
+)
+
+OFFICIAL_SOURCE_PATTERNS = (
+    "ftsm_official_website",
+    "academic_calendar",
+    "semester2_exam_schedule",
+    "master_coursemode_timetable",
+    "programmes_and_admissions",
+    "facilities_and_services",
+    "industrial_training_and_contacts",
+    "advisors_and_academic_staff",
+    "advisors_expertise_index",
+    "ukm_campus_bus_routes_guide",
+)
+
+COMMUNITY_SOURCE_PATTERNS = (
+    "student_portal",
+    "community",
+)
+
+STOP_WORDS = {
+    "about",
+    "after",
+    "again",
+    "also",
+    "and",
+    "are",
+    "can",
+    "check",
+    "does",
+    "for",
+    "from",
+    "give",
+    "how",
+    "information",
+    "into",
+    "list",
+    "me",
+    "need",
+    "please",
+    "show",
+    "student",
+    "tell",
+    "the",
+    "this",
+    "to",
+    "what",
+    "when",
+    "where",
+    "which",
+    "with",
+}
 
 
 def _rrf_fuse(
@@ -76,6 +134,103 @@ def _rerank(query: str, docs: list[Document], top_n: int) -> list[Document]:
     except Exception:
         pass
     return docs[:top_n]
+
+
+def _doc_source_name(doc: Document) -> str:
+    metadata = doc.metadata or {}
+    file_path = str(metadata.get("file_path") or metadata.get("source") or "")
+    file_name = Path(file_path).name if file_path else ""
+    return (
+        str(metadata.get("filename") or "")
+        or str(metadata.get("title") or "")
+        or file_name
+        or "unknown"
+    ).lower()
+
+
+def _source_priority(doc: Document) -> int:
+    metadata = doc.metadata or {}
+    raw_priority = metadata.get("source_priority")
+    try:
+        if raw_priority not in (None, ""):
+            return int(raw_priority)
+    except (TypeError, ValueError):
+        pass
+
+    source_type = str(metadata.get("source_type") or "").lower()
+    if source_type == "official":
+        return 1
+    if source_type == "scraped_website":
+        return 2
+    if source_type == "community_guide":
+        return 3
+    if source_type == "generated_summary":
+        return 4
+
+    name = _doc_source_name(doc)
+    if "ftsm_official_website" in name:
+        return 2
+    if any(pattern in name for pattern in OFFICIAL_SOURCE_PATTERNS):
+        return 1
+    if any(pattern in name for pattern in COMMUNITY_SOURCE_PATTERNS):
+        return 3
+    return 2
+
+
+def _apply_source_weight(docs: list[Document]) -> list[Document]:
+    """
+    Add a small authority adjustment after semantic reranking.
+    The original rank remains dominant; this prevents an official but less relevant
+    chunk from jumping ahead of a clearly better community/student-guide chunk.
+    """
+    def adjusted_rank(item: tuple[int, Document]) -> float:
+        rank, doc = item
+        priority = _source_priority(doc)
+        if priority == 1:
+            return rank - 0.25
+        if priority >= 3:
+            return rank + 0.15
+        return float(rank)
+
+    weighted = sorted(
+        enumerate(docs),
+        key=adjusted_rank,
+    )
+    return [doc for _, doc in weighted]
+
+
+def _query_terms(query: str) -> set[str]:
+    terms = {
+        token.lower()
+        for token in re.findall(r"[a-zA-Z0-9]+", query)
+        if len(token) > 2 and token.lower() not in STOP_WORDS
+    }
+    for phrase in re.findall(r"[\u4e00-\u9fff]{2,}", query):
+        if len(phrase) <= 4:
+            terms.add(phrase)
+        else:
+            terms.update(phrase[i : i + 2] for i in range(len(phrase) - 1))
+    return terms
+
+
+def _has_retrieval_signal(query: str, docs: list[Document]) -> bool:
+    if not docs:
+        return False
+
+    terms = _query_terms(query)
+    if not terms:
+        return True
+
+    top_text = "\n".join(
+        (doc.page_content or "").lower()
+        for doc in docs[: min(3, len(docs))]
+    )
+    overlap = sum(1 for term in terms if term.lower() in top_text)
+    required_overlap = 1 if len(terms) <= 2 else 2
+    if overlap >= required_overlap:
+        return True
+
+    return len(terms) <= 2 and _source_priority(docs[0]) <= 2
 
 
 class RagSummarizeService(object):
@@ -176,9 +331,9 @@ class RagSummarizeService(object):
 
         # ③ Reranker 精排
         if _RERANK_TOP_N > 0 and fused:
-            return _rerank(query, fused, _RERANK_TOP_N)
+            return _apply_source_weight(_rerank(query, fused, _RERANK_TOP_N))
 
-        return fused[:max(_RERANK_TOP_N, 6)]
+        return _apply_source_weight(fused[:max(_RERANK_TOP_N, 6)])
 
     # ── 格式化 ────────────────────────────────────────────────────────────────
 
@@ -203,6 +358,52 @@ class RagSummarizeService(object):
             or file_name
             or "Unknown source"
         )
+
+    @staticmethod
+    def _source_trust_label(doc: Document) -> str:
+        metadata = doc.metadata or {}
+        label = str(metadata.get("source_trust_label") or "").strip()
+        if label:
+            return label
+
+        source_type = str(metadata.get("source_type") or "").lower()
+        if source_type == "official":
+            return "Official material"
+        if source_type == "scraped_website":
+            return "Scraped official website"
+        if source_type == "community_guide":
+            return "Student guide"
+        if source_type == "generated_summary":
+            return "Generated summary"
+
+        name = RagSummarizeService._source_name(doc).lower()
+        if "ftsm_official_website" in name:
+            return "Scraped official website"
+        if "student_portal" in name:
+            return "Student guide"
+        if "index" in name:
+            return "Generated summary"
+        return "Official material"
+
+    def format_source_reliability(self, docs: list[Document], limit: int = MAX_SOURCES) -> str:
+        counts: dict[str, int] = {}
+        seen: set[tuple[str, str]] = set()
+        for doc in docs:
+            metadata = doc.metadata or {}
+            doc_id = str(metadata.get("doc_id") or self._source_name(doc))
+            chunk_index = str(metadata.get("chunk_index", ""))
+            key = (doc_id, chunk_index)
+            if key in seen:
+                continue
+            seen.add(key)
+            label = self._source_trust_label(doc)
+            counts[label] = counts.get(label, 0) + 1
+            if len(seen) >= limit:
+                break
+        if not counts:
+            return ""
+        parts = [f"{label}: {count}" for label, count in sorted(counts.items())]
+        return "Source reliability: " + "; ".join(parts) + "."
 
     @staticmethod
     def _source_excerpt(text: str) -> str:
@@ -232,20 +433,27 @@ class RagSummarizeService(object):
                 continue
             seen.add(key)
             name = self._source_name(doc)
+            trust_label = self._source_trust_label(doc)
             chunk_label = f", chunk {chunk_index}" if chunk_index != "" else ""
             excerpt = self._source_excerpt(doc.page_content)
-            lines.append(f"- [{len(lines) + 1}] {name}{chunk_label}: {excerpt}")
+            lines.append(
+                f"- [{len(lines) + 1}] {name} [{trust_label}]{chunk_label}: {excerpt}"
+            )
             if len(lines) >= limit:
                 break
         return "\n".join(lines)
 
     def rag_summarize(self, query: str) -> str:
         context_docs = self.retriever_docs(query)
+        if not _has_retrieval_signal(query, context_docs):
+            return NO_ANSWER_MESSAGE
         context = self._build_context(context_docs)
         answer = self._get_chain().invoke({"input": query, "context": context}).strip()
+        reliability = self.format_source_reliability(context_docs)
         sources = self.format_sources(context_docs)
         if sources:
-            return f"{answer}\n\nSources:\n{sources}"
+            reliability_block = f"\n\n{reliability}" if reliability else ""
+            return f"{answer}{reliability_block}\n\nSources:\n{sources}"
         return answer
 
 

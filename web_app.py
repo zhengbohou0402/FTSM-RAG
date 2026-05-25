@@ -9,7 +9,7 @@ from uuid import uuid4
 from dotenv import load_dotenv
 from fastapi import FastAPI, File, HTTPException, Query, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, StreamingResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field
@@ -55,12 +55,15 @@ from services.settings_service import (  # noqa: E402
 )
 from utils.config_handler import chroma_conf  # noqa: E402
 from utils.conversation_store import ConversationStore  # noqa: E402
+from utils.indexing_lock import indexing_lock  # noqa: E402
 from utils.path_tool import get_abs_path  # noqa: E402
 from utils.scheduler import get_status as scheduler_status  # noqa: E402
 from utils.scheduler import start_scheduler, stop_scheduler  # noqa: E402
 from utils.semantic_cache import SemanticCache  # noqa: E402
 
 WEB_DIR = _BUNDLE_DIR / "web"
+REACT_DIST_DIR = _BUNDLE_DIR / "desktop" / "dist"
+REACT_INDEX = REACT_DIST_DIR / "index.html"
 
 # ── 知识库 ──
 DATA_DIR = Path(get_abs_path(chroma_conf["data_path"]))
@@ -100,11 +103,11 @@ def _training_worker() -> None:
         should_continue = False
         try:
             from rag.vector_store import VectorStoreService
-            vs = VectorStoreService()
-            vs.load_document()
+            with indexing_lock:
+                vs = VectorStoreService()
+                vs.load_document()
             # 知识库更新后重置 RAG 单例，确保 BM25 索引随新文档重建
-            from agent.tools.agent_tools import reset_rag_service
-            reset_rag_service()
+            _reset_agent()
             with _TRAINING_LOCK:
                 _TRAINING_STATE["running"] = False
                 _TRAINING_STATE["last_result"] = "success"
@@ -139,6 +142,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.mount("/static", StaticFiles(directory=WEB_DIR / "static"), name="static")
+if (REACT_DIST_DIR / "assets").exists():
+    app.mount("/assets", StaticFiles(directory=REACT_DIST_DIR / "assets"), name="react_assets")
 templates = Jinja2Templates(directory=str(WEB_DIR / "templates"))
 
 _agent: ReactAgent | None = None
@@ -167,6 +172,17 @@ def _reset_agent() -> None:
         _agent = None
 
 
+def _cache_namespace() -> str:
+    from model.factory import resolve_chat_model_name
+    from rag.ingestion import load_manifest
+
+    env = _parse_env_file(_env_path)
+    base_url = env.get("DASHSCOPE_BASE_URL", "").strip() or os.getenv("DASHSCOPE_BASE_URL", "").strip()
+    region = "intl" if "intl" in base_url else "china"
+    index_version = (load_manifest().get("index") or {}).get("version", 0)
+    return f"v2|region={region}|chat={resolve_chat_model_name()}|index={index_version}"
+
+
 def _dashscope_configured() -> bool:
     """是否已在应用目录的 .env 中写入 API Key。
 
@@ -175,6 +191,14 @@ def _dashscope_configured() -> bool:
     """
     env = parse_env_file(_env_path)
     return bool(env.get("DASHSCOPE_API_KEY", "").strip())
+
+
+def _react_web_available() -> bool:
+    return REACT_INDEX.exists()
+
+
+def _react_web_response() -> FileResponse:
+    return FileResponse(REACT_INDEX)
 
 
 class ChatRequest(BaseModel):
@@ -187,7 +211,7 @@ class ChatRequest(BaseModel):
 @app.on_event("startup")
 async def _startup() -> None:
     DATA_DIR.mkdir(parents=True, exist_ok=True)
-    start_scheduler()
+    start_scheduler(on_index_updated=_reset_agent)
 
 
 @app.on_event("shutdown")
@@ -215,25 +239,42 @@ async def scheduler_status_api() -> JSONResponse:
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
+    if _react_web_available():
+        return _react_web_response()
+
     # 若未配置 API Key，自动跳转到设置页
-    if not _dashscope_configured():
-        return RedirectResponse("/settings", status_code=302)
-    return templates.TemplateResponse(request, "index.html", {})
+    return templates.TemplateResponse(request, "legacy.html", {})
 
 
 @app.get("/manage", response_class=HTMLResponse)
 async def manage(request: Request) -> HTMLResponse:
-    return templates.TemplateResponse(request, "admin.html", {})
+    if _react_web_available():
+        return _react_web_response()
+    return templates.TemplateResponse(request, "legacy.html", {})
 
 
 @app.get("/dashboard", response_class=HTMLResponse)
 async def dashboard(request: Request) -> HTMLResponse:
-    return templates.TemplateResponse(request, "dashboard.html", {})
+    if _react_web_available():
+        return _react_web_response()
+    return templates.TemplateResponse(request, "legacy.html", {})
 
 
 @app.get("/settings", response_class=HTMLResponse)
 async def settings_page(request: Request) -> HTMLResponse:
-    return templates.TemplateResponse(request, "settings.html", {})
+    if _react_web_available():
+        return _react_web_response()
+    return templates.TemplateResponse(request, "legacy.html", {})
+
+
+@app.get("/legacy", response_class=HTMLResponse)
+async def legacy_index(request: Request):
+    return templates.TemplateResponse(request, "legacy.html", {})
+
+
+@app.get("/legacy/{legacy_path:path}", response_class=HTMLResponse)
+async def legacy_fallback(request: Request, legacy_path: str) -> HTMLResponse:
+    return templates.TemplateResponse(request, "legacy.html", {})
 
 
 # ── 设置（单机版，无保护） ──
@@ -503,10 +544,15 @@ async def cache_stats() -> JSONResponse:
 @app.get("/api/knowledge/stats")
 async def knowledge_stats() -> JSONResponse:
     """知识库概览：文档数、manifest 记录数、chunk 总数、最近索引时间、缓存条目数。"""
-    from rag.ingestion import load_manifest
+    from rag.ingestion import compute_index_state, load_manifest, save_manifest
 
     manifest = load_manifest()
     docs_in_manifest = manifest.get("documents", {})
+    index_state = manifest.get("index") or compute_index_state(manifest)
+    if not index_state.get("source_type_counts"):
+        index_state = compute_index_state(manifest, previous_state=index_state)
+        manifest["index"] = index_state
+        save_manifest(manifest)
 
     total_chunks = sum(
         len(record.get("chunk_ids", []))
@@ -520,13 +566,18 @@ async def knowledge_stats() -> JSONResponse:
             last_indexed = at
 
     file_docs = list_knowledge_documents(DATA_DIR, ALLOWED_UPLOAD_EXTENSIONS)
+    source_type_counts = index_state.get("source_type_counts") or {}
 
     return JSONResponse({
         "document_count": len(file_docs),
         "manifest_records": len(docs_in_manifest),
-        "total_chunks": total_chunks,
-        "last_indexed": last_indexed,
+        "total_chunks": index_state.get("total_chunks", total_chunks),
+        "last_indexed": index_state.get("last_indexed") or last_indexed,
         "cache_entries": semantic_cache.stats().get("size", 0),
+        "index_version": index_state.get("version", 0),
+        "index_updated_at": index_state.get("updated_at"),
+        "index_last_error": index_state.get("last_error"),
+        "source_type_counts": source_type_counts,
     })
 
 
@@ -553,6 +604,7 @@ async def chat(payload: ChatRequest) -> StreamingResponse:
             conversation_store=conv_store,
             semantic_cache=semantic_cache,
             get_agent=_get_agent,
+            cache_namespace=_cache_namespace,
             max_history_turns=MAX_HISTORY_TURNS,
         ),
         media_type="text/plain; charset=utf-8",
@@ -562,3 +614,10 @@ async def chat(payload: ChatRequest) -> StreamingResponse:
             "X-Conversation-Id": conversation_id,
         },
     )
+
+
+@app.get("/{full_path:path}", response_class=HTMLResponse)
+async def spa_fallback(full_path: str) -> FileResponse:
+    if full_path.startswith("api/") or "." in Path(full_path).name or not _react_web_available():
+        raise HTTPException(status_code=404, detail="Not found")
+    return _react_web_response()

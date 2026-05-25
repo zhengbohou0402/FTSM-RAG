@@ -1,8 +1,10 @@
 import { useState, useCallback } from "react";
 import { api } from "../api/client";
-import type { Message } from "../api/client";
+import type { Message, Source } from "../api/client";
 
 const THINK_RE = /__THINK__([\s\S]*?)__ENDTHINK__/g;
+const SOURCES_RE = /\n\nSources:\n([\s\S]+)$/;
+const SOURCE_LINE_RE = /^- \[(\d+)\] (.+?)(?: \[(.+?)\])?(?:, chunk (\d+))?: (.+)$/;
 
 function parseThinking(raw: string): { thinking: string[]; clean: string } {
   const thinking: string[] = [];
@@ -11,6 +13,46 @@ function parseThinking(raw: string): { thinking: string[]; clean: string } {
     return "";
   });
   return { thinking, clean: clean.trim() };
+}
+
+function parseSources(raw: string): { content: string; sources?: Source[] } {
+  const match = raw.match(SOURCES_RE);
+  if (!match) return { content: raw.trim() };
+
+  const sourceLines = match[1]
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.startsWith("- ["));
+
+  const sources = sourceLines
+    .map((line): Source | null => {
+      const parsed = line.match(SOURCE_LINE_RE);
+      if (!parsed) return null;
+      const source: Source = {
+        file: parsed[2].trim(),
+        chunk_index: Number(parsed[4] ?? 0),
+        excerpt: parsed[5].trim(),
+      };
+      if (parsed[3]?.trim()) {
+        source.source_type = parsed[3].trim();
+      }
+      return source;
+    })
+    .filter((source): source is Source => source !== null);
+
+  if (!sources.length) return { content: raw.trim() };
+  return { content: raw.slice(0, raw.length - match[0].length).trim(), sources };
+}
+
+function parseAssistantMessage(raw: string): Message {
+  const parsedThinking = parseThinking(raw);
+  const parsedSources = parseSources(parsedThinking.clean);
+  return {
+    role: "assistant",
+    content: parsedSources.content,
+    thinking: parsedThinking.thinking.length > 0 ? parsedThinking.thinking : undefined,
+    sources: parsedSources.sources,
+  };
 }
 
 export function useChat() {
@@ -37,14 +79,10 @@ export function useChat() {
           const { done, value } = await reader.read();
           if (done) break;
           rawContent += decoder.decode(value, { stream: true });
-          const parsed = parseThinking(rawContent);
+          const parsed = parseAssistantMessage(rawContent);
           setMessages((prev) => {
             const copy = [...prev];
-            copy[copy.length - 1] = {
-              role: "assistant" as const,
-              content: parsed.clean,
-              thinking: parsed.thinking.length > 0 ? parsed.thinking : undefined,
-            };
+            copy[copy.length - 1] = parsed;
             return copy;
           });
         }
@@ -76,8 +114,7 @@ export function useChat() {
       // Parse thinking blocks from loaded messages too
       const parsed = (conv.messages || []).map((msg) => {
         if (msg.role === "assistant" && !msg.thinking) {
-          const result = parseThinking(msg.content);
-          return { ...msg, content: result.clean || msg.content, thinking: result.thinking.length > 0 ? result.thinking : undefined };
+          return parseAssistantMessage(msg.content);
         }
         return msg;
       });

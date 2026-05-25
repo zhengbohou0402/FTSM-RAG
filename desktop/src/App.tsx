@@ -54,9 +54,9 @@ function AppRoutes({ isDark, onToggleTheme }: { isDark: boolean; onToggleTheme: 
       />
       <Routes>
         <Route path="/" element={<Chat isDark={isDark} onToggleTheme={onToggleTheme} />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/manage" element={<Manage />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/settings" element={<Settings isDark={isDark} onToggleTheme={onToggleTheme} />} />
+        <Route path="/manage" element={<Manage isDark={isDark} onToggleTheme={onToggleTheme} />} />
+        <Route path="/dashboard" element={<Dashboard isDark={isDark} onToggleTheme={onToggleTheme} />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </>

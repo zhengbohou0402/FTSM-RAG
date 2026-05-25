@@ -1,6 +1,18 @@
 import { useEffect, useState, useCallback } from "react";
 import { Button, Typography, Space, Progress } from "antd";
-import { ReloadOutlined, ArrowLeftOutlined, SettingOutlined, AppstoreOutlined } from "@ant-design/icons";
+import {
+  AppstoreOutlined,
+  ArrowLeftOutlined,
+  BulbFilled,
+  BulbOutlined,
+  DatabaseOutlined,
+  FileSearchOutlined,
+  MessageOutlined,
+  ReloadOutlined,
+  RobotOutlined,
+  SearchOutlined,
+  SettingOutlined,
+} from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import { api } from "../api/client";
 import type { KnowledgeStats, CacheStats, TrainingStatus, SchedulerStatus } from "../api/client";
@@ -9,8 +21,13 @@ import StatusBadge from "../components/StatusBadge";
 
 const { Text } = Typography;
 
+interface Props {
+  isDark: boolean;
+  onToggleTheme: () => void;
+}
+
 function fmtPast(iso: string | null): string {
-  if (!iso) return "—";
+  if (!iso) return "-";
   const diff = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
   if (diff < 60) return "just now";
   if (diff < 3600) return Math.floor(diff / 60) + "m ago";
@@ -19,7 +36,7 @@ function fmtPast(iso: string | null): string {
 }
 
 function fmtFuture(iso: string | null): string {
-  if (!iso) return "—";
+  if (!iso) return "-";
   const diff = (new Date(iso).getTime() - Date.now()) / 1000;
   if (diff <= 0) return "due now";
   if (diff < 3600) return "in " + Math.ceil(diff / 60) + "m";
@@ -27,7 +44,17 @@ function fmtFuture(iso: string | null): string {
   return "in " + Math.ceil(diff / 86400) + "d";
 }
 
-export default function Dashboard() {
+function sourceTypeLabel(sourceType: string): string {
+  const labels: Record<string, string> = {
+    official: "Official",
+    community_guide: "Student Guide",
+    scraped_website: "Scraped Website",
+    generated_summary: "Generated Summary",
+  };
+  return labels[sourceType] || sourceType || "Unknown";
+}
+
+export default function Dashboard({ isDark, onToggleTheme }: Props) {
   const [kb, setKb] = useState<KnowledgeStats | null>(null);
   const [cache, setCache] = useState<CacheStats | null>(null);
   const [training, setTraining] = useState<TrainingStatus | null>(null);
@@ -50,15 +77,22 @@ export default function Dashboard() {
       setScheduler(schedData);
       setConvCount(convs.items.length);
     } catch {
-      // ignore
+      // keep previous values visible
     }
     setUpdatedAt(new Date().toLocaleTimeString());
   }, []);
 
   useEffect(() => {
-    loadAll();
-    const interval = setInterval(loadAll, 30000);
-    return () => clearInterval(interval);
+    const initial = window.setTimeout(() => {
+      void loadAll();
+    }, 0);
+    const interval = window.setInterval(() => {
+      void loadAll();
+    }, 30000);
+    return () => {
+      window.clearTimeout(initial);
+      window.clearInterval(interval);
+    };
   }, [loadAll]);
 
   const trainStatus: "running" | "idle" | "error" | "success" =
@@ -67,17 +101,27 @@ export default function Dashboard() {
     training?.last_error ? "error" :
     training?.last_result === "success" ? "success" : "idle";
 
+  const pipeline = [
+    { icon: <MessageOutlined />, label: "User Query", sub: "question + history" },
+    { icon: <SearchOutlined />, label: "Vector Search", sub: "semantic retrieval" },
+    { icon: <FileSearchOutlined />, label: "BM25 Search", sub: "keyword retrieval" },
+    { icon: <DatabaseOutlined />, label: "RRF Fusion", sub: "merge candidates" },
+    { icon: <DatabaseOutlined />, label: "Source Trust", sub: "authority weighting" },
+    { icon: <RobotOutlined />, label: "LLM Answer", sub: "Qwen response" },
+  ];
+
   return (
-    <div className="dash-shell">
-      <div className="dash-header">
+    <div className="admin-shell dash-shell">
+      <div className="admin-header dash-header">
         <div>
-          <Text type="secondary" style={{ letterSpacing: 1, fontSize: 11, fontWeight: 700, textTransform: "uppercase" }}>
-            FTSM-RAG
-          </Text>
-          <h1 style={{ margin: 0 }}>System Dashboard</h1>
-          <p>Real-time metrics for knowledge base, cache and indexing.</p>
+          <Text type="secondary" className="page-kicker">FTSM-RAG</Text>
+          <h1>System Dashboard</h1>
+          <p>Monitor retrieval, knowledge-base indexing, cache usage, and crawler scheduling.</p>
         </div>
-        <Space>
+        <Space wrap>
+          <Button icon={isDark ? <BulbFilled /> : <BulbOutlined />} onClick={onToggleTheme}>
+            {isDark ? "Light" : "Dark"}
+          </Button>
           <Button icon={<ReloadOutlined />} onClick={loadAll}>Refresh</Button>
           <Link to="/manage"><Button icon={<AppstoreOutlined />}>Manage</Button></Link>
           <Link to="/settings"><Button icon={<SettingOutlined />}>Settings</Button></Link>
@@ -85,83 +129,107 @@ export default function Dashboard() {
         </Space>
       </div>
 
-      {/* Pipeline */}
-      <div className="dash-section">
-        <Text strong style={{ fontSize: 12, textTransform: "uppercase", letterSpacing: 0.5, color: "#888" }}>
-          Retrieval Pipeline
-        </Text>
+      <section className="admin-section">
+        <Text strong className="section-kicker">Retrieval Pipeline</Text>
         <div className="pipeline">
-          {[
-            { icon: "❓", label: "User Query", sub: "multi-query expansion" },
-            { icon: "🔍", label: "Vector Search", sub: "ChromaDB k=12" },
-            { icon: "📝", label: "BM25 Search", sub: "keyword k=12" },
-            { icon: "⚖️", label: "RRF Fusion", sub: "merge & re-rank" },
-            { icon: "🏆", label: "Reranker", sub: "gte-rerank-v2 top-6" },
-            { icon: "🤖", label: "LLM Answer", sub: "Qwen" },
-          ].map((step, idx) => (
-            <span key={idx} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+          {pipeline.map((step, idx) => (
+            <div className="pipeline-item" key={step.label}>
               <div className="pipeline-step">
                 <div className="pipeline-step-icon">{step.icon}</div>
                 <div className="pipeline-step-label">{step.label}</div>
                 <div className="pipeline-step-sub">{step.sub}</div>
               </div>
-              {idx < 5 && <span className="pipeline-arrow">›</span>}
-            </span>
+              {idx < pipeline.length - 1 && <div className="pipeline-arrow">→</div>}
+            </div>
           ))}
         </div>
-      </div>
+      </section>
 
-      {/* Knowledge Base */}
-      <div className="dash-section">
-        <Text strong style={{ fontSize: 12, textTransform: "uppercase", letterSpacing: 0.5, color: "#888" }}>
-          Knowledge Base
-        </Text>
+      <section className="admin-section">
+        <Text strong className="section-kicker">Knowledge Base</Text>
         <div className="stats-grid">
-          <StatsCard label="Documents" value={kb?.document_count ?? "—"} sub="uploaded files" accent="blue" />
-          <StatsCard label="Vector Chunks" value={kb?.total_chunks ?? "—"} sub="indexed in Chroma" accent="purple" />
-          <StatsCard label="Manifest Records" value={kb?.manifest_records ?? "—"} sub="processed docs" accent="blue" />
+          <StatsCard label="Documents" value={kb?.document_count ?? "-"} sub="uploaded files" accent="blue" />
+          <StatsCard label="Vector Chunks" value={kb?.total_chunks ?? "-"} sub="indexed in Chroma" accent="purple" />
+          <StatsCard label="Index Version" value={kb?.index_version ?? "-"} sub="manifest version" accent="green" />
           <StatsCard
             label="Last Indexed"
             value={fmtPast(kb?.last_indexed ?? null)}
             sub={kb?.last_indexed ? new Date(kb.last_indexed).toLocaleString() : undefined}
           />
         </div>
-      </div>
+      </section>
 
-      {/* Semantic Cache */}
-      <div className="dash-section">
-        <Text strong style={{ fontSize: 12, textTransform: "uppercase", letterSpacing: 0.5, color: "#888" }}>
-          Semantic Cache
-        </Text>
-        <div style={{ background: "#fff", padding: "12px 16px", borderRadius: 12, marginBottom: 12, border: "1px solid #e5e7eb" }}>
-          <Text strong style={{ display: "block", marginBottom: 8 }}>Cache Hit Rate (since last restart)</Text>
-          <Progress percent={Math.round((cache?.hit_rate || 0) * 100)} />
-        </div>
-        <div className="stats-grid">
-          <StatsCard label="Cache Hits" value={cache?.hit_count ?? "—"} sub="saved LLM calls" accent="green" />
-          <StatsCard label="Cache Misses" value={cache?.miss_count ?? "—"} sub="new LLM calls" accent="amber" />
-          <StatsCard label="Cached Entries" value={cache?.size ?? "—"} sub={`${cache?.valid ?? "—"} valid`} />
-          <StatsCard label="Threshold" value={cache?.threshold ?? "—"} sub="cosine similarity" accent="blue" />
-        </div>
-      </div>
+      <section className="admin-section">
+        <Text strong className="section-kicker">Source Trust And Index Version</Text>
+        <div className="dash-two-column">
+          <div className="admin-panel">
+            <div className="panel-title-row">
+              <Text strong>Source Type Distribution</Text>
+              <Text type="secondary">{kb?.manifest_records ?? "-"} records</Text>
+            </div>
+            <div className="source-type-grid">
+              {Object.entries(kb?.source_type_counts || {}).map(([type, count]) => (
+                <div className="source-type-row" key={type}>
+                  <span>{sourceTypeLabel(type)}</span>
+                  <strong>{count}</strong>
+                </div>
+              ))}
+              {Object.keys(kb?.source_type_counts || {}).length === 0 && (
+                <Text type="secondary">No source types recorded yet.</Text>
+              )}
+            </div>
+          </div>
 
-      {/* Indexing Worker */}
-      <div className="dash-section">
-        <Text strong style={{ fontSize: 12, textTransform: "uppercase", letterSpacing: 0.5, color: "#888" }}>
-          Indexing Worker
-        </Text>
-        <div className="dash-info-card">
-          <div><Text type="secondary">Status</Text><div><StatusBadge status={trainStatus} /></div></div>
-          <div><Text type="secondary">Last Result</Text><div><Text strong>{training?.last_result || "—"}</Text></div></div>
-          <div><Text type="secondary">Last Error</Text><div><Text type="danger" style={{ fontSize: 12 }}>{training?.last_error || "—"}</Text></div></div>
+          <div className="admin-panel">
+            <div className="panel-title-row">
+              <Text strong>Index Version State</Text>
+              <StatusBadge status={kb?.index_last_error ? "error" : "success"} />
+            </div>
+            <div className="info-grid">
+              <div>
+                <Text type="secondary">Updated At</Text>
+                <strong>{kb?.index_updated_at ? new Date(kb.index_updated_at).toLocaleString() : "-"}</strong>
+              </div>
+              <div>
+                <Text type="secondary">Last Error</Text>
+                <strong>{kb?.index_last_error || "-"}</strong>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+      </section>
 
-      {/* Conversations & Scheduler */}
-      <div className="dash-section">
-        <Text strong style={{ fontSize: 12, textTransform: "uppercase", letterSpacing: 0.5, color: "#888" }}>
-          Conversations & Scheduler
-        </Text>
+      <section className="admin-section">
+        <Text strong className="section-kicker">Cache And Workers</Text>
+        <div className="dash-two-column">
+          <div className="admin-panel">
+            <div className="panel-title-row">
+              <Text strong>Semantic Cache</Text>
+              <Text type="secondary">{cache?.size ?? "-"} entries</Text>
+            </div>
+            <Progress percent={Math.round((cache?.hit_rate || 0) * 100)} />
+            <div className="stats-grid compact-stats-grid">
+              <StatsCard label="Hits" value={cache?.hit_count ?? "-"} accent="green" />
+              <StatsCard label="Misses" value={cache?.miss_count ?? "-"} accent="amber" />
+              <StatsCard label="Threshold" value={cache?.threshold ?? "-"} />
+            </div>
+          </div>
+
+          <div className="admin-panel worker-panel">
+            <div className="panel-title-row">
+              <Text strong>Indexing Worker</Text>
+              <StatusBadge status={trainStatus} />
+            </div>
+            <div className="info-grid">
+              <div><Text type="secondary">Last Result</Text><strong>{training?.last_result || "-"}</strong></div>
+              <div><Text type="secondary">Last Error</Text><strong>{training?.last_error || "-"}</strong></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="admin-section">
+        <Text strong className="section-kicker">Conversations And Crawler</Text>
         <div className="stats-grid">
           <StatsCard label="Conversations" value={convCount} sub="stored on disk" accent="blue" />
           <StatsCard
@@ -172,13 +240,13 @@ export default function Dashboard() {
           <StatsCard
             label="Last Crawl"
             value={fmtPast(scheduler?.last_run ?? null)}
-            sub={scheduler?.next_run ? `next: ${fmtFuture(scheduler.next_run)}` : "—"}
+            sub={scheduler?.next_run ? `next: ${fmtFuture(scheduler.next_run)}` : "-"}
           />
         </div>
-      </div>
+      </section>
 
-      <div style={{ textAlign: "right", marginTop: 24 }}>
-        <Text type="secondary">Last updated: {updatedAt}</Text>
+      <div className="admin-updated">
+        <Text type="secondary">Last updated: {updatedAt || "-"}</Text>
       </div>
     </div>
   );

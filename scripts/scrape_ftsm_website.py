@@ -7,8 +7,10 @@
 #   python scripts/scrape_ftsm_website.py --no-train
 
 import asyncio
+import os
 import re
 import sys
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from urllib.parse import urljoin, urlparse
@@ -18,12 +20,11 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 try:
     from playwright.async_api import async_playwright
-except ImportError:
-    print("Installing playwright...")
-    import subprocess
-    subprocess.run([sys.executable, "-m", "pip", "install", "playwright"], check=True)
-    subprocess.run([sys.executable, "-m", "playwright", "install", "chromium"], check=True)
-    from playwright.async_api import async_playwright
+except ImportError as exc:
+    async_playwright = None
+    _PLAYWRIGHT_IMPORT_ERROR = exc
+else:
+    _PLAYWRIGHT_IMPORT_ERROR = None
 
 OUTPUT_DIR = PROJECT_ROOT / "data" / "ukm_ftsm"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -88,6 +89,15 @@ SEED_URLS = [
 ]
 
 SKIP_EXTENSIONS = ['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.zip', '.rar', '.jpg', '.jpeg', '.png', '.gif']
+MIN_SUCCESS_PAGES = 1
+
+
+@dataclass
+class CrawlResult:
+    output_file: Path
+    pages_crawled: int
+    pages_visited: int
+    skipped_pages: int
 
 
 def is_ftsm_url(url: str) -> bool:
@@ -184,7 +194,41 @@ async def extract_page(page, url: str) -> dict | None:
         return None
 
 
-async def crawl(max_pages: int = 80, headless: bool = True) -> Path | None:
+def _write_pages_file(out_file: Path, all_pages: list[dict]) -> None:
+    tmp_file = out_file.with_suffix(out_file.suffix + ".tmp")
+    with open(tmp_file, "w", encoding="utf-8") as f:
+        f.write("FTSM UKM Official Website Content\n")
+        f.write(f"Source: {BASE_URL}\n")
+        f.write(f"Crawled at: {datetime.now().isoformat()}\n")
+        f.write(f"Total pages: {len(all_pages)}\n")
+        f.write("=" * 80 + "\n\n")
+
+        for i, p in enumerate(all_pages, 1):
+            f.write(f"[Page {i}]\n")
+            f.write(f"URL: {p['url']}\n")
+            f.write(f"Title: {p['title']}\n")
+            f.write(f"\n{p['content']}\n")
+            f.write("\n" + "-" * 60 + "\n\n")
+
+    if len(all_pages) < MIN_SUCCESS_PAGES or tmp_file.stat().st_size == 0:
+        try:
+            tmp_file.unlink()
+        except OSError:
+            pass
+        raise RuntimeError(
+            f"Scrape produced only {len(all_pages)} page(s); keeping existing file."
+        )
+
+    os.replace(tmp_file, out_file)
+
+
+async def crawl(max_pages: int = 80, headless: bool = True) -> CrawlResult | None:
+    if async_playwright is None:
+        raise RuntimeError(
+            "Playwright is not installed or Chromium is missing. "
+            "Install it with: python -m playwright install chromium"
+        ) from _PLAYWRIGHT_IMPORT_ERROR
+
     visited: set[str] = set()
     queue: list[str] = []
 
@@ -195,6 +239,7 @@ async def crawl(max_pages: int = 80, headless: bool = True) -> Path | None:
             queue.append(u)
 
     all_pages: list[dict] = []
+    skipped_pages = 0
 
     print(f"\n{'='*60}")
     print(f"FTSM Official Website Scraper  |  Target: {BASE_URL}")
@@ -222,8 +267,10 @@ async def crawl(max_pages: int = 80, headless: bool = True) -> Path | None:
         while queue and count < max_pages:
             url = queue.pop(0).rstrip("/")
             if url in visited:
+                skipped_pages += 1
                 continue
             if should_skip_url(url):
+                skipped_pages += 1
                 continue
             visited.add(url)
             count += 1
@@ -247,24 +294,16 @@ async def crawl(max_pages: int = 80, headless: bool = True) -> Path | None:
 
     # Save to fixed filename
     out_file = OUTPUT_DIR / "ftsm_official_website.txt"
-
-    with open(out_file, "w", encoding="utf-8") as f:
-        f.write("FTSM UKM Official Website Content\n")
-        f.write(f"Source: {BASE_URL}\n")
-        f.write(f"Crawled at: {datetime.now().isoformat()}\n")
-        f.write(f"Total pages: {len(all_pages)}\n")
-        f.write("=" * 80 + "\n\n")
-
-        for i, p in enumerate(all_pages, 1):
-            f.write(f"[Page {i}]\n")
-            f.write(f"URL: {p['url']}\n")
-            f.write(f"Title: {p['title']}\n")
-            f.write(f"\n{p['content']}\n")
-            f.write("\n" + "-" * 60 + "\n\n")
+    _write_pages_file(out_file, all_pages)
 
     print(f"\n[DONE] Total {len(all_pages)} pages crawled")
     print(f"[SAVE] {out_file}")
-    return out_file
+    return CrawlResult(
+        output_file=out_file,
+        pages_crawled=len(all_pages),
+        pages_visited=len(visited),
+        skipped_pages=skipped_pages,
+    )
 
 
 def retrain_chroma():
@@ -273,14 +312,17 @@ def retrain_chroma():
     print("Retraining Chroma vector store...")
     print(f"{'='*60}")
     from rag.vector_store import VectorStoreService
-    vs = VectorStoreService()
-    vs.load_document()
+    from utils.indexing_lock import indexing_lock
+
+    with indexing_lock:
+        vs = VectorStoreService()
+        vs.load_document()
     print("[DONE] Chroma training complete!")
 
 
 async def main(max_pages: int = 80, headless: bool = True, auto_train: bool = True):
-    out_file = await crawl(max_pages=max_pages, headless=headless)
-    if out_file and auto_train:
+    result = await crawl(max_pages=max_pages, headless=headless)
+    if result and auto_train:
         retrain_chroma()
 
 

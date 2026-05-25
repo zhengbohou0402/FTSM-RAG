@@ -8,6 +8,7 @@ def stream_chat_answer(
     conversation_store: Any,
     semantic_cache: Any,
     get_agent: Callable[[], Any],
+    cache_namespace: Callable[[], str],
     max_history_turns: int,
 ) -> Iterator[str]:
     def save_history(answer: str) -> None:
@@ -19,15 +20,18 @@ def stream_chat_answer(
             title=title or "New chat",
         )
 
-    hit, cached_answer = semantic_cache.get(message)
-    if hit and cached_answer and "__THINK" not in cached_answer:
-        yield "__THINK__Answering from cache...__ENDTHINK__"
-        save_history(cached_answer)
-        yield cached_answer
-        return
-
     recent_history = conversation_store.recent_messages(conversation_id, max_history_turns)
+    namespace = cache_namespace()
+    if not recent_history:
+        hit, cached_answer = semantic_cache.get(message, namespace=namespace)
+        if hit and cached_answer and "__THINK" not in cached_answer:
+            yield "__THINK__Answering from cache...__ENDTHINK__"
+            save_history(cached_answer)
+            yield cached_answer
+            return
+
     result_chunks: list[str] = []
+    had_error = False
     try:
         for chunk in get_agent().execute_stream(message, history=recent_history):
             if not chunk:
@@ -38,11 +42,13 @@ def stream_chat_answer(
             result_chunks.append(chunk)
             yield chunk
     except Exception as exc:
+        had_error = True
         err_msg = f"\n\n[Error] {exc}"
         result_chunks.append(err_msg)
         yield err_msg
 
     final_answer = "".join(result_chunks).strip()
     if final_answer:
-        semantic_cache.set(message, final_answer)
+        if not had_error and not recent_history:
+            semantic_cache.set(message, final_answer, namespace=namespace)
         save_history(final_answer)

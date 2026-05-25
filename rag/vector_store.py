@@ -1,3 +1,5 @@
+import hashlib
+import json
 import time
 from pathlib import Path
 
@@ -13,8 +15,9 @@ from rag.ingestion import (
     save_manifest,
     source_to_manifest_record,
     stable_file_doc_id,
+    update_manifest_index_state,
 )
-from utils.config_handler import chroma_conf
+from utils.config_handler import chroma_conf, rag_conf
 from utils.file_handler import (
     image_loader,
     listdir_with_allowed_type,
@@ -43,6 +46,26 @@ class VectorStoreService:
             separators=chroma_conf["separators"],
             length_function=len,
         )
+
+        self.index_config = self._build_index_config()
+        self.index_fingerprint = self._build_index_fingerprint(self.index_config)
+
+    @staticmethod
+    def _build_index_config() -> dict:
+        return {
+            "schema_version": 2,
+            "embedding_model_name": rag_conf["embedding_model_name"],
+            "collection_name": chroma_conf["collection_name"],
+            "chunk_size": chroma_conf["chunk_size"],
+            "chunk_overlap": chroma_conf["chunk_overlap"],
+            "separators": chroma_conf["separators"],
+            "allowed_file_types": chroma_conf["allow_knowledge_file_type"],
+        }
+
+    @staticmethod
+    def _build_index_fingerprint(index_config: dict) -> str:
+        payload = json.dumps(index_config, sort_keys=True, ensure_ascii=False)
+        return hashlib.sha256(payload.encode("utf-8")).hexdigest()[:16]
 
     def get_retriever(self, k: int | None = None):
         return self.vector_store.as_retriever(
@@ -95,6 +118,7 @@ class VectorStoreService:
         chunk_ids = record.get("chunk_ids", [])
         vector_delete_ok = self._delete_chunk_ids(chunk_ids, doc_id)
         del manifest["documents"][doc_id]
+        update_manifest_index_state(manifest, bump_version=True)
         save_manifest(manifest)
         logger.info(f"[knowledge delete] Removed {doc_id} from manifest.")
 
@@ -134,6 +158,8 @@ class VectorStoreService:
     def load_document(self):
         manifest = load_manifest()
         manifest.setdefault("documents", {})
+        modified = False
+        errors: list[str] = []
 
         allowed_files_path: list[str] = listdir_with_allowed_type(
             get_abs_path(chroma_conf["data_path"]),
@@ -146,6 +172,7 @@ class VectorStoreService:
                 continue
             self._delete_chunk_ids(record.get("chunk_ids", []), doc_id)
             del manifest["documents"][doc_id]
+            modified = True
             save_manifest(manifest)
             logger.info(f"[knowledge load] Removed missing source document {doc_id}.")
 
@@ -154,7 +181,16 @@ class VectorStoreService:
                 source = build_file_source_document(path)
                 previous = manifest["documents"].get(source.doc_id)
 
-                if previous and previous.get("hash") == source.hash:
+                source_changed = (
+                    previous
+                    and previous.get("hash") == source.hash
+                    and previous.get("source_type") == source.source_type
+                    and previous.get("index_fingerprint") == self.index_fingerprint
+                    and (previous.get("extra") or {}).get("source_trust_label")
+                    == source.extra.get("source_trust_label")
+                )
+
+                if source_changed:
                     logger.info(f"[knowledge load] {path} unchanged. Skipping.")
                     continue
 
@@ -205,18 +241,31 @@ class VectorStoreService:
                     time.sleep(1)
 
                 manifest["documents"][source.doc_id] = source_to_manifest_record(
-                    source, chunk_ids
+                    source,
+                    chunk_ids,
+                    index_fingerprint=self.index_fingerprint,
+                    index_config=self.index_config,
                 )
+                modified = True
                 save_manifest(manifest)
                 logger.info(
                     f"[knowledge load] Loaded {len(chunk_ids)} chunks from {path} "
                     f"(doc_id={source.doc_id})."
                 )
             except Exception as e:
+                errors.append(f"{Path(path).name}: {e}")
                 logger.error(
                     f"[knowledge load] Failed to load {path}: {str(e)}", exc_info=True
                 )
                 continue
+
+        update_manifest_index_state(
+            manifest,
+            last_error="; ".join(errors) if errors else None,
+            bump_version=modified,
+            pipeline_fingerprint=self.index_fingerprint,
+        )
+        save_manifest(manifest)
 
 
 if __name__ == "__main__":

@@ -65,7 +65,7 @@ class SemanticCache:
     #  公开接口                                                             #
     # ------------------------------------------------------------------ #
 
-    def get(self, question: str) -> tuple[bool, str | None]:
+    def get(self, question: str, *, namespace: str = "") -> tuple[bool, str | None]:
         """
         查询缓存。
         Returns:
@@ -83,6 +83,8 @@ class SemanticCache:
             best_score = 0.0
             best_answer = None
             for entry in self._entries:
+                if str(entry.get("namespace") or "") != namespace:
+                    continue
                 # 跳过过期条目
                 if now - entry.get("created_at", 0) > CACHE_TTL_SECONDS:
                     continue
@@ -102,7 +104,7 @@ class SemanticCache:
             self._miss_count += 1
         return False, None
 
-    def set(self, question: str, answer: str) -> None:
+    def set(self, question: str, answer: str, *, namespace: str = "") -> None:
         """将问答对写入缓存"""
         try:
             q_vec = self._embed(question)
@@ -111,6 +113,7 @@ class SemanticCache:
             return
 
         entry = {
+            "namespace": namespace,
             "question": question,
             "answer": answer,
             "vector": q_vec,
@@ -135,6 +138,10 @@ class SemanticCache:
                 1 for e in self._entries
                 if now - e.get("created_at", 0) <= CACHE_TTL_SECONDS
             )
+            namespaces: dict[str, int] = {}
+            for entry in self._entries:
+                name = str(entry.get("namespace") or "legacy")
+                namespaces[name] = namespaces.get(name, 0) + 1
             hit = self._hit_count
             miss = self._miss_count
         total_queries = hit + miss
@@ -146,6 +153,7 @@ class SemanticCache:
             "hit_count": hit,
             "miss_count": miss,
             "hit_rate": hit_rate,
+            "namespaces": namespaces,
         }
 
     def clear(self) -> None:

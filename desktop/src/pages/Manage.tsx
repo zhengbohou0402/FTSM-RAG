@@ -1,6 +1,19 @@
 import { useEffect, useState, useCallback } from "react";
-import { Upload, Button, List, Typography, Card, Space, message, Progress } from "antd";
-import { InboxOutlined, DeleteOutlined, ReloadOutlined, ArrowLeftOutlined, DashboardOutlined } from "@ant-design/icons";
+import { Upload, Button, List, Typography, Card, Space, message, Progress, Popconfirm, Empty } from "antd";
+import {
+  ArrowLeftOutlined,
+  BulbFilled,
+  BulbOutlined,
+  CloudUploadOutlined,
+  DashboardOutlined,
+  DatabaseOutlined,
+  DeleteOutlined,
+  FileImageOutlined,
+  FilePdfOutlined,
+  FileTextOutlined,
+  ReloadOutlined,
+  SettingOutlined,
+} from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import { api } from "../api/client";
 import type { Document, TrainingStatus, KnowledgeStats, CacheStats } from "../api/client";
@@ -10,7 +23,33 @@ import StatusBadge from "../components/StatusBadge";
 const { Dragger } = Upload;
 const { Text } = Typography;
 
-export default function Manage() {
+interface Props {
+  isDark: boolean;
+  onToggleTheme: () => void;
+}
+
+function formatBytes(bytes: number): string {
+  if (!bytes) return "0 KB";
+  if (bytes < 1048576) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+  return `${(bytes / 1048576).toFixed(1)} MB`;
+}
+
+function formatDate(ts: number): string {
+  return new Date(ts * 1000).toLocaleString();
+}
+
+function formatIndexed(value: string | null | undefined): string {
+  return value ? new Date(value).toLocaleString() : "-";
+}
+
+function documentIcon(name: string) {
+  const ext = name.split(".").pop()?.toLowerCase();
+  if (ext === "pdf") return <FilePdfOutlined />;
+  if (["png", "jpg", "jpeg", "webp", "gif"].includes(ext || "")) return <FileImageOutlined />;
+  return <FileTextOutlined />;
+}
+
+export default function Manage({ isDark, onToggleTheme }: Props) {
   const [docs, setDocs] = useState<Document[]>([]);
   const [training, setTraining] = useState<TrainingStatus | null>(null);
   const [kb, setKb] = useState<KnowledgeStats | null>(null);
@@ -30,14 +69,21 @@ export default function Manage() {
       setKb(k);
       setCache(c);
     } catch {
-      // ignore
+      // keep the last visible state
     }
   }, []);
 
   useEffect(() => {
-    refreshAll();
-    const interval = setInterval(refreshAll, 10000);
-    return () => clearInterval(interval);
+    const initial = window.setTimeout(() => {
+      void refreshAll();
+    }, 0);
+    const interval = window.setInterval(() => {
+      void refreshAll();
+    }, 10000);
+    return () => {
+      window.clearTimeout(initial);
+      window.clearInterval(interval);
+    };
   }, [refreshAll]);
 
   const handleUpload = async (file: File) => {
@@ -51,12 +97,12 @@ export default function Manage() {
       } as unknown as FileList;
       const result = await api.documents.upload(fileList);
       if (result.errors.length > 0) {
-        message.error(result.errors.join(", "));
+        message.error(result.errors.map((err) => String(err)).join(", "));
       }
       if (result.saved.length > 0) {
         message.success(`Uploaded: ${result.saved.join(", ")}`);
       }
-      refreshAll();
+      void refreshAll();
     } catch (err) {
       message.error(`Upload failed: ${err}`);
     } finally {
@@ -69,7 +115,7 @@ export default function Manage() {
     try {
       await api.documents.delete(filename);
       message.success(`Deleted: ${filename}`);
-      refreshAll();
+      void refreshAll();
     } catch (err) {
       message.error(`Delete failed: ${err}`);
     }
@@ -79,7 +125,7 @@ export default function Manage() {
     try {
       const result = await api.training.start();
       message.info(result.message);
-      refreshAll();
+      void refreshAll();
     } catch (err) {
       message.error(`Re-index failed: ${err}`);
     }
@@ -92,109 +138,114 @@ export default function Manage() {
     training?.last_result === "success" ? "success" : "idle";
 
   return (
-    <div className="manage-shell">
-      <div className="manage-header">
+    <div className="admin-shell manage-shell">
+      <div className="admin-header manage-header">
         <div>
-          <Text type="secondary" style={{ letterSpacing: 1, fontSize: 11, fontWeight: 700, textTransform: "uppercase" }}>
-            FTSM-RAG
-          </Text>
+          <Text type="secondary" className="page-kicker">FTSM-RAG</Text>
           <h1>Document Management</h1>
-          <p>Upload, re-index, and remove knowledge-base files.</p>
+          <p>Review knowledge-base health, add source files, and rebuild the vector index.</p>
         </div>
-        <Space>
+        <Space wrap>
+          <Button icon={isDark ? <BulbFilled /> : <BulbOutlined />} onClick={onToggleTheme}>
+            {isDark ? "Light" : "Dark"}
+          </Button>
+          <Button icon={<ReloadOutlined />} onClick={refreshAll}>Refresh</Button>
           <Link to="/dashboard"><Button icon={<DashboardOutlined />}>Dashboard</Button></Link>
-          <Link to="/settings"><Button>Settings</Button></Link>
+          <Link to="/settings"><Button icon={<SettingOutlined />}>Settings</Button></Link>
           <Link to="/"><Button icon={<ArrowLeftOutlined />}>Back to Chat</Button></Link>
         </Space>
       </div>
 
-      {training && (
-        <div className="index-status-bar">
-          <StatusBadge status={trainStatus} label={
-            training.running ? "Indexing..." :
-            training.pending ? "Queued" :
-            training.last_error ? `Error: ${training.last_error}` :
-            training.last_result === "success" ? "Idle" : "Idle"
-          } />
-        </div>
-      )}
-
-      {kb && (
-        <div style={{ marginBottom: 20 }}>
-          <Text strong style={{ fontSize: 12, textTransform: "uppercase", letterSpacing: 0.5, color: "#888" }}>
-            Knowledge Base
-          </Text>
-          <div className="stats-grid">
-            <StatsCard label="Documents" value={kb.document_count} accent="blue" />
-            <StatsCard label="Vector Chunks" value={kb.total_chunks} accent="purple" />
-            <StatsCard label="Manifest Records" value={kb.manifest_records} />
-            <StatsCard label="Last Indexed" value={kb.last_indexed ? new Date(kb.last_indexed).toLocaleString() : "—"} />
+      <section className="admin-panel manage-status-panel">
+        <div className="manage-status-main">
+          <Text type="secondary" className="section-kicker">Indexing Worker</Text>
+          <div className="manage-status-row">
+            <StatusBadge status={trainStatus} label={
+              training?.running ? "Indexing in progress" :
+              training?.pending ? "Queued" :
+              training?.last_error ? "Indexing failed" :
+              training?.last_result === "success" ? "Ready" : "Idle"
+            } />
+            {training?.last_error && <Text type="danger">{training.last_error}</Text>}
           </div>
         </div>
-      )}
+        <Button type="primary" icon={<DatabaseOutlined />} onClick={handleReindex} loading={training?.running}>
+          Re-index all
+        </Button>
+      </section>
 
-      {cache && (
-        <div style={{ marginBottom: 20 }}>
-          <Text strong style={{ fontSize: 12, textTransform: "uppercase", letterSpacing: 0.5, color: "#888" }}>
-            Semantic Cache
-          </Text>
-          <Card size="small" style={{ marginBottom: 12 }}>
-            <Text strong>Cache Hit Rate</Text>
-            <Progress percent={Math.round((cache.hit_rate || 0) * 100)} />
-          </Card>
-          <div className="stats-grid">
-            <StatsCard label="Cache Hits" value={cache.hit_count} accent="green" />
-            <StatsCard label="Cache Misses" value={cache.miss_count} accent="amber" />
-            <StatsCard label="Cached Entries" value={cache.size} />
-          </div>
+      <section className="admin-section manage-section">
+        <Text strong className="section-kicker">Knowledge Base</Text>
+        <div className="stats-grid manage-stats-grid">
+          <StatsCard label="Documents" value={kb?.document_count ?? "-"} sub="source files" accent="blue" />
+          <StatsCard label="Vector Chunks" value={kb?.total_chunks ?? "-"} sub="searchable segments" accent="purple" />
+          <StatsCard label="Manifest Records" value={kb?.manifest_records ?? "-"} sub="indexed documents" />
+          <StatsCard label="Last Indexed" value={formatIndexed(kb?.last_indexed)} />
         </div>
-      )}
+      </section>
 
       <div className="manage-grid">
-        <Card title="Upload Files" extra={<Text type="secondary">TXT, PDF, PNG, JPG, WEBP, GIF</Text>}>
+        <Card className="manage-card" title="Upload Files" extra={<Text type="secondary">TXT, PDF, images</Text>}>
           <Dragger
+            className="manage-upload"
             multiple
             showUploadList={false}
             beforeUpload={handleUpload}
             disabled={uploading}
             accept=".txt,.pdf,.png,.jpg,.jpeg,.webp,.gif"
           >
-            <p className="ant-upload-drag-icon"><InboxOutlined /></p>
-            <p>Click or drag files to upload</p>
+            <p className="ant-upload-drag-icon"><CloudUploadOutlined /></p>
+            <p className="manage-upload-title">Drop files here or click to upload</p>
+            <p className="manage-upload-hint">Files are saved to the knowledge folder, then the index can be rebuilt.</p>
           </Dragger>
+
+          {cache && (
+            <div className="manage-cache-card">
+              <div>
+                <Text strong>Semantic Cache</Text>
+                <p>{cache.size} entries, {cache.valid} currently valid</p>
+              </div>
+              <Progress
+                type="circle"
+                size={62}
+                percent={Math.round((cache.hit_rate || 0) * 100)}
+              />
+            </div>
+          )}
         </Card>
 
         <Card
+          className="manage-card manage-list-card"
           title="Knowledge Base"
           extra={
             <Space>
               <Text type="secondary">{docs.length} files</Text>
               <Button icon={<ReloadOutlined />} onClick={refreshAll}>Refresh</Button>
-              <Button onClick={handleReindex}>Re-index all</Button>
             </Space>
           }
         >
           <List
+            className="manage-doc-list"
             dataSource={docs}
             renderItem={(doc) => (
-              <List.Item
-                actions={[
-                  <Button
-                    key="delete"
-                    type="text"
-                    danger
-                    icon={<DeleteOutlined />}
-                    onClick={() => handleDelete(doc.name)}
-                  />,
-                ]}
-              >
+              <List.Item className="manage-doc-item">
                 <List.Item.Meta
-                  title={doc.name}
-                  description={`${(doc.size / 1048576).toFixed(1)} MB - ${new Date(doc.modified * 1000).toLocaleDateString()}`}
+                  avatar={<span className="manage-doc-icon">{documentIcon(doc.name)}</span>}
+                  title={<span className="manage-doc-title">{doc.name}</span>}
+                  description={`${formatBytes(doc.size)} - modified ${formatDate(doc.modified)}`}
                 />
+                <Popconfirm
+                  title="Delete document?"
+                  description={doc.name}
+                  okText="Delete"
+                  okButtonProps={{ danger: true }}
+                  onConfirm={() => handleDelete(doc.name)}
+                >
+                  <Button type="text" danger icon={<DeleteOutlined />} />
+                </Popconfirm>
               </List.Item>
             )}
-            locale={{ emptyText: "No documents uploaded yet" }}
+            locale={{ emptyText: <Empty description="No documents uploaded yet" /> }}
           />
         </Card>
       </div>

@@ -2,11 +2,12 @@ import base64
 import hashlib
 import os
 
-from langchain_community.document_loaders import PyPDFLoader, TextLoader
+from langchain_community.document_loaders import PyPDFLoader
 from langchain_core.documents import Document
 
 from utils.config_handler import rag_conf
 from utils.logger_handler import logger
+from utils.text_encoding import read_text_safely
 
 
 def get_file_md5_hex(filepath: str):
@@ -51,7 +52,25 @@ def pdf_loader(filepath: str, passwd=None) -> list[Document]:
 
 
 def txt_loader(filepath: str) -> list[Document]:
-    return TextLoader(filepath, encoding="utf-8").load()
+    decoded = read_text_safely(filepath)
+    if decoded.mojibake_score:
+        logger.warning(
+            "[txt_loader] Possible mojibake in %s after decoding as %s (score=%s).",
+            filepath,
+            decoded.encoding,
+            decoded.mojibake_score,
+        )
+    return [
+        Document(
+            page_content=decoded.text,
+            metadata={
+                "source": filepath,
+                "filename": os.path.basename(filepath),
+                "encoding": decoded.encoding,
+                "mojibake_score": decoded.mojibake_score,
+            },
+        )
+    ]
 
 
 def image_loader(filepath: str) -> list[Document]:
