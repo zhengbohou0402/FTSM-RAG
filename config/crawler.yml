@@ -8,6 +8,7 @@ allowed_url_prefixes:
   - https://www.ukm.my/akademik/
   - https://www.ukm.my/hepukm/
   - https://www.ukm.my/ukmshape/
+  - https://ftsm.pages.dev/
 
 seed_urls:
   # FTSM official site
@@ -74,6 +75,11 @@ seed_urls:
   - https://www.ukm.my/ukmshape/ukmshape-learning-fees/
   - https://www.ukm.my/ukmshape/finance-ukmshape/
   - https://www.ukm.my/ukmshape/frequently-asked-questions-faq/
+  - https://www.ukm.my/ukmshape/renewal--application/
+
+  # Chinese student community guide. This is useful for practical onboarding,
+  # but answers should treat it as student-maintained guidance, not official policy.
+  - https://ftsm.pages.dev/
 
 skip_extensions:
   - .pdf

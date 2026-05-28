@@ -43,6 +43,9 @@ COMMUNITY_GUIDE_PATTERNS = (
     "student_portal",
     "registration_renewal",
     "campus_bus",
+    "chinese_student",
+    "china_student",
+    "international_student",
 )
 
 OFFICIAL_PATTERNS = (
