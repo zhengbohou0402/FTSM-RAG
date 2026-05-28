@@ -155,6 +155,12 @@ export default function Manage({ isDark, onToggleTheme }: Props) {
     scheduler?.last_error ? "error" :
     scheduler?.last_success ? "success" : "idle";
 
+  const crawlerLabel =
+    scheduler?.running && scheduler.phase === "indexing" ? "Rebuilding vector index" :
+    scheduler?.running ? "Crawling FTSM site" :
+    scheduler?.last_error ? "Update failed" :
+    scheduler?.last_success ? "Updated" : "Idle";
+
   return (
     <div className="admin-shell manage-shell">
       <div className="admin-header manage-header">
@@ -179,13 +185,11 @@ export default function Manage({ isDark, onToggleTheme }: Props) {
           <div className="manage-status-main">
             <Text type="secondary" className="section-kicker">Website Update</Text>
             <div className="manage-status-row">
-              <StatusBadge status={crawlerStatus} label={
-                scheduler?.running ? "Updating from FTSM site" :
-                scheduler?.last_error ? "Update failed" :
-                scheduler?.last_success ? "Updated" : "Idle"
-              } />
+              <StatusBadge status={crawlerStatus} label={crawlerLabel} />
               <Text type="secondary">
-                Last crawl: {formatIndexed(scheduler?.last_success ?? scheduler?.last_run)}
+                {scheduler?.running && scheduler.pages_crawled > 0
+                  ? `${scheduler.pages_crawled} pages crawled`
+                  : `Last crawl: ${formatIndexed(scheduler?.last_success ?? scheduler?.last_run)}`}
               </Text>
               {scheduler?.last_error && <Text type="danger">{scheduler.last_error}</Text>}
             </div>

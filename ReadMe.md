@@ -104,7 +104,7 @@ Copy-Item .env.example .env
 uvicorn web_app:app --host 127.0.0.1 --port 8000
 ```
 
-The management page includes an **Update from FTSM site** button. Source builds use Playwright when Chromium is installed; packaged EXE builds use a lightweight HTTP/BeautifulSoup fallback so the button can still refresh `data/ukm_ftsm/ftsm_official_website.txt` and rebuild Chroma without bundling Chromium.
+The management page includes an **Update from FTSM site** button. Source builds use Playwright when Chromium is installed; packaged EXE builds use a lightweight HTTP/BeautifulSoup fallback so the button can still refresh `data/ukm_ftsm/ftsm_official_website.txt` and rebuild Chroma without bundling Chromium. Scheduled crawling is disabled by default in `config/scheduler.yml` to keep desktop/demo startup responsive.
 
 Open <http://127.0.0.1:8000/>. If no API key is set, you are redirected to `/settings` automatically.
 

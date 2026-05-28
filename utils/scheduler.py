@@ -40,6 +40,7 @@ _on_index_updated: Callable[[], None] | None = None
 _STATE: dict[str, Any] = {
     "running": False,
     "mode": None,
+    "phase": "idle",
     "last_success": None,
     "last_attempt": None,
     "last_error": None,
@@ -84,6 +85,7 @@ def _begin_run(mode: str) -> bool:
             return False
         _STATE["running"] = True
         _STATE["mode"] = mode
+        _STATE["phase"] = "crawling"
         _STATE["last_attempt"] = _now_iso()
         _STATE["last_error"] = None
         return True
@@ -94,6 +96,7 @@ def _mark_success(result: Any) -> None:
     with _status_lock:
         _STATE["running"] = False
         _STATE["mode"] = None
+        _STATE["phase"] = "idle"
         _STATE["last_success"] = _iso_from_timestamp(last_run)
         _STATE["last_error"] = None
         _STATE["last_output_file"] = str(getattr(result, "output_file", "") or "")
@@ -104,7 +107,15 @@ def _mark_error(exc: Exception | str) -> None:
     with _status_lock:
         _STATE["running"] = False
         _STATE["mode"] = None
+        _STATE["phase"] = "idle"
         _STATE["last_error"] = str(exc)
+
+
+def _mark_indexing(result: Any) -> None:
+    with _status_lock:
+        _STATE["phase"] = "indexing"
+        _STATE["last_output_file"] = str(getattr(result, "output_file", "") or "")
+        _STATE["pages_crawled"] = int(getattr(result, "pages_crawled", 0) or 0)
 
 
 def _run_crawl_and_update(max_pages: int | None = None, mode: str = "scheduled", marked: bool = False) -> None:
@@ -135,9 +146,11 @@ def _run_crawl_and_update(max_pages: int | None = None, mode: str = "scheduled",
             getattr(result, "pages_crawled", 0),
             getattr(result, "output_file", ""),
         )
+        _mark_indexing(result)
 
+        target_paths = [getattr(result, "output_file")] if getattr(result, "output_file", None) else None
         with indexing_lock:
-            VectorStoreService().load_document()
+            VectorStoreService().load_document(target_paths=target_paths)
 
         if _on_index_updated is not None:
             _on_index_updated()

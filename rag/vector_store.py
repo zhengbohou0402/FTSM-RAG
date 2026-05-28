@@ -100,6 +100,21 @@ class VectorStoreService:
             )
             return False
 
+    @staticmethod
+    def _is_non_retryable_embedding_error(exc: Exception) -> bool:
+        message = str(exc).lower()
+        return any(
+            marker in message
+            for marker in (
+                "arrearage",
+                "free quota",
+                "quota",
+                "access denied",
+                "insufficient",
+                "billing",
+            )
+        )
+
     def delete_document_by_path(self, file_path: str | Path) -> dict:
         manifest = load_manifest()
         manifest.setdefault("documents", {})
@@ -155,28 +170,39 @@ class VectorStoreService:
 
         return metadata
 
-    def load_document(self):
+    def load_document(self, target_paths: list[str | Path] | None = None):
         manifest = load_manifest()
         manifest.setdefault("documents", {})
         modified = False
         errors: list[str] = []
 
-        allowed_files_path: list[str] = listdir_with_allowed_type(
-            get_abs_path(chroma_conf["data_path"]),
-            tuple(chroma_conf["allow_knowledge_file_type"]),
-        )
-        current_doc_ids = {stable_file_doc_id(path) for path in allowed_files_path}
+        if target_paths is None:
+            allowed_files_path: list[str] = listdir_with_allowed_type(
+                get_abs_path(chroma_conf["data_path"]),
+                tuple(chroma_conf["allow_knowledge_file_type"]),
+            )
+            current_doc_ids = {stable_file_doc_id(path) for path in allowed_files_path}
 
-        for doc_id, record in list(manifest["documents"].items()):
-            if not doc_id.startswith("file:") or doc_id in current_doc_ids:
-                continue
-            self._delete_chunk_ids(record.get("chunk_ids", []), doc_id)
-            del manifest["documents"][doc_id]
-            modified = True
-            save_manifest(manifest)
-            logger.info(f"[knowledge load] Removed missing source document {doc_id}.")
+            for doc_id, record in list(manifest["documents"].items()):
+                if not doc_id.startswith("file:") or doc_id in current_doc_ids:
+                    continue
+                self._delete_chunk_ids(record.get("chunk_ids", []), doc_id)
+                del manifest["documents"][doc_id]
+                modified = True
+                save_manifest(manifest)
+                logger.info(f"[knowledge load] Removed missing source document {doc_id}.")
+        else:
+            allowed_extensions = tuple(
+                f".{ext.lower().lstrip('.')}" for ext in chroma_conf["allow_knowledge_file_type"]
+            )
+            allowed_files_path = [
+                str(Path(path).resolve())
+                for path in target_paths
+                if Path(path).exists() and Path(path).suffix.lower() in allowed_extensions
+            ]
 
         for path in allowed_files_path:
+            added_chunk_ids: list[str] = []
             try:
                 source = build_file_source_document(path)
                 previous = manifest["documents"].get(source.doc_id)
@@ -193,9 +219,6 @@ class VectorStoreService:
                 if source_changed:
                     logger.info(f"[knowledge load] {path} unchanged. Skipping.")
                     continue
-
-                if previous:
-                    self._delete_chunk_ids(previous.get("chunk_ids", []), source.doc_id)
 
                 documents: list[Document] = self._get_file_documents(path)
                 if not documents:
@@ -226,11 +249,18 @@ class VectorStoreService:
                     for attempt in range(3):
                         try:
                             self.vector_store.add_documents(batch, ids=batch_ids)
+                            added_chunk_ids.extend(batch_ids)
                             logger.info(
                                 f"[knowledge load] batch {batch_no}/{total_batches} OK ({source.title})"
                             )
                             break
                         except Exception as batch_err:
+                            if self._is_non_retryable_embedding_error(batch_err):
+                                logger.error(
+                                    f"[knowledge load] batch {batch_no} failed without retry "
+                                    f"({source.title}): {batch_err}"
+                                )
+                                raise
                             if attempt < 2:
                                 logger.warning(
                                     f"[knowledge load] batch {batch_no} retry {attempt + 1}: {batch_err}"
@@ -239,6 +269,12 @@ class VectorStoreService:
                             else:
                                 raise
                     time.sleep(1)
+
+                if previous:
+                    previous_ids = previous.get("chunk_ids", [])
+                    new_ids = set(chunk_ids)
+                    stale_ids = [cid for cid in previous_ids if cid not in new_ids]
+                    self._delete_chunk_ids(stale_ids, source.doc_id)
 
                 manifest["documents"][source.doc_id] = source_to_manifest_record(
                     source,
@@ -253,10 +289,18 @@ class VectorStoreService:
                     f"(doc_id={source.doc_id})."
                 )
             except Exception as e:
+                if added_chunk_ids:
+                    self._delete_chunk_ids(added_chunk_ids, f"{Path(path).name} partial update")
                 errors.append(f"{Path(path).name}: {e}")
                 logger.error(
                     f"[knowledge load] Failed to load {path}: {str(e)}", exc_info=True
                 )
+                if self._is_non_retryable_embedding_error(e):
+                    logger.error(
+                        "[knowledge load] Stopping indexing early because the embedding service "
+                        "returned a non-retryable billing/quota error."
+                    )
+                    break
                 continue
 
         update_manifest_index_state(

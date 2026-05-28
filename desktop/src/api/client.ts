@@ -93,6 +93,7 @@ export interface SchedulerStatus {
   next_run: string | null;
   running: boolean;
   mode: "scheduled" | "manual" | null;
+  phase: "idle" | "crawling" | "indexing";
   last_success: string | null;
   last_attempt: string | null;
   last_error: string | null;
