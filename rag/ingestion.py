@@ -51,6 +51,7 @@ COMMUNITY_GUIDE_PATTERNS = (
 OFFICIAL_PATTERNS = (
     "academic_calendar",
     "advisors_and_academic_staff",
+    "coursework_timetable",
     "facilities_and_services",
     "graduation_certification",
     "industrial_training",
