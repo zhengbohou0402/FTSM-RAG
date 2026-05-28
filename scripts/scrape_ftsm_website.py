@@ -15,6 +15,8 @@ from datetime import datetime
 from pathlib import Path
 from urllib.parse import urljoin, urlparse
 
+import yaml
+
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT))
 
@@ -41,6 +43,10 @@ OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 BASE_URL = "https://www.ftsm.ukm.my/v6/"
 ALLOWED_DOMAIN = "ftsm.ukm.my"
+ALLOWED_URL_PREFIXES = [
+    "https://www.ftsm.ukm.my/",
+    "https://ftsm.ukm.my/",
+]
 
 # Complete list of sub-pages extracted from navigation
 SEED_URLS = [
@@ -102,6 +108,53 @@ SKIP_EXTENSIONS = ['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.zip', '.rar', '.j
 MIN_SUCCESS_PAGES = 1
 
 
+def _normalize_url(url: str) -> str:
+    return str(url).strip().split("#")[0].rstrip("/")
+
+
+def _load_crawler_config() -> None:
+    global BASE_URL, SEED_URLS, SKIP_EXTENSIONS, ALLOWED_URL_PREFIXES
+
+    config_path = PROJECT_ROOT / "config" / "crawler.yml"
+    if not config_path.exists():
+        return
+
+    try:
+        config = yaml.safe_load(config_path.read_text(encoding="utf-8")) or {}
+    except Exception as exc:
+        print(f"[WARN] Failed to read crawler config {config_path}: {exc}")
+        return
+
+    BASE_URL = _normalize_url(config.get("base_url") or BASE_URL) + "/"
+    configured_prefixes = config.get("allowed_url_prefixes") or []
+    if configured_prefixes:
+        ALLOWED_URL_PREFIXES = [
+            _normalize_url(prefix) + "/"
+            for prefix in configured_prefixes
+            if str(prefix).strip()
+        ]
+
+    configured_seeds = config.get("seed_urls") or []
+    if configured_seeds:
+        seen: set[str] = set()
+        SEED_URLS = []
+        for url in configured_seeds:
+            normalized = _normalize_url(url)
+            if normalized and normalized not in seen:
+                seen.add(normalized)
+                SEED_URLS.append(normalized)
+
+    configured_skips = config.get("skip_extensions") or []
+    if configured_skips:
+        SKIP_EXTENSIONS = [
+            ext.lower() if str(ext).startswith(".") else f".{str(ext).lower()}"
+            for ext in configured_skips
+        ]
+
+
+_load_crawler_config()
+
+
 @dataclass
 class CrawlResult:
     output_file: Path
@@ -111,6 +164,10 @@ class CrawlResult:
 
 
 def is_ftsm_url(url: str) -> bool:
+    normalized = _normalize_url(url) + "/"
+    if ALLOWED_URL_PREFIXES:
+        return any(normalized.startswith(prefix) for prefix in ALLOWED_URL_PREFIXES)
+
     parsed = urlparse(url)
     domain = parsed.netloc.lower()
     if domain.startswith("www."):
