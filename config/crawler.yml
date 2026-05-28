@@ -1,0 +1,95 @@
+base_url: https://www.ftsm.ukm.my/v6/
+
+allowed_url_prefixes:
+  - https://www.ftsm.ukm.my/
+  - https://ftsm.ukm.my/
+  - https://www.ukm.my/portalukm/
+  - https://www.ukm.my/studyukm/
+  - https://www.ukm.my/akademik/
+  - https://www.ukm.my/hepukm/
+  - https://www.ukm.my/ukmshape/
+  - https://ftsm.pages.dev/
+
+seed_urls:
+  # FTSM official site
+  - https://www.ftsm.ukm.my/v6
+  - https://www.ftsm.ukm.my/v6/background
+  - https://www.ftsm.ukm.my/v6/mission-faculty
+  - https://www.ftsm.ukm.my/v6/quality-statement
+  - https://www.ftsm.ukm.my/v6/chart
+  - https://www.ftsm.ukm.my/v6/faculty-map
+  - https://www.ftsm.ukm.my/v6/faculty-management
+  - https://www.ftsm.ukm.my/v6/why-choose-us
+  - https://www.ftsm.ukm.my/v6/undergraduate
+  - https://www.ftsm.ukm.my/v6/master-program
+  - https://www.ftsm.ukm.my/v6/doctoral-programme
+  - https://www.ftsm.ukm.my/v6/entrepreneurship-programme
+  - https://www.ftsm.ukm.my/v6/staff-academic
+  - https://www.ftsm.ukm.my/v6/staff-admin
+  - https://www.ftsm.ukm.my/v6/staff-ictsupport
+  - https://www.ftsm.ukm.my/v6/adjunct-professor
+  - https://www.ftsm.ukm.my/v6/emeritus-professor
+  - https://www.ftsm.ukm.my/v6/honorary-professor
+  - https://www.ftsm.ukm.my/v6/advisory-board
+  - https://www.ftsm.ukm.my/v6/external-examiner
+  - https://www.ftsm.ukm.my/v6/expertise
+  - https://www.ftsm.ukm.my/v6/research-center
+  - https://www.ftsm.ukm.my/v6/research-university
+  - https://www.ftsm.ukm.my/v6/research-conference
+  - https://www.ftsm.ukm.my/v6/research-guidelineform
+  - https://www.ftsm.ukm.my/v6/publication
+  - https://www.ftsm.ukm.my/v6/technical-report
+  - https://www.ftsm.ukm.my/v6/editing-book
+  - https://www.ftsm.ukm.my/v6/student-affair
+  - https://www.ftsm.ukm.my/v6/industrial-training
+  - https://www.ftsm.ukm.my/v6/fyp
+  - https://www.ftsm.ukm.my/v6/mobility-exchange
+  - https://www.ftsm.ukm.my/v6/hejim
+  - https://www.ftsm.ukm.my/v6/unit-postgraduate
+  - https://www.ftsm.ukm.my/v6/unit-undergraduate
+  - https://www.ftsm.ukm.my/v6/unit-cait
+  - https://www.ftsm.ukm.my/v6/unit-cyber
+  - https://www.ftsm.ukm.my/v6/unit-softam
+  - https://www.ftsm.ukm.my/v6/facility
+  - https://www.ftsm.ukm.my/v6/download
+  - https://www.ftsm.ukm.my/v6/news-event
+  - https://www.ftsm.ukm.my/v6/alumni
+  - https://www.ftsm.ukm.my/v6/sustainability
+  - https://www.ftsm.ukm.my/v6/agreement
+  - https://www.ftsm.ukm.my/v6/online-survey
+  - https://www.ftsm.ukm.my/aksesV2
+  - https://www.ftsm.ukm.my/ethesis
+  - https://www.ftsm.ukm.my/alumniftsm
+  - https://www.ftsm.ukm.my/ftsmgallery
+  - https://ftsm.ukm.my/richsoftam
+
+  # Related official UKM sources for broader student answers
+  - https://www.ukm.my/portalukm/contact-us/
+  - https://www.ukm.my/portalukm/undergraduate/
+  - https://www.ukm.my/portalukm/undergraduate-requirements/
+  - https://www.ukm.my/studyukm/
+  - https://www.ukm.my/studyukm/postgraduate/
+  - https://www.ukm.my/akademik/kalendar/
+  - https://www.ukm.my/akademik/staff-department/student-admission-unit/
+  - https://www.ukm.my/hepukm/en/
+  - https://www.ukm.my/ukmshape/ukmshape-learning-fees/
+  - https://www.ukm.my/ukmshape/finance-ukmshape/
+  - https://www.ukm.my/ukmshape/frequently-asked-questions-faq/
+  - https://www.ukm.my/ukmshape/renewal--application/
+
+  # Chinese student community guide. This is useful for practical onboarding,
+  # but answers should treat it as student-maintained guidance, not official policy.
+  - https://ftsm.pages.dev/
+
+skip_extensions:
+  - .pdf
+  - .doc
+  - .docx
+  - .xls
+  - .xlsx
+  - .zip
+  - .rar
+  - .jpg
+  - .jpeg
+  - .png
+  - .gif

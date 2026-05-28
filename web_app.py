@@ -1,38 +1,72 @@
-import json
 import os
-import hashlib
-import hmac
-import re
-import secrets
+import shutil
+import sys
 import threading
-import time
 from pathlib import Path
-from threading import Lock
 from typing import Any
 from uuid import uuid4
 
-from fastapi import Depends, FastAPI, File, Header, HTTPException, Request, Response, UploadFile
-from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
+from dotenv import load_dotenv
+from fastapi import FastAPI, File, HTTPException, Query, Request, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field
 
-from agent.react_agent import ReactAgent
-from utils.config_handler import chroma_conf
-from utils.path_tool import get_abs_path
-from utils.scheduler import get_status as scheduler_status
-from utils.scheduler import start_scheduler, stop_scheduler
-from utils.semantic_cache import SemanticCache
+# ── 打包路径处理 ──
+# 打包后 sys.frozen=True；_MEIPASS 是 PyInstaller 临时解压目录，只读
+if getattr(sys, "frozen", False):
+    BASE_DIR = Path(sys.executable).parent           # 可写（exe 所在目录）
+    _BUNDLE_DIR = Path(getattr(sys, "_MEIPASS", BASE_DIR))  # 只读资源根
+else:
+    BASE_DIR = Path(__file__).resolve().parent
+    _BUNDLE_DIR = BASE_DIR
 
-BASE_DIR = Path(__file__).resolve().parent
-WEB_DIR = BASE_DIR / "web"
-SESSION_STORE_PATH = BASE_DIR / "data" / "ukm_ftsm" / "chat_sessions.json"
-STUDENT_STORE_PATH = BASE_DIR / "data" / "ukm_ftsm" / "student_accounts.json"
-AUTH_COOKIE_NAME = "ftsm_student_session"
-AUTH_SESSION_TTL_SECONDS = 7 * 24 * 3600
-PASSWORD_HASH_ITERATIONS = 200_000
+# Tauri `cargo run` 调试时启动的是 dist 下的 PyInstaller exe，默认同级 .env 在 dist/FTSM-RAG/；
+# 通过 FTSM_PROJECT_ROOT 让后端改用仓库根目录的 .env，与源码开发一致。
+_env_override = os.environ.get("FTSM_PROJECT_ROOT", "").strip()
+if _env_override:
+    _env_root = Path(_env_override)
+    _env_path = (_env_root / ".env") if _env_root.is_dir() else BASE_DIR / ".env"
+else:
+    _env_path = BASE_DIR / ".env"
 
-# ── Knowledge Base ──
+# 首次启动：若本地没有 .env，从 bundle 里的 .env.example 复制一份
+if not _env_path.exists():
+    example = _BUNDLE_DIR / ".env.example"
+    if example.exists():
+        shutil.copy2(example, _env_path)
+
+load_dotenv(_env_path)
+
+# ── 必须在 load_dotenv 之后再 import agent / 模型工厂（它们读环境变量）──
+from agent.react_agent import ReactAgent  # noqa: E402
+from services.chat_service import stream_chat_answer  # noqa: E402
+from services.document_service import (  # noqa: E402
+    delete_knowledge_document,
+    list_knowledge_documents,
+    save_uploads,
+)
+from services.settings_service import (  # noqa: E402
+    apply_runtime_env,
+    parse_env_file,
+    write_env_file,
+)
+from utils.config_handler import chroma_conf  # noqa: E402
+from utils.conversation_store import ConversationStore  # noqa: E402
+from utils.indexing_lock import indexing_lock  # noqa: E402
+from utils.path_tool import get_abs_path  # noqa: E402
+from utils.scheduler import get_status as scheduler_status  # noqa: E402
+from utils.scheduler import start_scheduler, stop_scheduler  # noqa: E402
+from utils.scheduler import trigger_manual_crawl  # noqa: E402
+from utils.semantic_cache import SemanticCache  # noqa: E402
+
+WEB_DIR = _BUNDLE_DIR / "web"
+REACT_DIST_DIR = _BUNDLE_DIR / "desktop" / "dist"
+REACT_INDEX = REACT_DIST_DIR / "index.html"
+
+# ── 知识库 ──
 DATA_DIR = Path(get_abs_path(chroma_conf["data_path"]))
 ALLOWED_UPLOAD_EXTENSIONS: set[str] = set(
     chroma_conf.get(
@@ -40,25 +74,28 @@ ALLOWED_UPLOAD_EXTENSIONS: set[str] = set(
     )
 )
 MAX_UPLOAD_SIZE_MB = 50
-ADMIN_API_KEY = os.getenv("ADMIN_API_KEY", "").strip()
 
+MAX_EXPOSED_CONVERSATIONS = 50
+MAX_HISTORY_TURNS = 5
+
+conv_store = ConversationStore(DATA_DIR)
+
+
+# ── 训练 worker ──
 _TRAINING_LOCK = threading.Lock()
 _TRAINING_STATE: dict[str, Any] = {
     "running": False,
     "pending": False,
-    "last_result": None,  # "success" | None
-    "last_error": None,  # error message string | None
+    "last_result": None,
+    "last_error": None,
 }
-
-# ── Training worker ──
 
 
 def _training_worker() -> None:
-    """Background worker: runs VectorStoreService.load_document(), re-runs if pending."""
     while True:
         with _TRAINING_LOCK:
             if _TRAINING_STATE["running"]:
-                return  # another worker is active
+                return
             _TRAINING_STATE["running"] = True
             _TRAINING_STATE["pending"] = False
             _TRAINING_STATE["last_result"] = None
@@ -66,12 +103,12 @@ def _training_worker() -> None:
 
         should_continue = False
         try:
-            from rag.vector_store import (
-                VectorStoreService,  # lazy import avoids circular deps
-            )
-
-            vs = VectorStoreService()
-            vs.load_document()
+            from rag.vector_store import VectorStoreService
+            with indexing_lock:
+                vs = VectorStoreService()
+                vs.load_document()
+            # 知识库更新后重置 RAG 单例，确保 BM25 索引随新文档重建
+            _reset_agent()
             with _TRAINING_LOCK:
                 _TRAINING_STATE["running"] = False
                 _TRAINING_STATE["last_result"] = "success"
@@ -87,7 +124,6 @@ def _training_worker() -> None:
 
 
 def _start_training() -> bool:
-    """Start training thread; if already running mark as pending. Returns True when a new thread is spawned."""
     with _TRAINING_LOCK:
         if _TRAINING_STATE["running"]:
             _TRAINING_STATE["pending"] = True
@@ -97,547 +133,492 @@ def _start_training() -> bool:
     return True
 
 
+# ── FastAPI app ──
 app = FastAPI(title="FTSM-RAG")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 app.mount("/static", StaticFiles(directory=WEB_DIR / "static"), name="static")
+if (REACT_DIST_DIR / "assets").exists():
+    app.mount("/assets", StaticFiles(directory=REACT_DIST_DIR / "assets"), name="react_assets")
 templates = Jinja2Templates(directory=str(WEB_DIR / "templates"))
 
-agent = ReactAgent()
+_agent: ReactAgent | None = None
+_agent_lock = threading.Lock()
 semantic_cache = SemanticCache(threshold=0.92)
 
-CHAR_STREAM_DELAY_SECONDS = 0.006
-MAX_CONVERSATION_ITEMS = 200
-MAX_EXPOSED_CONVERSATIONS = 50
-MAX_HISTORY_TURNS = 5
 
-CONVERSATIONS: dict[str, list[dict[str, str]]] = {}
-CONVERSATION_META: dict[str, dict[str, str | int]] = {}
-SESSION_LOCK = Lock()
-STUDENT_LOCK = Lock()
-AUTH_SESSIONS: dict[str, dict[str, str | int]] = {}
+def _get_agent() -> ReactAgent:
+    """懒加载 agent，避免 DASHSCOPE_API_KEY 缺失时启动失败。"""
+    global _agent
+    with _agent_lock:
+        if _agent is None:
+            _agent = ReactAgent()
+        return _agent
+
+
+def _reset_agent() -> None:
+    """保存设置后调用，下次聊天时会用新 key/模型重新创建 agent。"""
+    global _agent
+    from agent.tools.agent_tools import reset_rag_service
+    from model.factory import reset_models
+    reset_models()
+    reset_rag_service()
+    semantic_cache.clear()
+    with _agent_lock:
+        _agent = None
+
+
+def _cache_namespace() -> str:
+    from model.factory import resolve_chat_model_name
+    from rag.ingestion import load_manifest
+
+    env = _parse_env_file(_env_path)
+    base_url = env.get("DASHSCOPE_BASE_URL", "").strip() or os.getenv("DASHSCOPE_BASE_URL", "").strip()
+    region = "intl" if "intl" in base_url else "china"
+    index_version = (load_manifest().get("index") or {}).get("version", 0)
+    return f"v2|region={region}|chat={resolve_chat_model_name()}|index={index_version}"
+
+
+def _dashscope_configured() -> bool:
+    """是否已在应用目录的 .env 中写入 API Key。
+
+    不能只用 os.getenv：load_dotenv 默认不覆盖已有环境变量，若系统在用户/终端里
+    已导出 DASHSCOPE_API_KEY，会导致误以为「应用内已配置」，桌面端首次引导弹窗不出现。
+    """
+    env = parse_env_file(_env_path)
+    return bool(env.get("DASHSCOPE_API_KEY", "").strip())
+
+
+def _react_web_available() -> bool:
+    return REACT_INDEX.exists()
+
+
+def _react_web_response() -> FileResponse:
+    return FileResponse(REACT_INDEX)
 
 
 class ChatRequest(BaseModel):
     message: str
     conversation_id: str | None = Field(default=None)
-    new_chat: bool = Field(default=False)
 
 
-class StudentAuthRequest(BaseModel):
-    student_id: str = Field(min_length=3, max_length=80)
-    password: str = Field(min_length=6, max_length=200)
-    display_name: str | None = Field(default=None, max_length=80)
-
-
-def _normalize_student_id(student_id: str) -> str:
-    normalized = student_id.strip().lower()
-    if not re.fullmatch(r"[a-z0-9@._-]{3,80}", normalized):
-        raise HTTPException(
-            status_code=400,
-            detail="Student ID can only contain letters, numbers, @, dot, underscore, or hyphen.",
-        )
-    return normalized
-
-
-def _load_student_store() -> dict[str, Any]:
-    if not STUDENT_STORE_PATH.exists():
-        return {"students": {}}
-    try:
-        return json.loads(STUDENT_STORE_PATH.read_text(encoding="utf-8"))
-    except Exception:
-        return {"students": {}}
-
-
-def _persist_student_store(payload: dict[str, Any]) -> None:
-    STUDENT_STORE_PATH.parent.mkdir(parents=True, exist_ok=True)
-    STUDENT_STORE_PATH.write_text(
-        json.dumps(payload, ensure_ascii=False, indent=2),
-        encoding="utf-8",
-    )
-
-
-def _hash_password(password: str, salt: str | None = None) -> str:
-    salt = salt or secrets.token_hex(16)
-    digest = hashlib.pbkdf2_hmac(
-        "sha256",
-        password.encode("utf-8"),
-        salt.encode("utf-8"),
-        PASSWORD_HASH_ITERATIONS,
-    ).hex()
-    return f"pbkdf2_sha256${PASSWORD_HASH_ITERATIONS}${salt}${digest}"
-
-
-def _verify_password(password: str, stored_hash: str) -> bool:
-    try:
-        scheme, iterations, salt, expected = stored_hash.split("$", 3)
-        if scheme != "pbkdf2_sha256":
-            return False
-        digest = hashlib.pbkdf2_hmac(
-            "sha256",
-            password.encode("utf-8"),
-            salt.encode("utf-8"),
-            int(iterations),
-        ).hex()
-        return hmac.compare_digest(digest, expected)
-    except Exception:
-        return False
-
-
-def _public_student(student_id: str, record: dict[str, Any]) -> dict[str, str]:
-    return {
-        "student_id": student_id,
-        "display_name": str(record.get("display_name") or student_id),
-    }
-
-
-def _create_student_session(response: Response, student_id: str) -> None:
-    token = secrets.token_urlsafe(32)
-    AUTH_SESSIONS[token] = {
-        "student_id": student_id,
-        "expires_at": int(time.time()) + AUTH_SESSION_TTL_SECONDS,
-    }
-    response.set_cookie(
-        AUTH_COOKIE_NAME,
-        token,
-        max_age=AUTH_SESSION_TTL_SECONDS,
-        httponly=True,
-        samesite="lax",
-    )
-
-
-def _clear_student_session(request: Request, response: Response) -> None:
-    token = request.cookies.get(AUTH_COOKIE_NAME)
-    if token:
-        AUTH_SESSIONS.pop(token, None)
-    response.delete_cookie(AUTH_COOKIE_NAME)
-
-
-def require_student(request: Request) -> dict[str, str]:
-    token = request.cookies.get(AUTH_COOKIE_NAME)
-    if not token:
-        raise HTTPException(status_code=401, detail="Login required")
-    session = AUTH_SESSIONS.get(token)
-    if not session or int(session.get("expires_at", 0)) < int(time.time()):
-        AUTH_SESSIONS.pop(token, None)
-        raise HTTPException(status_code=401, detail="Login required")
-    student_id = str(session["student_id"])
-    with STUDENT_LOCK:
-        store = _load_student_store()
-        record = store.get("students", {}).get(student_id)
-    if not record:
-        raise HTTPException(status_code=401, detail="Login required")
-    return _public_student(student_id, record)
-
-
-def require_admin_api_key(x_admin_api_key: str | None = Header(default=None)) -> None:
-    if not ADMIN_API_KEY:
-        raise HTTPException(
-            status_code=500,
-            detail="ADMIN_API_KEY is not configured on the server.",
-        )
-    if not x_admin_api_key or x_admin_api_key.strip() != ADMIN_API_KEY:
-        raise HTTPException(status_code=401, detail="Unauthorized")
-
-
-def _load_session_store() -> None:
-    if not SESSION_STORE_PATH.exists():
-        return
-
-    try:
-        payload = json.loads(SESSION_STORE_PATH.read_text(encoding="utf-8"))
-    except Exception:
-        return
-
-    conversations = payload.get("conversations", {})
-    meta = payload.get("meta", {})
-
-    if isinstance(conversations, dict):
-        CONVERSATIONS.update(conversations)
-    if isinstance(meta, dict):
-        CONVERSATION_META.update(meta)
-
-
-def _persist_session_store() -> None:
-    SESSION_STORE_PATH.parent.mkdir(parents=True, exist_ok=True)
-    SESSION_STORE_PATH.write_text(
-        json.dumps(
-            {
-                "conversations": CONVERSATIONS,
-                "meta": CONVERSATION_META,
-            },
-            ensure_ascii=False,
-            indent=2,
-        ),
-        encoding="utf-8",
-    )
-
-
-def _prune_conversations() -> None:
-    if len(CONVERSATION_META) <= MAX_CONVERSATION_ITEMS:
-        return
-
-    ordered_ids = sorted(
-        CONVERSATION_META,
-        key=lambda cid: int(CONVERSATION_META.get(cid, {}).get("updated_at", 0)),
-        reverse=True,
-    )
-    keep_ids = set(ordered_ids[:MAX_CONVERSATION_ITEMS])
-    for cid in list(CONVERSATION_META.keys()):
-        if cid in keep_ids:
-            continue
-        CONVERSATION_META.pop(cid, None)
-        CONVERSATIONS.pop(cid, None)
-
-
-def _ensure_conversation(
-    conversation_id: str,
-    title: str = "New chat",
-    student_id: str = "",
-) -> None:
-    now = int(time.time())
-    CONVERSATIONS.setdefault(conversation_id, [])
-    existing = CONVERSATION_META.get(conversation_id, {})
-    CONVERSATION_META[conversation_id] = {
-        "title": str(existing.get("title", title)),
-        "updated_at": int(existing.get("updated_at", now)),
-        "student_id": str(existing.get("student_id") or student_id),
-    }
-
-
-_load_session_store()
-
+# ── 生命周期 ──
 
 @app.on_event("startup")
-async def _startup():
-    start_scheduler()
+async def _startup() -> None:
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    start_scheduler(on_index_updated=_reset_agent)
 
 
 @app.on_event("shutdown")
-async def _shutdown():
+async def _shutdown() -> None:
     stop_scheduler()
 
 
-@app.get("/api/scheduler/status")
-async def scheduler_status_api() -> JSONResponse:
-    """查看定时任务状态"""
-    return JSONResponse(scheduler_status())
-
-
-@app.get("/", response_class=HTMLResponse)
-async def index(request: Request) -> HTMLResponse:
-    return templates.TemplateResponse(request, "index.html", {})
-
-
-@app.get("/manage", response_class=HTMLResponse)
-async def manage(request: Request) -> HTMLResponse:
-    return templates.TemplateResponse(request, "admin.html", {})
-
+# ── 路由 ──
 
 @app.get("/api/health")
 async def health() -> JSONResponse:
     return JSONResponse({"status": "ok"})
 
 
-@app.get("/api/auth/me")
-async def auth_me(student: dict[str, str] = Depends(require_student)) -> JSONResponse:
-    return JSONResponse({"authenticated": True, "student": student})
+@app.get("/api/config/status")
+async def config_status() -> JSONResponse:
+    """前端用来判断是否需要引导用户去设置 API Key。"""
+    return JSONResponse({"dashscope_configured": _dashscope_configured()})
 
 
-@app.post("/api/auth/register")
-async def auth_register(payload: StudentAuthRequest) -> JSONResponse:
-    student_id = _normalize_student_id(payload.student_id)
-    display_name = (payload.display_name or student_id).strip() or student_id
-    with STUDENT_LOCK:
-        store = _load_student_store()
-        students = store.setdefault("students", {})
-        if student_id in students:
-            raise HTTPException(status_code=409, detail="Student account already exists.")
-        students[student_id] = {
-            "student_id": student_id,
-            "display_name": display_name,
-            "password_hash": _hash_password(payload.password),
-            "created_at": int(time.time()),
-        }
-        _persist_student_store(store)
-    res = JSONResponse(
-        {"authenticated": True, "student": {"student_id": student_id, "display_name": display_name}}
-    )
-    _create_student_session(res, student_id)
-    return res
+@app.get("/api/scheduler/status")
+async def scheduler_status_api() -> JSONResponse:
+    return JSONResponse(scheduler_status())
 
 
-@app.post("/api/auth/login")
-async def auth_login(payload: StudentAuthRequest) -> JSONResponse:
-    student_id = _normalize_student_id(payload.student_id)
-    with STUDENT_LOCK:
-        store = _load_student_store()
-        record = store.get("students", {}).get(student_id)
-    if not record or not _verify_password(payload.password, str(record.get("password_hash", ""))):
-        raise HTTPException(status_code=401, detail="Invalid student ID or password.")
-    res = JSONResponse({"authenticated": True, "student": _public_student(student_id, record)})
-    _create_student_session(res, student_id)
-    return res
+@app.get("/", response_class=HTMLResponse)
+async def index(request: Request):
+    if _react_web_available():
+        return _react_web_response()
+
+    # 若未配置 API Key，自动跳转到设置页
+    return templates.TemplateResponse(request, "legacy.html", {})
 
 
-@app.post("/api/auth/logout")
-async def auth_logout(request: Request) -> JSONResponse:
-    res = JSONResponse({"authenticated": False})
-    _clear_student_session(request, res)
-    return res
+@app.get("/manage", response_class=HTMLResponse)
+async def manage(request: Request) -> HTMLResponse:
+    if _react_web_available():
+        return _react_web_response()
+    return templates.TemplateResponse(request, "legacy.html", {})
 
 
-# ── Knowledge Base endpoints ──
+@app.get("/dashboard", response_class=HTMLResponse)
+async def dashboard(request: Request) -> HTMLResponse:
+    if _react_web_available():
+        return _react_web_response()
+    return templates.TemplateResponse(request, "legacy.html", {})
 
 
-@app.post("/api/upload")
-async def upload_documents(
-    files: list[UploadFile] = File(...),
-    _: None = Depends(require_admin_api_key),
-) -> JSONResponse:
-    """Upload one or more documents and kick off background training."""
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
-    saved: list[str] = []
-    errors: list[dict[str, str]] = []
+@app.get("/settings", response_class=HTMLResponse)
+async def settings_page(request: Request) -> HTMLResponse:
+    if _react_web_available():
+        return _react_web_response()
+    return templates.TemplateResponse(request, "legacy.html", {})
 
-    for file in files:
-        fname = Path(file.filename or "").name  # strip any path component
-        if not fname:
-            errors.append(
-                {"name": file.filename or "(unknown)", "error": "Invalid filename"}
-            )
-            continue
 
-        ext = fname.rsplit(".", 1)[-1].lower() if "." in fname else ""
-        if ext not in ALLOWED_UPLOAD_EXTENSIONS:
-            errors.append({"name": fname, "error": f"Unsupported file type: .{ext}"})
-            continue
+@app.get("/legacy", response_class=HTMLResponse)
+async def legacy_index(request: Request):
+    return templates.TemplateResponse(request, "legacy.html", {})
 
+
+@app.get("/legacy/{legacy_path:path}", response_class=HTMLResponse)
+async def legacy_fallback(request: Request, legacy_path: str) -> HTMLResponse:
+    return templates.TemplateResponse(request, "legacy.html", {})
+
+
+# ── 设置（单机版，无保护） ──
+
+def _parse_env_file(env_path: Path) -> dict[str, str]:
+    return parse_env_file(env_path)
+
+
+def _write_env_file(env_path: Path, updates: dict[str, str]) -> None:
+    write_env_file(env_path, updates)
+
+
+class SettingsPayload(BaseModel):
+    dashscope_api_key: str = Field(default="")
+    dashscope_base_url: str = Field(default="")
+    chat_model_name: str = Field(default="")
+
+
+def _mask_api_key(key: str) -> str:
+    """返回掩码形式，仅保留末 4 位，如 sk-****abcd"""
+    if not key:
+        return ""
+    visible = key[-4:] if len(key) >= 4 else key
+    return f"sk-****{visible}"
+
+
+@app.get("/api/settings")
+async def get_settings() -> JSONResponse:
+    env = _parse_env_file(_env_path)
+    from model.factory import resolve_chat_model_name
+    raw_key = env.get("DASHSCOPE_API_KEY", "")
+    return JSONResponse({
+        "dashscope_api_key":  _mask_api_key(raw_key),
+        "dashscope_base_url": env.get("DASHSCOPE_BASE_URL", ""),
+        "chat_model_name":    env.get("CHAT_MODEL_NAME", "") or resolve_chat_model_name(),
+    })
+
+
+@app.post("/api/settings")
+async def save_settings(payload: SettingsPayload) -> JSONResponse:
+    updates: dict[str, str] = {}
+    raw_key = payload.dashscope_api_key.strip()
+    # 如果前端回传的仍是掩码（sk-****xxxx），说明用户未修改，跳过覆盖
+    is_masked = raw_key.startswith("sk-****") and len(raw_key) <= 12
+    if raw_key and not is_masked:
+        updates["DASHSCOPE_API_KEY"] = raw_key
+    # 空字符串表示恢复默认（base_url 不设 = 国内版；模型名不设 = rag.yml 默认值）
+    updates["DASHSCOPE_BASE_URL"] = payload.dashscope_base_url.strip()
+    updates["CHAT_MODEL_NAME"] = payload.chat_model_name.strip()
+
+    _write_env_file(_env_path, updates)
+    apply_runtime_env(updates)
+
+    _reset_agent()
+    return JSONResponse({"ok": True})
+
+
+@app.get("/api/models")
+async def list_models(list_region: str | None = Query(default=None)) -> JSONResponse:
+    """
+    返回按地区精选的 Qwen 对话模型列表，并用一次轻量 completions 调用验证 API Key 是否有效。
+    DashScope 的 compatible-mode 不支持 /v1/models 端点，所以用官方文档整理的静态列表。
+
+    list_region: 可选 china | intl，仅影响返回的模型名字列表（例如设置页切换地区时尚未保存）。
+    不传则按 .env 中的 DASHSCOPE_BASE_URL 判断。
+    """
+    import httpx
+
+    env = _parse_env_file(_env_path)
+    api_key = env.get("DASHSCOPE_API_KEY", "").strip() or os.getenv("DASHSCOPE_API_KEY", "").strip()
+    base_url = env.get("DASHSCOPE_BASE_URL", "").strip() or os.getenv("DASHSCOPE_BASE_URL", "").strip()
+
+    env_is_intl = bool(base_url and "intl" in base_url)
+    if list_region == "intl":
+        list_is_intl = True
+    elif list_region == "china":
+        list_is_intl = False
+    else:
+        list_is_intl = env_is_intl
+
+    # ── 官方文档整理的精选列表（2026-04，来自 help.aliyun.com/zh/model-studio/getting-started/models）
+    _CHINA_MODELS = [
+        # Qwen3 系列（2025 最新旗舰）
+        "qwen3-max",
+        "qwen3-max-latest",
+        "qwen3-max-preview",
+        "qwen3.6-max-preview",
+        # 经典旗舰
+        "qwen-max",
+        "qwen-max-latest",
+        # Plus 系列
+        "qwen3.6-plus",
+        "qwen3.5-plus",
+        "qwen-plus",
+        "qwen-plus-latest",
+        # Turbo 系列（快速低成本）
+        "qwen-turbo",
+        "qwen-turbo-latest",
+        # Long 系列（超长上下文）
+        "qwen-long",
+        "qwen-long-latest",
+    ]
+    _INTL_MODELS = [
+        # 国际版独有 / 同步可用
+        "qwen3.6-max-preview",
+        "qwen3.6-plus",
+        "qwen3.5-plus",
+        "qwen-plus",
+        "qwen-plus-latest",
+        "qwen-turbo",
+        "qwen-turbo-latest",
+    ]
+
+    models = _INTL_MODELS if list_is_intl else _CHINA_MODELS
+
+    # ── 用一次极简 completions 请求验证 Key（始终按已保存地域的 endpoint）──
+    key_valid: bool | None = None
+    key_error: str = ""
+
+    if api_key:
+        compat_base = (
+            "https://dashscope-intl.aliyuncs.com/compatible-mode/v1"
+            if env_is_intl
+            else "https://dashscope.aliyuncs.com/compatible-mode/v1"
+        )
         try:
-            content = await file.read()
-            if len(content) > MAX_UPLOAD_SIZE_MB * 1024 * 1024:
-                errors.append(
-                    {
-                        "name": fname,
-                        "error": f"File exceeds {MAX_UPLOAD_SIZE_MB} MB limit",
-                    }
+            async with httpx.AsyncClient(timeout=10) as client:
+                resp = await client.post(
+                    f"{compat_base}/chat/completions",
+                    headers={"Authorization": f"Bearer {api_key}"},
+                    json={
+                        "model": "qwen-turbo",
+                        "messages": [{"role": "user", "content": "hi"}],
+                        "max_tokens": 1,
+                    },
                 )
-                continue
-            (DATA_DIR / fname).write_bytes(content)
-            saved.append(fname)
+            if resp.status_code in (200, 400):
+                # 400 也算 Key 有效（请求格式问题，非认证问题）
+                key_valid = True
+            elif resp.status_code == 401:
+                key_valid = False
+                key_error = "API Key 无效，请检查是否填写正确。"
+            else:
+                key_valid = None
+                key_error = f"验证请求返回 {resp.status_code}，无法确认。"
         except Exception as exc:
-            errors.append({"name": fname, "error": str(exc)})
-        finally:
-            await file.close()
+            key_valid = None
+            key_error = f"网络请求失败：{exc}"
+    else:
+        key_valid = False
+        key_error = "API Key 未配置。"
 
-    training_started = False
-    if saved:
-        training_started = _start_training()
-
-    return JSONResponse(
-        {"saved": saved, "errors": errors, "training_started": training_started}
-    )
-
-
-@app.get("/api/documents")
-async def list_documents() -> JSONResponse:
-    """List all knowledge-base documents in the data directory."""
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
-    docs: list[dict[str, Any]] = []
-    for f in DATA_DIR.iterdir():
-        if not f.is_file():
-            continue
-        ext = f.suffix.lstrip(".").lower()
-        if ext not in ALLOWED_UPLOAD_EXTENSIONS:
-            continue
-        stat = f.stat()
-        docs.append(
-            {"name": f.name, "size": stat.st_size, "modified": int(stat.st_mtime)}
-        )
-    docs.sort(key=lambda x: x["modified"], reverse=True)
-    return JSONResponse({"documents": docs})
+    return JSONResponse({
+        "models": models,
+        "key_valid": key_valid,
+        "key_error": key_error,
+        "region": "intl" if list_is_intl else "china",
+    })
 
 
-@app.delete("/api/documents/{filename}")
-async def delete_document(
-    filename: str,
-    _: None = Depends(require_admin_api_key),
-) -> JSONResponse:
-    """Delete a document from the knowledge-base data directory."""
-    safe_name = Path(filename).name  # prevent path traversal
-    file_path = DATA_DIR / safe_name
-
-    if not file_path.exists() or not file_path.is_file():
-        raise HTTPException(status_code=404, detail="File not found")
-
-    ext = safe_name.rsplit(".", 1)[-1].lower() if "." in safe_name else ""
-    if ext not in ALLOWED_UPLOAD_EXTENSIONS:
-        raise HTTPException(status_code=400, detail="File type not allowed")
-
-    file_path.unlink()
-    return JSONResponse({"deleted": safe_name})
-
-
-@app.get("/api/training/status")
-async def training_status() -> JSONResponse:
-    """Return the current training state."""
-    with _TRAINING_LOCK:
-        return JSONResponse(
-            {
-                "running": _TRAINING_STATE["running"],
-                "pending": _TRAINING_STATE["pending"],
-                "last_result": _TRAINING_STATE["last_result"],
-                "last_error": _TRAINING_STATE["last_error"],
-            }
-        )
-
-
-@app.post("/api/training/start")
-async def training_start(_: None = Depends(require_admin_api_key)) -> JSONResponse:
-    """Manually trigger a training run."""
-    started = _start_training()
-    return JSONResponse(
-        {
-            "started": started,
-            "message": "Training already running — marked as pending"
-            if not started
-            else "Training started",
-        }
-    )
-
+# ── 对话 ──
 
 @app.post("/api/conversations")
-async def create_conversation(student: dict[str, str] = Depends(require_student)) -> JSONResponse:
+async def create_conversation() -> JSONResponse:
     conversation_id = str(uuid4())
-    with SESSION_LOCK:
-        _ensure_conversation(conversation_id, student_id=student["student_id"])
-        _persist_session_store()
+    conv = conv_store.create(conversation_id)
     return JSONResponse(
         {
-            "id": conversation_id,
-            "title": "New chat",
-            "updated_at": int(time.time()),
+            "id": conv["id"],
+            "title": conv["title"],
+            "updated_at": conv["updated_at"],
             "messages": [],
         }
     )
 
 
 @app.get("/api/conversations")
-async def list_conversations(student: dict[str, str] = Depends(require_student)) -> JSONResponse:
-    items: list[dict[str, str | int]] = []
-    with SESSION_LOCK:
-        for cid, meta in CONVERSATION_META.items():
-            if str(meta.get("student_id", "")) != student["student_id"]:
-                continue
-            items.append(
-                {
-                    "id": cid,
-                    "title": str(meta.get("title", "New chat")),
-                    "updated_at": int(meta.get("updated_at", 0)),
-                }
-            )
-    items.sort(key=lambda x: int(x.get("updated_at", 0)), reverse=True)
-    return JSONResponse({"items": items[:MAX_EXPOSED_CONVERSATIONS]})
+async def list_conversations() -> JSONResponse:
+    items = conv_store.list_items(limit=MAX_EXPOSED_CONVERSATIONS)
+    return JSONResponse({"items": items})
+
+
+@app.delete("/api/conversations/{conversation_id}")
+async def delete_conversation(conversation_id: str) -> JSONResponse:
+    found = conv_store.delete(conversation_id)
+    if not found:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    return JSONResponse({"ok": True})
 
 
 @app.get("/api/conversations/{conversation_id}")
-async def get_conversation(
-    conversation_id: str,
-    student: dict[str, str] = Depends(require_student),
-) -> JSONResponse:
-    with SESSION_LOCK:
-        meta = CONVERSATION_META.get(conversation_id, {})
-        if str(meta.get("student_id", "")) != student["student_id"]:
-            raise HTTPException(status_code=404, detail="Conversation not found")
-        messages = CONVERSATIONS.get(conversation_id, [])
+async def get_conversation(conversation_id: str) -> JSONResponse:
+    conv = conv_store.get(conversation_id)
+    if not conv:
+        raise HTTPException(status_code=404, detail="Conversation not found")
     return JSONResponse(
         {
-            "id": conversation_id,
-            "title": str(meta.get("title", "New chat")),
-            "updated_at": int(meta.get("updated_at", 0)),
-            "messages": messages,
+            "id": conv["id"],
+            "title": conv.get("title", "New chat"),
+            "updated_at": conv.get("updated_at", 0),
+            "messages": [
+                {"role": m["role"], "content": m["content"]}
+                for m in conv.get("messages", [])
+            ],
+        }
+    )
+
+
+# ── 知识库文件管理 ──
+
+@app.post("/api/upload")
+async def upload_documents(files: list[UploadFile] = File(...)) -> JSONResponse:
+    saved, errors = await save_uploads(
+        files,
+        DATA_DIR,
+        ALLOWED_UPLOAD_EXTENSIONS,
+        MAX_UPLOAD_SIZE_MB,
+    )
+    if saved:
+        semantic_cache.clear()
+    training_started = _start_training() if saved else False
+    return JSONResponse({"saved": saved, "errors": errors, "training_started": training_started})
+
+
+@app.get("/api/documents")
+async def list_documents() -> JSONResponse:
+    return JSONResponse({"documents": list_knowledge_documents(DATA_DIR, ALLOWED_UPLOAD_EXTENSIONS)})
+
+
+@app.delete("/api/documents/{filename:path}")
+async def delete_document(filename: str) -> JSONResponse:
+    try:
+        result = delete_knowledge_document(filename, DATA_DIR, ALLOWED_UPLOAD_EXTENSIONS)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="File not found")
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    except RuntimeError as exc:
+        raise HTTPException(status_code=409, detail=str(exc))
+    semantic_cache.clear()
+    return JSONResponse(result)
+
+
+@app.get("/api/training/status")
+async def training_status() -> JSONResponse:
+    with _TRAINING_LOCK:
+        return JSONResponse(dict(_TRAINING_STATE))
+
+
+@app.post("/api/training/start")
+async def training_start() -> JSONResponse:
+    started = _start_training()
+    semantic_cache.clear()
+    return JSONResponse(
+        {
+            "started": started,
+            "message": "Training already running — marked as pending" if not started else "Training started",
         }
     )
 
 
 @app.get("/api/cache/stats")
 async def cache_stats() -> JSONResponse:
-    """查看语义缓存统计"""
     return JSONResponse(semantic_cache.stats())
 
 
+@app.get("/api/knowledge/stats")
+async def knowledge_stats() -> JSONResponse:
+    """知识库概览：文档数、manifest 记录数、chunk 总数、最近索引时间、缓存条目数。"""
+    from rag.ingestion import compute_index_state, load_manifest, save_manifest
+
+    manifest = load_manifest()
+    docs_in_manifest = manifest.get("documents", {})
+    index_state = manifest.get("index") or compute_index_state(manifest)
+    if not index_state.get("source_type_counts"):
+        index_state = compute_index_state(manifest, previous_state=index_state)
+        manifest["index"] = index_state
+        save_manifest(manifest)
+
+    total_chunks = sum(
+        len(record.get("chunk_ids", []))
+        for record in docs_in_manifest.values()
+    )
+
+    last_indexed: str | None = None
+    for record in docs_in_manifest.values():
+        at = record.get("indexed_at")
+        if at and (last_indexed is None or at > last_indexed):
+            last_indexed = at
+
+    file_docs = list_knowledge_documents(DATA_DIR, ALLOWED_UPLOAD_EXTENSIONS)
+    source_type_counts = index_state.get("source_type_counts") or {}
+
+    return JSONResponse({
+        "document_count": len(file_docs),
+        "manifest_records": len(docs_in_manifest),
+        "total_chunks": index_state.get("total_chunks", total_chunks),
+        "last_indexed": index_state.get("last_indexed") or last_indexed,
+        "cache_entries": semantic_cache.stats().get("size", 0),
+        "index_version": index_state.get("version", 0),
+        "index_updated_at": index_state.get("updated_at"),
+        "index_last_error": index_state.get("last_error"),
+        "source_type_counts": source_type_counts,
+    })
+
+
+# ── 聊天 ──
+
+@app.post("/api/knowledge/update")
+async def update_knowledge_from_website(
+    max_pages: int | None = Query(default=None, ge=1, le=300),
+    reindex: bool = Query(default=True),
+) -> JSONResponse:
+    result = trigger_manual_crawl(max_pages=max_pages, reindex=reindex)
+    if reindex:
+        semantic_cache.clear()
+    return JSONResponse(result)
+
+
 @app.post("/api/chat")
-async def chat(
-    payload: ChatRequest,
-    student: dict[str, str] = Depends(require_student),
-) -> StreamingResponse:
+async def chat(payload: ChatRequest) -> StreamingResponse:
+    if not _dashscope_configured():
+        raise HTTPException(
+            status_code=400,
+            detail="DASHSCOPE_API_KEY is not configured. Please set it in /settings.",
+        )
+
     message = payload.message.strip()
     if not message:
         raise HTTPException(status_code=400, detail="Message is required.")
+
     conversation_id = payload.conversation_id or str(uuid4())
 
-    with SESSION_LOCK:
-        existing_meta = CONVERSATION_META.get(conversation_id)
-        if existing_meta and str(existing_meta.get("student_id", "")) != student["student_id"]:
-            raise HTTPException(status_code=404, detail="Conversation not found")
-        if payload.new_chat or conversation_id not in CONVERSATIONS:
-            _ensure_conversation(conversation_id, student_id=student["student_id"])
-            _persist_session_store()
-
-    def save_history(answer: str) -> None:
-        with SESSION_LOCK:
-            _ensure_conversation(conversation_id, student_id=student["student_id"])
-            CONVERSATIONS[conversation_id].append({"role": "user", "content": message})
-            CONVERSATIONS[conversation_id].append(
-                {"role": "assistant", "content": answer}
-            )
-            if len(CONVERSATIONS[conversation_id]) > 40:
-                CONVERSATIONS[conversation_id] = CONVERSATIONS[conversation_id][-40:]
-            title = message.strip()
-            if len(title) > 40:
-                title = f"{title[:40]}..."
-            CONVERSATION_META[conversation_id] = {
-                "title": title or "New chat",
-                "updated_at": int(time.time()),
-                "student_id": student["student_id"],
-            }
-            _prune_conversations()
-            _persist_session_store()
-
-    def stream_response():
-        # 1. 语义缓存命中 → 直接流式返回，不调用 LLM
-        hit, cached_answer = semantic_cache.get(message)
-        if hit and cached_answer:
-            yield "__THINK__Answering from cache...__ENDTHINK__"
-            save_history(cached_answer)
-            for char in cached_answer:
-                yield char
-                time.sleep(CHAR_STREAM_DELAY_SECONDS)
-            return
-
-        # 2. 未命中 → 取历史上下文，调用 Agent
-        with SESSION_LOCK:
-            all_history = list(CONVERSATIONS.get(conversation_id, []))
-        recent_history = all_history[-(MAX_HISTORY_TURNS * 2) :]
-
-        result_chunks: list[str] = []
-        for chunk in agent.execute_stream(message, history=recent_history):
-            if not chunk:
-                continue
-            if chunk.startswith("__THINK__"):
-                yield chunk
-                continue
-            result_chunks.append(chunk)
-            for char in chunk:
-                yield char
-                time.sleep(CHAR_STREAM_DELAY_SECONDS)
-
-        # 3. 回答完毕 → 写入语义缓存 + 保存历史
-        final_answer = "".join(result_chunks).strip()
-        if final_answer:
-            semantic_cache.set(message, final_answer)
-            save_history(final_answer)
-
     return StreamingResponse(
-        stream_response(),
+        stream_chat_answer(
+            message=message,
+            conversation_id=conversation_id,
+            conversation_store=conv_store,
+            semantic_cache=semantic_cache,
+            get_agent=_get_agent,
+            cache_namespace=_cache_namespace,
+            max_history_turns=MAX_HISTORY_TURNS,
+        ),
         media_type="text/plain; charset=utf-8",
         headers={
             "Cache-Control": "no-cache",
@@ -645,3 +626,10 @@ async def chat(
             "X-Conversation-Id": conversation_id,
         },
     )
+
+
+@app.get("/{full_path:path}", response_class=HTMLResponse)
+async def spa_fallback(full_path: str) -> FileResponse:
+    if full_path.startswith("api/") or "." in Path(full_path).name or not _react_web_available():
+        raise HTTPException(status_code=404, detail="Not found")
+    return _react_web_response()

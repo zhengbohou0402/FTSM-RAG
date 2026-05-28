@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>FTSM-RAG Legacy Status</title>
+        <link rel="icon" type="image/x-icon" href="/static/assets/favicon.ico" />
+        <link rel="apple-touch-icon" href="/static/assets/apple-touch-icon.png" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+            rel="stylesheet"
+        />
+        <link rel="stylesheet" href="/static/legacy.css" />
+    </head>
+    <body class="legacy-page">
+        <main class="legacy-shell">
+            <header class="legacy-header">
+                <div>
+                    <p class="legacy-kicker">Fallback Page</p>
+                    <h1>Backend Status</h1>
+                    <p>
+                        This lightweight page checks whether the FastAPI backend, knowledge base,
+                        cache, indexing worker, and crawler scheduler are reachable.
+                    </p>
+                </div>
+                <div class="legacy-actions">
+                    <button class="legacy-btn" id="legacy-refresh" type="button">Refresh</button>
+                    <a class="legacy-btn legacy-btn-primary" href="/">Open React App</a>
+                </div>
+            </header>
+
+            <section class="legacy-banner" id="legacy-overall">
+                <span class="legacy-dot legacy-dot-loading"></span>
+                <span>Checking backend...</span>
+            </section>
+
+            <section class="legacy-grid">
+                <article class="legacy-card">
+                    <div class="legacy-card-head">
+                        <span>API</span>
+                        <strong id="legacy-api-status">Checking</strong>
+                    </div>
+                    <dl>
+                        <div>
+                            <dt>Health</dt>
+                            <dd id="legacy-api-health">-</dd>
+                        </div>
+                        <div>
+                            <dt>API Key</dt>
+                            <dd id="legacy-api-key">-</dd>
+                        </div>
+                    </dl>
+                </article>
+
+                <article class="legacy-card">
+                    <div class="legacy-card-head">
+                        <span>Knowledge Base</span>
+                        <strong id="legacy-kb-status">Checking</strong>
+                    </div>
+                    <dl>
+                        <div>
+                            <dt>Documents</dt>
+                            <dd id="legacy-kb-docs">-</dd>
+                        </div>
+                        <div>
+                            <dt>Chunks</dt>
+                            <dd id="legacy-kb-chunks">-</dd>
+                        </div>
+                        <div>
+                            <dt>Last Indexed</dt>
+                            <dd id="legacy-kb-last">-</dd>
+                        </div>
+                    </dl>
+                </article>
+
+                <article class="legacy-card">
+                    <div class="legacy-card-head">
+                        <span>Cache</span>
+                        <strong id="legacy-cache-status">Checking</strong>
+                    </div>
+                    <dl>
+                        <div>
+                            <dt>Entries</dt>
+                            <dd id="legacy-cache-size">-</dd>
+                        </div>
+                        <div>
+                            <dt>Hit Rate</dt>
+                            <dd id="legacy-cache-rate">-</dd>
+                        </div>
+                    </dl>
+                </article>
+
+                <article class="legacy-card">
+                    <div class="legacy-card-head">
+                        <span>Indexing</span>
+                        <strong id="legacy-training-status">Checking</strong>
+                    </div>
+                    <dl>
+                        <div>
+                            <dt>Running</dt>
+                            <dd id="legacy-training-running">-</dd>
+                        </div>
+                        <div>
+                            <dt>Pending</dt>
+                            <dd id="legacy-training-pending">-</dd>
+                        </div>
+                        <div>
+                            <dt>Last Error</dt>
+                            <dd id="legacy-training-error">-</dd>
+                        </div>
+                    </dl>
+                </article>
+
+                <article class="legacy-card legacy-card-wide">
+                    <div class="legacy-card-head">
+                        <span>Scheduled Crawler</span>
+                        <strong id="legacy-scheduler-status">Checking</strong>
+                    </div>
+                    <dl class="legacy-dl-wide">
+                        <div>
+                            <dt>Enabled</dt>
+                            <dd id="legacy-scheduler-enabled">-</dd>
+                        </div>
+                        <div>
+                            <dt>Thread</dt>
+                            <dd id="legacy-scheduler-thread">-</dd>
+                        </div>
+                        <div>
+                            <dt>Last Success</dt>
+                            <dd id="legacy-scheduler-success">-</dd>
+                        </div>
+                        <div>
+                            <dt>Next Run</dt>
+                            <dd id="legacy-scheduler-next">-</dd>
+                        </div>
+                        <div>
+                            <dt>Last Error</dt>
+                            <dd id="legacy-scheduler-error">-</dd>
+                        </div>
+                    </dl>
+                </article>
+            </section>
+        </main>
+        <script src="/static/legacy.js" defer></script>
+    </body>
+</html>
