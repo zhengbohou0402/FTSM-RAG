@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { Upload, Button, List, Typography, Card, Space, message, Progress, Popconfirm, Empty } from "antd";
+import { Upload, Button, List, Typography, Card, Space, message, Progress, Popconfirm, Empty, Tag, Tooltip } from "antd";
 import {
   ArrowLeftOutlined,
   BulbFilled,
@@ -49,6 +49,16 @@ function documentIcon(name: string) {
   return <FileTextOutlined />;
 }
 
+function indexTag(doc: Document) {
+  if (doc.stale) return <Tag color="orange">Stale</Tag>;
+  if (doc.indexed) return <Tag color="green">Indexed</Tag>;
+  return <Tag>Not indexed</Tag>;
+}
+
+function sourceLabel(doc: Document): string {
+  return doc.source_trust_label || doc.source_type || "Untrained";
+}
+
 export default function Manage({ isDark, onToggleTheme }: Props) {
   const [docs, setDocs] = useState<Document[]>([]);
   const [training, setTraining] = useState<TrainingStatus | null>(null);
@@ -56,6 +66,9 @@ export default function Manage({ isDark, onToggleTheme }: Props) {
   const [cache, setCache] = useState<CacheStats | null>(null);
   const [scheduler, setScheduler] = useState<SchedulerStatus | null>(null);
   const [uploading, setUploading] = useState(false);
+  const indexedCount = docs.filter((doc) => doc.indexed && !doc.stale).length;
+  const staleCount = docs.filter((doc) => doc.stale).length;
+  const unindexedCount = docs.filter((doc) => !doc.indexed || doc.stale).length;
 
   const refreshAll = useCallback(async () => {
     try {
@@ -228,7 +241,8 @@ export default function Manage({ isDark, onToggleTheme }: Props) {
         <div className="stats-grid manage-stats-grid">
           <StatsCard label="Documents" value={kb?.document_count ?? "-"} sub="source files" accent="blue" />
           <StatsCard label="Vector Chunks" value={kb?.total_chunks ?? "-"} sub="searchable segments" accent="purple" />
-          <StatsCard label="Manifest Records" value={kb?.manifest_records ?? "-"} sub="indexed documents" />
+          <StatsCard label="Indexed Files" value={indexedCount} sub={`${unindexedCount} need indexing`} />
+          <StatsCard label="Stale Files" value={staleCount} sub="changed after indexing" />
           <StatsCard label="Last Indexed" value={formatIndexed(kb?.last_indexed)} />
         </div>
       </section>
@@ -280,8 +294,23 @@ export default function Manage({ isDark, onToggleTheme }: Props) {
               <List.Item className="manage-doc-item">
                 <List.Item.Meta
                   avatar={<span className="manage-doc-icon">{documentIcon(doc.name)}</span>}
-                  title={<span className="manage-doc-title">{doc.name}</span>}
-                  description={`${formatBytes(doc.size)} - modified ${formatDate(doc.modified)}`}
+                  title={
+                    <div className="manage-doc-title-row">
+                      <Tooltip title={doc.name}>
+                        <span className="manage-doc-title">{doc.name}</span>
+                      </Tooltip>
+                      {indexTag(doc)}
+                    </div>
+                  }
+                  description={
+                    <div className="manage-doc-meta">
+                      <span>{formatBytes(doc.size)}</span>
+                      <span>Modified {formatDate(doc.modified)}</span>
+                      <span>{doc.chunks || 0} chunks</span>
+                      <span>{sourceLabel(doc)}</span>
+                      {doc.indexed_at && <span>Indexed {formatIndexed(doc.indexed_at)}</span>}
+                    </div>
+                  }
                 />
                 <Popconfirm
                   title="Delete document?"

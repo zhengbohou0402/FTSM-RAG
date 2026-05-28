@@ -199,6 +199,113 @@ def _apply_source_weight(docs: list[Document]) -> list[Document]:
     return [doc for _, doc in weighted]
 
 
+def _query_identifiers(query: str) -> dict[str, set[str]]:
+    lowered = query.lower()
+    return {
+        "course_codes": {m.group(0).upper() for m in re.finditer(r"\b[A-Z]{2}\d{4}\b", query.upper())},
+        "rooms": {m.group(0).upper().replace(" ", "") for m in re.finditer(r"\bBK\s*\d+\b", query.upper())},
+        "blocks": {m.group(0).upper() for m in re.finditer(r"\bBLOCK\s+[A-H]\b", query.upper())},
+        "years": {m.group(0) for m in re.finditer(r"\b20\d{2}(?:\s*/\s*20\d{2})?\b", query)},
+        "map_terms": {
+            term
+            for term in ("map", "地图", "room", "rooms", "facility", "facilities", "lecture room", "tutorial")
+            if term in lowered or term in query
+        },
+        "calendar_terms": {
+            term
+            for term in ("calendar", "kalendar", "校历", "academic", "semester", "sem")
+            if term in lowered or term in query
+        },
+        "registration_terms": {
+            term
+            for term in ("joinukm", "registration", "register", "renewal", "emgs", "visa", "体检", "注册", "续签")
+            if term in lowered or term in query
+        },
+    }
+
+
+def _phrase_terms(query: str) -> set[str]:
+    phrases: set[str] = set()
+    for phrase in re.findall(r"[A-Za-z][A-Za-z0-9&/() -]{4,}", query):
+        cleaned = " ".join(phrase.lower().split())
+        if cleaned and cleaned not in STOP_WORDS:
+            phrases.add(cleaned)
+            words = [
+                word
+                for word in re.findall(r"[a-zA-Z0-9]+", cleaned)
+                if len(word) > 2 and word not in STOP_WORDS
+            ]
+            phrases.update(words)
+            phrases.update(" ".join(words[i : i + 2]) for i in range(max(0, len(words) - 1)))
+            phrases.update(" ".join(words[i : i + 3]) for i in range(max(0, len(words) - 2)))
+    for phrase in re.findall(r"[\u4e00-\u9fff]{2,}", query):
+        phrases.add(phrase)
+    return phrases
+
+
+def _query_boost(query: str, doc: Document) -> float:
+    text = (doc.page_content or "").lower()
+    compact_text = text.replace(" ", "")
+    name = _doc_source_name(doc)
+    identifiers = _query_identifiers(query)
+    boost = 0.0
+
+    for code in identifiers["course_codes"]:
+        if code.lower() in text:
+            boost += 5.0
+    for room in identifiers["rooms"]:
+        if room.lower() in compact_text:
+            boost += 3.0
+    for block in identifiers["blocks"]:
+        if block.lower() in text:
+            boost += 2.0
+    for year in identifiers["years"]:
+        if year.replace(" ", "") in text.replace(" ", ""):
+            boost += 1.25
+
+    for phrase in _phrase_terms(query):
+        if len(phrase) >= 5 and phrase.lower() in text:
+            boost += 4.0 if " " in phrase else 0.75
+
+    if identifiers["map_terms"] and any(
+        marker in text or marker in name
+        for marker in ("faculty map", "ftsm map", "学院地图", "rooms & facilities", "faculty_map")
+    ):
+        boost += 3.0
+    if identifiers["calendar_terms"] and any(
+        marker in text or marker in name
+        for marker in ("academic calendar", "kalendar akademik", "校历", "academic_calendar")
+    ):
+        boost += 3.0
+    if identifiers["registration_terms"] and any(
+        marker in text or marker in name
+        for marker in ("joinukm", "registration", "renewal", "emgs", "visa", "体检", "注册", "续签")
+    ):
+        boost += 3.0
+
+    if ("coursework_timetable" in name or "timetable" in name) and (
+        identifiers["course_codes"] or identifiers["rooms"]
+    ):
+        boost += 1.0
+    if "student_portal_ftsm_faculty_map_rooms" in name and (
+        identifiers["map_terms"] or identifiers["rooms"] or identifiers["blocks"]
+    ):
+        boost += 1.0
+
+    return boost
+
+
+def _apply_query_boost(query: str, docs: list[Document]) -> list[Document]:
+    if not docs:
+        return docs
+
+    def adjusted(item: tuple[int, Document]) -> float:
+        rank, doc = item
+        return rank - _query_boost(query, doc)
+
+    return [doc for _, doc in sorted(enumerate(docs), key=adjusted)]
+
+
 def _query_terms(query: str) -> set[str]:
     terms = {
         token.lower()
@@ -331,9 +438,10 @@ class RagSummarizeService(object):
 
         # ③ Reranker 精排
         if _RERANK_TOP_N > 0 and fused:
-            return _apply_source_weight(_rerank(query, fused, _RERANK_TOP_N))
+            reranked = _rerank(query, fused, _RERANK_TOP_N)
+            return _apply_source_weight(_apply_query_boost(query, reranked))
 
-        return _apply_source_weight(fused[:max(_RERANK_TOP_N, 6)])
+        return _apply_source_weight(_apply_query_boost(query, fused[:max(_RERANK_TOP_N, 6)]))
 
     # ── 格式化 ────────────────────────────────────────────────────────────────
 

@@ -509,6 +509,24 @@ html, body, #root {
   white-space: nowrap;
 }
 
+.manage-doc-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.manage-doc-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  line-height: 1.5;
+}
+
+.manage-doc-meta span {
+  white-space: nowrap;
+}
+
 .manage-doc-item .ant-list-item-meta-description {
   color: #6b7280;
   font-size: 12px;
@@ -1079,6 +1097,7 @@ html, body, #root {
 [data-theme="dark"] .manage-upload-hint,
 [data-theme="dark"] .pipeline-step-sub,
 [data-theme="dark"] .manage-doc-item .ant-list-item-meta-description,
+[data-theme="dark"] .manage-doc-meta,
 [data-theme="dark"] .field-help {
   color: #9ca3af;
 }

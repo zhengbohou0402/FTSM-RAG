@@ -505,7 +505,7 @@ async def list_documents() -> JSONResponse:
     return JSONResponse({"documents": list_knowledge_documents(DATA_DIR, ALLOWED_UPLOAD_EXTENSIONS)})
 
 
-@app.delete("/api/documents/{filename}")
+@app.delete("/api/documents/{filename:path}")
 async def delete_document(filename: str) -> JSONResponse:
     try:
         result = delete_knowledge_document(filename, DATA_DIR, ALLOWED_UPLOAD_EXTENSIONS)

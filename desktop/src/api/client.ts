@@ -54,6 +54,12 @@ export interface Document {
   name: string;
   size: number;
   modified: number;
+  indexed?: boolean;
+  stale?: boolean;
+  chunks?: number;
+  source_type?: string | null;
+  source_trust_label?: string | null;
+  indexed_at?: string | null;
 }
 
 export interface TrainingStatus {
