@@ -387,8 +387,18 @@ html, body, #root {
   border-radius: 8px;
 }
 
+.manage-status-stack {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
 .manage-status-main {
   min-width: 0;
+}
+
+.manage-status-actions {
+  justify-content: flex-end;
 }
 
 .manage-status-row {
@@ -512,6 +522,10 @@ html, body, #root {
   .manage-status-panel {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .manage-status-actions {
+    justify-content: flex-start;
   }
 
   .manage-grid {

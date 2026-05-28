@@ -16,7 +16,7 @@ import {
 } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import { api } from "../api/client";
-import type { Document, TrainingStatus, KnowledgeStats, CacheStats } from "../api/client";
+import type { Document, TrainingStatus, KnowledgeStats, CacheStats, SchedulerStatus } from "../api/client";
 import StatsCard from "../components/StatsCard";
 import StatusBadge from "../components/StatusBadge";
 
@@ -54,20 +54,23 @@ export default function Manage({ isDark, onToggleTheme }: Props) {
   const [training, setTraining] = useState<TrainingStatus | null>(null);
   const [kb, setKb] = useState<KnowledgeStats | null>(null);
   const [cache, setCache] = useState<CacheStats | null>(null);
+  const [scheduler, setScheduler] = useState<SchedulerStatus | null>(null);
   const [uploading, setUploading] = useState(false);
 
   const refreshAll = useCallback(async () => {
     try {
-      const [d, t, k, c] = await Promise.all([
+      const [d, t, k, c, s] = await Promise.all([
         api.documents.list(),
         api.training.status(),
         api.knowledge.stats(),
         api.cache.stats(),
+        api.scheduler.status(),
       ]);
       setDocs(d.documents);
       setTraining(t);
       setKb(k);
       setCache(c);
+      setScheduler(s);
     } catch {
       // keep the last visible state
     }
@@ -131,11 +134,26 @@ export default function Manage({ isDark, onToggleTheme }: Props) {
     }
   };
 
+  const handleKnowledgeUpdate = async () => {
+    try {
+      const result = await api.knowledge.update();
+      message.info(result.message);
+      void refreshAll();
+    } catch (err) {
+      message.error(`Knowledge update failed: ${err}`);
+    }
+  };
+
   const trainStatus: "running" | "idle" | "error" | "success" =
     training?.running ? "running" :
     training?.pending ? "running" :
     training?.last_error ? "error" :
     training?.last_result === "success" ? "success" : "idle";
+
+  const crawlerStatus: "running" | "idle" | "error" | "success" =
+    scheduler?.running ? "running" :
+    scheduler?.last_error ? "error" :
+    scheduler?.last_success ? "success" : "idle";
 
   return (
     <div className="admin-shell manage-shell">
@@ -157,21 +175,48 @@ export default function Manage({ isDark, onToggleTheme }: Props) {
       </div>
 
       <section className="admin-panel manage-status-panel">
-        <div className="manage-status-main">
-          <Text type="secondary" className="section-kicker">Indexing Worker</Text>
-          <div className="manage-status-row">
-            <StatusBadge status={trainStatus} label={
-              training?.running ? "Indexing in progress" :
-              training?.pending ? "Queued" :
-              training?.last_error ? "Indexing failed" :
-              training?.last_result === "success" ? "Ready" : "Idle"
-            } />
-            {training?.last_error && <Text type="danger">{training.last_error}</Text>}
+        <div className="manage-status-stack">
+          <div className="manage-status-main">
+            <Text type="secondary" className="section-kicker">Website Update</Text>
+            <div className="manage-status-row">
+              <StatusBadge status={crawlerStatus} label={
+                scheduler?.running ? "Updating from FTSM site" :
+                scheduler?.last_error ? "Update failed" :
+                scheduler?.last_success ? "Updated" : "Idle"
+              } />
+              <Text type="secondary">
+                Last crawl: {formatIndexed(scheduler?.last_success ?? scheduler?.last_run)}
+              </Text>
+              {scheduler?.last_error && <Text type="danger">{scheduler.last_error}</Text>}
+            </div>
+          </div>
+          <div className="manage-status-main">
+            <Text type="secondary" className="section-kicker">Indexing Worker</Text>
+            <div className="manage-status-row">
+              <StatusBadge status={trainStatus} label={
+                training?.running ? "Indexing in progress" :
+                training?.pending ? "Queued" :
+                training?.last_error ? "Indexing failed" :
+                training?.last_result === "success" ? "Ready" : "Idle"
+              } />
+              {training?.last_error && <Text type="danger">{training.last_error}</Text>}
+            </div>
           </div>
         </div>
-        <Button type="primary" icon={<DatabaseOutlined />} onClick={handleReindex} loading={training?.running}>
-          Re-index all
-        </Button>
+        <Space wrap className="manage-status-actions">
+          <Button
+            type="primary"
+            icon={<ReloadOutlined />}
+            onClick={handleKnowledgeUpdate}
+            loading={scheduler?.running}
+            disabled={training?.running}
+          >
+            Update from FTSM site
+          </Button>
+          <Button icon={<DatabaseOutlined />} onClick={handleReindex} loading={training?.running}>
+            Re-index all
+          </Button>
+        </Space>
       </section>
 
       <section className="admin-section manage-section">

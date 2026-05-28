@@ -74,6 +74,9 @@ a = Analysis(
         "webview.platforms.winforms",
         "clr_loader",
         "pythonnet",
+        "scripts.scrape_ftsm_website",
+        "requests",
+        "bs4",
     ] + numpy_hiddens + chroma_hiddens + onnx_hiddens + webview_hiddens,
     hookspath=[],
     hooksconfig={},
@@ -85,7 +88,7 @@ a = Analysis(
         "PyQt6",
         "PySide2",
         "PySide6",
-        "playwright",    # 爬虫在运行期不需要；如需爬取请用源码运行
+        "playwright",    # 发布版手动更新使用 requests/bs4 fallback，不打包 Chromium
         "selenium",
     ],
     noarchive=False,

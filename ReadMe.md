@@ -81,6 +81,7 @@ FTSM-RAG is a FastAPI-based **Retrieval-Augmented Generation (RAG)** assistant f
 | DELETE | `/api/documents/{filename}` | Delete a document + its vector chunks |
 | GET/POST | `/api/training/status` `/api/training/start` | Indexing status and trigger |
 | GET | `/api/knowledge/stats` | Doc count, chunk count, last indexed time, cache size |
+| POST | `/api/knowledge/update` | Manually crawl the FTSM website and rebuild the index |
 | GET | `/api/cache/stats` | Cache hit count, miss count, hit rate |
 | GET | `/api/scheduler/status` | Crawler scheduler state |
 
@@ -102,6 +103,8 @@ Copy-Item .env.example .env
 
 uvicorn web_app:app --host 127.0.0.1 --port 8000
 ```
+
+The management page includes an **Update from FTSM site** button. Source builds use Playwright when Chromium is installed; packaged EXE builds use a lightweight HTTP/BeautifulSoup fallback so the button can still refresh `data/ukm_ftsm/ftsm_official_website.txt` and rebuild Chroma without bundling Chromium.
 
 Open <http://127.0.0.1:8000/>. If no API key is set, you are redirected to `/settings` automatically.
 
@@ -185,7 +188,7 @@ Real-time view of:
 - Knowledge base statistics (documents, indexed chunks, last indexed)
 - Semantic cache performance (hit rate, hit/miss counts, valid entries)
 - Indexing worker status (running / idle / last result)
-- Scheduler status (next crawl time)
+- Scheduler/manual crawler status (next crawl time, last manual update, errors)
 
 ## Ignored Local Files
 

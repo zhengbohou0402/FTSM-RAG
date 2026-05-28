@@ -1,7 +1,8 @@
 """
-Background scheduler for the dev-only FTSM website crawler.
+Background and manual runners for the FTSM website crawler.
 
-Packaged EXE builds keep this disabled because Playwright/Chromium are not bundled.
+Packaged EXE builds keep the scheduled runner disabled, but manual updates can
+still use the lightweight crawler fallback when Playwright/Chromium is absent.
 """
 
 from __future__ import annotations
@@ -38,6 +39,7 @@ _on_index_updated: Callable[[], None] | None = None
 
 _STATE: dict[str, Any] = {
     "running": False,
+    "mode": None,
     "last_success": None,
     "last_attempt": None,
     "last_error": None,
@@ -76,17 +78,22 @@ def _iso_from_timestamp(ts: float | None) -> str | None:
     return datetime.fromtimestamp(ts).isoformat()
 
 
-def _mark_attempt() -> None:
+def _begin_run(mode: str) -> bool:
     with _status_lock:
+        if _STATE["running"]:
+            return False
         _STATE["running"] = True
+        _STATE["mode"] = mode
         _STATE["last_attempt"] = _now_iso()
         _STATE["last_error"] = None
+        return True
 
 
 def _mark_success(result: Any) -> None:
     last_run = _write_last_run()
     with _status_lock:
         _STATE["running"] = False
+        _STATE["mode"] = None
         _STATE["last_success"] = _iso_from_timestamp(last_run)
         _STATE["last_error"] = None
         _STATE["last_output_file"] = str(getattr(result, "output_file", "") or "")
@@ -96,13 +103,18 @@ def _mark_success(result: Any) -> None:
 def _mark_error(exc: Exception | str) -> None:
     with _status_lock:
         _STATE["running"] = False
+        _STATE["mode"] = None
         _STATE["last_error"] = str(exc)
 
 
-def _run_crawl_and_update() -> None:
+def _run_crawl_and_update(max_pages: int | None = None, mode: str = "scheduled", marked: bool = False) -> None:
     """Run one scrape + vector-store update cycle."""
-    _mark_attempt()
-    logger.info("[Scheduler] Starting scheduled FTSM crawl.")
+    if not marked and not _begin_run(mode):
+        logger.info("[Scheduler] Crawl skipped because another update is already running.")
+        return
+
+    crawl_max_pages = max_pages or MAX_PAGES
+    logger.info("[Scheduler] Starting %s FTSM crawl. max_pages=%s", mode, crawl_max_pages)
     try:
         from rag.vector_store import VectorStoreService
         from scripts.scrape_ftsm_website import crawl
@@ -110,7 +122,7 @@ def _run_crawl_and_update() -> None:
         loop = asyncio.new_event_loop()
         try:
             asyncio.set_event_loop(loop)
-            result = loop.run_until_complete(crawl(max_pages=MAX_PAGES, headless=True))
+            result = loop.run_until_complete(crawl(max_pages=crawl_max_pages, headless=True))
         finally:
             asyncio.set_event_loop(None)
             loop.close()
@@ -131,10 +143,10 @@ def _run_crawl_and_update() -> None:
             _on_index_updated()
 
         _mark_success(result)
-        logger.info("[Scheduler] Scheduled crawl and index update completed.")
+        logger.info("[Scheduler] %s crawl and index update completed.", mode.capitalize())
     except Exception as exc:
         _mark_error(exc)
-        logger.error("[Scheduler] Scheduled crawl failed: %s", exc, exc_info=True)
+        logger.error("[Scheduler] %s crawl failed: %s", mode.capitalize(), exc, exc_info=True)
 
 
 def _seconds_until_next_run(now: float | None = None) -> float:
@@ -160,7 +172,7 @@ def _scheduler_loop() -> None:
             break
 
         logger.info("[Scheduler] Triggering scheduled crawl.")
-        _run_crawl_and_update()
+        _run_crawl_and_update(mode="scheduled")
 
     logger.info("[Scheduler] Stopped.")
 
@@ -192,6 +204,30 @@ def start_scheduler(on_index_updated: Callable[[], None] | None = None) -> None:
     logger.info("[Scheduler] Background thread started.")
 
 
+def trigger_manual_crawl(max_pages: int | None = None) -> dict:
+    """Start a user-triggered crawl + index update in the background."""
+    crawl_max_pages = max_pages or MAX_PAGES
+    if not _begin_run("manual"):
+        return {
+            "started": False,
+            "message": "Knowledge update is already running.",
+            "max_pages": crawl_max_pages,
+        }
+
+    thread = threading.Thread(
+        target=_run_crawl_and_update,
+        kwargs={"max_pages": crawl_max_pages, "mode": "manual", "marked": True},
+        name="ftsm-manual-crawler",
+        daemon=True,
+    )
+    thread.start()
+    return {
+        "started": True,
+        "message": "Knowledge update started.",
+        "max_pages": crawl_max_pages,
+    }
+
+
 def stop_scheduler() -> None:
     """Signal the scheduler thread to stop and wait briefly for it."""
     _stop_event.set()
@@ -214,6 +250,7 @@ def get_status() -> dict:
 
     return {
         "enabled": _runtime_enabled(),
+        "manual_available": True,
         "interval_hours": INTERVAL_HOURS,
         "max_pages": MAX_PAGES,
         "last_run": _iso_from_timestamp(last_run),

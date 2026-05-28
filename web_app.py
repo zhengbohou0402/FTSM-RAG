@@ -59,6 +59,7 @@ from utils.indexing_lock import indexing_lock  # noqa: E402
 from utils.path_tool import get_abs_path  # noqa: E402
 from utils.scheduler import get_status as scheduler_status  # noqa: E402
 from utils.scheduler import start_scheduler, stop_scheduler  # noqa: E402
+from utils.scheduler import trigger_manual_crawl  # noqa: E402
 from utils.semantic_cache import SemanticCache  # noqa: E402
 
 WEB_DIR = _BUNDLE_DIR / "web"
@@ -582,6 +583,13 @@ async def knowledge_stats() -> JSONResponse:
 
 
 # ── 聊天 ──
+
+@app.post("/api/knowledge/update")
+async def update_knowledge_from_website(max_pages: int | None = Query(default=None, ge=1, le=300)) -> JSONResponse:
+    result = trigger_manual_crawl(max_pages=max_pages)
+    semantic_cache.clear()
+    return JSONResponse(result)
+
 
 @app.post("/api/chat")
 async def chat(payload: ChatRequest) -> StreamingResponse:

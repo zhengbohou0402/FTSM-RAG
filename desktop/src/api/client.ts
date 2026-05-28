@@ -86,9 +86,19 @@ export interface CacheStats {
 
 export interface SchedulerStatus {
   enabled: boolean;
+  manual_available: boolean;
   interval_hours: number;
+  max_pages: number;
   last_run: string | null;
   next_run: string | null;
+  running: boolean;
+  mode: "scheduled" | "manual" | null;
+  last_success: string | null;
+  last_attempt: string | null;
+  last_error: string | null;
+  last_output_file: string | null;
+  pages_crawled: number;
+  thread_alive: boolean;
 }
 
 export interface Settings {
@@ -168,7 +178,13 @@ export const api = {
   },
 
   // Stats
-  knowledge: { stats: () => request<KnowledgeStats>("/api/knowledge/stats") },
+  knowledge: {
+    stats: () => request<KnowledgeStats>("/api/knowledge/stats"),
+    update: () => request<{ started: boolean; message: string; max_pages: number }>(
+      "/api/knowledge/update",
+      { method: "POST" }
+    ),
+  },
   cache: { stats: () => request<CacheStats>("/api/cache/stats") },
   scheduler: { status: () => request<SchedulerStatus>("/api/scheduler/status") },
 };
