@@ -58,7 +58,7 @@ FTSM-RAG is a FastAPI-based **Retrieval-Augmented Generation (RAG)** assistant f
 | Agent framework | LangChain ReAct (`create_react_agent`) |
 | Retrieval | ChromaDB (vector) + BM25 → RRF → DashScope `gte-rerank-v2` |
 | Chat model | DashScope Tongyi (default `qwen3-max`, switchable in UI) |
-| Embedding model | DashScope `text-embedding-v4` |
+| Embedding model | DashScope `text-embedding-v3` |
 | Vector store | Chroma via `langchain-chroma` |
 | Semantic cache | Cosine similarity cache, persisted to JSON |
 | Conversation storage | Per-file JSON directory (no database required) |
