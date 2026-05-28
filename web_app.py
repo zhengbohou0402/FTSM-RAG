@@ -585,9 +585,13 @@ async def knowledge_stats() -> JSONResponse:
 # ── 聊天 ──
 
 @app.post("/api/knowledge/update")
-async def update_knowledge_from_website(max_pages: int | None = Query(default=None, ge=1, le=300)) -> JSONResponse:
-    result = trigger_manual_crawl(max_pages=max_pages)
-    semantic_cache.clear()
+async def update_knowledge_from_website(
+    max_pages: int | None = Query(default=None, ge=1, le=300),
+    reindex: bool = Query(default=True),
+) -> JSONResponse:
+    result = trigger_manual_crawl(max_pages=max_pages, reindex=reindex)
+    if reindex:
+        semantic_cache.clear()
     return JSONResponse(result)
 
 

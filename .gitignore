@@ -1,10 +1,12 @@
 .venv/
 .idea/
+.claude/
 .qoder/
 __pycache__/
 *.py[cod]
 
 logs/
+results/
 chroma_db_ftsm/
 **/chroma_db/
 md5_ftsm.text
@@ -17,6 +19,7 @@ dist/
 ftsm_rag_onefile.spec
 
 data/ukm_ftsm/chat_sessions.json
+data/ukm_ftsm/conversations/
 data/ukm_ftsm/conversations.json
 data/ukm_ftsm/conversations.legacy.json
 data/ukm_ftsm/semantic_cache.json

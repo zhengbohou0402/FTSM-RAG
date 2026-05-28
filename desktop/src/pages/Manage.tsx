@@ -50,6 +50,7 @@ function documentIcon(name: string) {
 }
 
 function indexTag(doc: Document) {
+  if (doc.covered_by) return <Tag color="blue">Covered</Tag>;
   if (doc.stale) return <Tag color="orange">Stale</Tag>;
   if (doc.indexed) return <Tag color="green">Indexed</Tag>;
   return <Tag>Not indexed</Tag>;
@@ -68,7 +69,7 @@ export default function Manage({ isDark, onToggleTheme }: Props) {
   const [uploading, setUploading] = useState(false);
   const indexedCount = docs.filter((doc) => doc.indexed && !doc.stale).length;
   const staleCount = docs.filter((doc) => doc.stale).length;
-  const unindexedCount = docs.filter((doc) => !doc.indexed || doc.stale).length;
+  const unindexedCount = docs.filter((doc) => (!doc.indexed || doc.stale) && !doc.covered_by).length;
 
   const refreshAll = useCallback(async () => {
     try {
@@ -147,9 +148,9 @@ export default function Manage({ isDark, onToggleTheme }: Props) {
     }
   };
 
-  const handleKnowledgeUpdate = async () => {
+  const handleKnowledgeUpdate = async (reindex = true) => {
     try {
-      const result = await api.knowledge.update();
+      const result = await api.knowledge.update(reindex);
       message.info(result.message);
       void refreshAll();
     } catch (err) {
@@ -169,8 +170,8 @@ export default function Manage({ isDark, onToggleTheme }: Props) {
     scheduler?.last_success ? "success" : "idle";
 
   const crawlerLabel =
-    scheduler?.running && scheduler.phase === "indexing" ? "Rebuilding vector index" :
-    scheduler?.running ? "Crawling FTSM site" :
+            scheduler?.running && scheduler.phase === "indexing" ? "Indexing crawled content" :
+            scheduler?.running ? "Crawling FTSM website" :
     scheduler?.last_error ? "Update failed" :
     scheduler?.last_success ? "Updated" : "Idle";
 
@@ -224,11 +225,19 @@ export default function Manage({ isDark, onToggleTheme }: Props) {
           <Button
             type="primary"
             icon={<ReloadOutlined />}
-            onClick={handleKnowledgeUpdate}
+            onClick={() => handleKnowledgeUpdate(true)}
             loading={scheduler?.running}
             disabled={training?.running}
           >
-            Update from FTSM site
+            Crawl + Index FTSM
+          </Button>
+          <Button
+            icon={<ReloadOutlined />}
+            onClick={() => handleKnowledgeUpdate(false)}
+            loading={scheduler?.running}
+            disabled={training?.running}
+          >
+            Crawl Only
           </Button>
           <Button icon={<DatabaseOutlined />} onClick={handleReindex} loading={training?.running}>
             Re-index all
@@ -309,6 +318,7 @@ export default function Manage({ isDark, onToggleTheme }: Props) {
                       <span>{doc.chunks || 0} chunks</span>
                       <span>{sourceLabel(doc)}</span>
                       {doc.indexed_at && <span>Indexed {formatIndexed(doc.indexed_at)}</span>}
+                      {doc.index_note && <span>{doc.index_note}</span>}
                     </div>
                   }
                 />

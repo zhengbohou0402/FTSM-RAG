@@ -60,6 +60,8 @@ export interface Document {
   source_type?: string | null;
   source_trust_label?: string | null;
   indexed_at?: string | null;
+  covered_by?: string | null;
+  index_note?: string | null;
 }
 
 export interface TrainingStatus {
@@ -187,8 +189,8 @@ export const api = {
   // Stats
   knowledge: {
     stats: () => request<KnowledgeStats>("/api/knowledge/stats"),
-    update: () => request<{ started: boolean; message: string; max_pages: number }>(
-      "/api/knowledge/update",
+    update: (reindex = true) => request<{ started: boolean; message: string; max_pages: number; reindex: boolean }>(
+      `/api/knowledge/update?reindex=${reindex ? "true" : "false"}`,
       { method: "POST" }
     ),
   },

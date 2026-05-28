@@ -62,6 +62,13 @@ def list_knowledge_documents(
         rel_name = path.relative_to(data_dir).as_posix()
         doc_id = stable_file_doc_id(path)
         record = indexed_docs.get(doc_id)
+        covered_by = None
+        if not record and ext == "pdf":
+            transcript_path = path.with_suffix(".txt")
+            if transcript_path.exists():
+                transcript_id = stable_file_doc_id(transcript_path)
+                if transcript_id in indexed_docs:
+                    covered_by = transcript_path.relative_to(data_dir).as_posix()
         current_hash = file_sha256(path)
         indexed = bool(record)
         stale = bool(record and record.get("hash") != current_hash)
@@ -77,10 +84,22 @@ def list_knowledge_documents(
                 "source_type": (record or {}).get("source_type"),
                 "source_trust_label": extra.get("source_trust_label"),
                 "indexed_at": (record or {}).get("indexed_at"),
+                "covered_by": covered_by,
+                "index_note": (
+                    f"Covered by indexed transcript {covered_by}"
+                    if covered_by
+                    else None
+                ),
             }
         )
 
-    docs.sort(key=lambda item: (not item["indexed"], item["modified"]), reverse=True)
+    docs.sort(
+        key=lambda item: (
+            not item["indexed"] and not item.get("covered_by"),
+            item["modified"],
+        ),
+        reverse=True,
+    )
     return docs
 
 

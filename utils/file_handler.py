@@ -48,7 +48,17 @@ def listdir_with_allowed_type(path: str, allowed_types: tuple[str]):
 
 
 def pdf_loader(filepath: str, passwd=None) -> list[Document]:
-    return PyPDFLoader(filepath, passwd).load()
+    docs = PyPDFLoader(filepath, passwd).load()
+    text_chars = sum(len((doc.page_content or "").strip()) for doc in docs)
+    if text_chars < 80:
+        logger.warning(
+            "[pdf_loader] %s appears to be image-only or scanned (%s text chars). "
+            "Create a text transcript before indexing.",
+            filepath,
+            text_chars,
+        )
+        return []
+    return docs
 
 
 def txt_loader(filepath: str) -> list[Document]:

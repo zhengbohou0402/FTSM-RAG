@@ -118,8 +118,13 @@ def _mark_indexing(result: Any) -> None:
         _STATE["pages_crawled"] = int(getattr(result, "pages_crawled", 0) or 0)
 
 
-def _run_crawl_and_update(max_pages: int | None = None, mode: str = "scheduled", marked: bool = False) -> None:
-    """Run one scrape + vector-store update cycle."""
+def _run_crawl_and_update(
+    max_pages: int | None = None,
+    mode: str = "scheduled",
+    marked: bool = False,
+    reindex: bool = True,
+) -> None:
+    """Run one scrape cycle, optionally followed by a vector-store update."""
     if not marked and not _begin_run(mode):
         logger.info("[Scheduler] Crawl skipped because another update is already running.")
         return
@@ -142,21 +147,27 @@ def _run_crawl_and_update(max_pages: int | None = None, mode: str = "scheduled",
             raise RuntimeError("Crawler returned no content; existing knowledge file was preserved.")
 
         logger.info(
-            "[Scheduler] Crawl complete: pages=%s output=%s. Updating vector store.",
+            "[Scheduler] Crawl complete: pages=%s output=%s reindex=%s.",
             getattr(result, "pages_crawled", 0),
             getattr(result, "output_file", ""),
+            reindex,
         )
-        _mark_indexing(result)
 
-        target_paths = [getattr(result, "output_file")] if getattr(result, "output_file", None) else None
-        with indexing_lock:
-            VectorStoreService().load_document(target_paths=target_paths)
+        if reindex:
+            _mark_indexing(result)
+            target_paths = [getattr(result, "output_file")] if getattr(result, "output_file", None) else None
+            with indexing_lock:
+                VectorStoreService().load_document(target_paths=target_paths)
 
-        if _on_index_updated is not None:
-            _on_index_updated()
+            if _on_index_updated is not None:
+                _on_index_updated()
 
         _mark_success(result)
-        logger.info("[Scheduler] %s crawl and index update completed.", mode.capitalize())
+        logger.info(
+            "[Scheduler] %s crawl%s completed.",
+            mode.capitalize(),
+            " and index update" if reindex else "",
+        )
     except Exception as exc:
         _mark_error(exc)
         logger.error("[Scheduler] %s crawl failed: %s", mode.capitalize(), exc, exc_info=True)
@@ -217,8 +228,8 @@ def start_scheduler(on_index_updated: Callable[[], None] | None = None) -> None:
     logger.info("[Scheduler] Background thread started.")
 
 
-def trigger_manual_crawl(max_pages: int | None = None) -> dict:
-    """Start a user-triggered crawl + index update in the background."""
+def trigger_manual_crawl(max_pages: int | None = None, reindex: bool = True) -> dict:
+    """Start a user-triggered crawl in the background."""
     crawl_max_pages = max_pages or MAX_PAGES
     if not _begin_run("manual"):
         return {
@@ -229,15 +240,21 @@ def trigger_manual_crawl(max_pages: int | None = None) -> dict:
 
     thread = threading.Thread(
         target=_run_crawl_and_update,
-        kwargs={"max_pages": crawl_max_pages, "mode": "manual", "marked": True},
+        kwargs={
+            "max_pages": crawl_max_pages,
+            "mode": "manual",
+            "marked": True,
+            "reindex": reindex,
+        },
         name="ftsm-manual-crawler",
         daemon=True,
     )
     thread.start()
     return {
         "started": True,
-        "message": "Knowledge update started.",
+        "message": "Website crawl and index update started." if reindex else "Website crawl started.",
         "max_pages": crawl_max_pages,
+        "reindex": reindex,
     }
 
 
