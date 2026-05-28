@@ -1,10 +1,10 @@
 FTSM Chinese Student Portal Browser Crawl
 Source type: Student community guide
 Primary source: https://ftsm.pages.dev/
-Crawled at: 2026-05-28T15:04:35.602419
+Crawled at: 2026-05-28T18:37:08.503261
 
 Important note:
-This document is browser-rendered content from a student-maintained portal. It is useful for practical onboarding and navigation, but it is not an official UKM or FTSM policy document. Verify formal requirements against official UKM, FTSM, UKMShape, EMGS, JoinUKM, or faculty sources.
+This document is browser-rendered content from a student-maintained portal. It captures route text, button-triggered modules, map interactions, media asset references, and readable strings from bundled JavaScript. It is useful for practical onboarding and navigation, but it is not an official UKM or FTSM policy document. Verify formal requirements against official UKM, FTSM, UKMShape, EMGS, JoinUKM, or faculty sources.
 
 ================================================================================
 
@@ -76,18 +76,6 @@ UKM FOLIO上课系统
 健康信息课表
 👥
 协调员信息
-欢迎访问UKM FTSM学术科研与校园服务门户
-×
-
-推荐使用电脑访问，获取最佳体验。
-
-近期更新如下：
-新增2026春季课表
-新增CCF推荐会议和期刊查询功能
-新增马来西亚2026-2027年公共假期
-新增中留服学历学位认证流程与指南
-新增毕业典礼视频回放功能（来自Youtube，国内网络可能无法访问）
-我知道了
 NCT Lab, Research Center for Cyber Security, FTSM, UKM Bangi, Selangor, Malaysia
 Author:
 Prof. ChatGPT & 一位路人甲学长
@@ -96,439 +84,7 @@ Prof. ChatGPT & 一位路人甲学长
 
 ------------------------------------------------------------
 
-[Route / / Module 查看假期]
-
-Failed to open module 查看假期: Locator.click: Timeout 5000ms exceeded.
-Call log:
-  - waiting for locator("button").nth(2)
-    - locator resolved to <button data-v-d515ae9e="" class="action-button">查看假期</button>
-  - attempting click action
-    2 × waiting for element to be visible, enabled and stable
-      - element is visible, enabled and stable
-      - scrolling into view if needed
-      - done scrolling
-      - <div data-v-e6570249="" data-v-72131fde="" class="welcome-modal-overlay">…</div> intercepts pointer events
-    - retrying click action
-    - waiting 20ms
-    2 × waiting for element to be visible, enabled and stable
-      - element is visible, enabled and stable
-      - scrolling into view if needed
-      - done scrolling
-      - <div data-v-e6570249="" data-v-72131fde="" class="welcome-modal-overlay">…</div> intercepts pointer events
-    - retrying click action
-      - waiting 100ms
-    9 × waiting for element to be visible, enabled and stable
-      - element is visible, enabled and stable
-      - scrolling into view if needed
-      - done scrolling
-      - <div data-v-e6570249="" data-v-72131fde="" class="welcome-modal-overlay">…</div> intercepts pointer events
-    - retrying click action
-      - waiting 500ms
-
-
-------------------------------------------------------------
-
-[Route / / Module 查看校历]
-
-Failed to open module 查看校历: Locator.click: Timeout 5000ms exceeded.
-Call log:
-  - waiting for locator("button").nth(3)
-    - locator resolved to <button data-v-d515ae9e="" class="action-button">查看校历</button>
-  - attempting click action
-    2 × waiting for element to be visible, enabled and stable
-      - element is visible, enabled and stable
-      - scrolling into view if needed
-      - done scrolling
-      - <div data-v-e6570249="" class="update-item">…</div> from <div data-v-e6570249="" data-v-72131fde="" class="welcome-modal-overlay">…</div> subtree intercepts pointer events
-    - retrying click action
-    - waiting 20ms
-    - waiting for element to be visible, enabled and stable
-    - element is visible, enabled and stable
-    - scrolling into view if needed
-    - done scrolling
-    - <div data-v-e6570249="" class="update-item">…</div> from <div data-v-e6570249="" data-v-72131fde="" class="welcome-modal-overlay">…</div> subtree intercepts pointer events
-  2 × retrying click action
-      - waiting 100ms
-      - waiting for element to be visible, enabled and stable
-      - element is visible, enabled and stable
-      - scrolling into view if needed
-      - done scrolling
-      - <h2 data-v-e6570249="" class="modal-title">欢迎访问UKM FTSM学术科研与校园服务门户</h2> from <div data-v-e6570249="" data-v-72131fde="" class="welcome-modal-overlay">…</div> subtree intercepts pointer events
-  2 × retrying click action
-      - waiting 500ms
-      - waiting for element to be visible, enabled and stable
-      - element is visible, enabled and stable
-      - scrolling into view if needed
-      - done scrolling
-      - <div data-v-e6570249="" class="update-item">…</div> from <div data-v-e6570249="" data-v-72131fde="" class="welcome-modal-overlay">…</div> subtree intercepts pointer events
-    - retrying click action
-      - waiting 500ms
-      - waiting for element to be visible, enabled and stable
-      - element is visible, enabled and stable
-      - scrolling into view if needed
-      - done scrolling
-      - <div data-v-e6570249="" class="update-item">…</div> from <div data-v-e6570249="" data-v-72131fde="" class="welcome-modal-overlay">…</div> subtree intercepts pointer events
-    - retrying click action
-      - waiting 500ms
-      - waiting for element to be visible, enabled and stable
-      - element is visible, enabled and stable
-      - scrolling into view if needed
-      - done scrolling
-      - <h2 data-v-e6570249="" class="modal-title">欢迎访问UKM FTSM学术科研与校园服务门户</h2> from <div data-v-e6570249="" data-v-72131fde="" class="welcome-modal-overlay">…</div> subtree intercepts pointer events
-    - retrying click action
-      - waiting 500ms
-      - waiting for element to be visible, enabled and stable
-      - element is visible, enabled and stable
-      - scrolling into view if needed
-      - done scrolling
-      - <h2 data-v-e6570249="" class="modal-title">欢迎访问UKM FTSM学术科研与校园服务门户</h2> from <div data-v-e6570249="" data-v-72131fde="" class="welcome-modal-overlay">…</div> subtree intercepts pointer events
-  - retrying click action
-    - waiting 500ms
-
-
-------------------------------------------------------------
-
-[Route / / Module 查看课程表]
-
-Failed to open module 查看课程表: Locator.click: Timeout 5000ms exceeded.
-Call log:
-  - waiting for locator("button").nth(4)
-    - locator resolved to <button data-v-d515ae9e="" class="action-button">查看课程表</button>
-  - attempting click action
-    2 × waiting for element to be visible, enabled and stable
-      - element is visible, enabled and stable
-      - scrolling into view if needed
-      - done scrolling
-      - <div data-v-e6570249="" class="update-item">…</div> from <div data-v-e6570249="" data-v-72131fde="" class="welcome-modal-overlay">…</div> subtree intercepts pointer events
-    - retrying click action
-    - waiting 20ms
-    - waiting for element to be visible, enabled and stable
-    - element is visible, enabled and stable
-    - scrolling into view if needed
-    - done scrolling
-    - <div data-v-e6570249="" class="update-item">…</div> from <div data-v-e6570249="" data-v-72131fde="" class="welcome-modal-overlay">…</div> subtree intercepts pointer events
-  2 × retrying click action
-      - waiting 100ms
-      - waiting for element to be visible, enabled and stable
-      - element is visible, enabled and stable
-      - scrolling into view if needed
-      - done scrolling
-      - <button data-v-e6570249="" class="close-button">×</button> from <div data-v-e6570249="" data-v-72131fde="" class="welcome-modal-overlay">…</div> subtree intercepts pointer events
-  2 × retrying click action
-      - waiting 500ms
-      - waiting for element to be visible, enabled and stable
-      - element is visible, enabled and stable
-      - scrolling into view if needed
-      - done scrolling
-      - <div data-v-e6570249="" class="update-item">…</div> from <div data-v-e6570249="" data-v-72131fde="" class="welcome-modal-overlay">…</div> subtree intercepts pointer events
-    - retrying click action
-      - waiting 500ms
-      - waiting for element to be visible, enabled and stable
-      - element is visible, enabled and stable
-      - scrolling into view if needed
-      - done scrolling
-      - <div data-v-e6570249="" class="update-item">…</div> from <div data-v-e6570249="" data-v-72131fde="" class="welcome-modal-overlay">…</div> subtree intercepts pointer events
-    - retrying click action
-      - waiting 500ms
-      - waiting for element to be visible, enabled and stable
-      - element is visible, enabled and stable
-      - scrolling into view if needed
-      - done scrolling
-      - <button data-v-e6570249="" class="close-button">×</button> from <div data-v-e6570249="" data-v-72131fde="" class="welcome-modal-overlay">…</div> subtree intercepts pointer events
-    - retrying click action
-      - waiting 500ms
-      - waiting for element to be visible, enabled and stable
-      - element is visible, enabled and stable
-      - scrolling into view if needed
-      - done scrolling
-      - <button data-v-e6570249="" class="close-button">×</button> from <div data-v-e6570249="" data-v-72131fde="" class="welcome-modal-overlay">…</div> subtree intercepts pointer events
-  - retrying click action
-    - waiting 500ms
-
-
-------------------------------------------------------------
-
-[Route / / Module 查看学院地图]
-
-Failed to open module 查看学院地图: Locator.click: Timeout 5000ms exceeded.
-Call log:
-  - waiting for locator("button").nth(5)
-    - locator resolved to <button data-v-d515ae9e="" class="action-button">查看学院地图</button>
-  - attempting click action
-    2 × waiting for element to be visible, enabled and stable
-      - element is visible, enabled and stable
-      - scrolling into view if needed
-      - done scrolling
-      - <div data-v-e6570249="" data-v-72131fde="" class="welcome-modal-overlay">…</div> intercepts pointer events
-    - retrying click action
-    - waiting 20ms
-    2 × waiting for element to be visible, enabled and stable
-      - element is visible, enabled and stable
-      - scrolling into view if needed
-      - done scrolling
-      - <div data-v-e6570249="" data-v-72131fde="" class="welcome-modal-overlay">…</div> intercepts pointer events
-    - retrying click action
-      - waiting 100ms
-    9 × waiting for element to be visible, enabled and stable
-      - element is visible, enabled and stable
-      - scrolling into view if needed
-      - done scrolling
-      - <div data-v-e6570249="" data-v-72131fde="" class="welcome-modal-overlay">…</div> intercepts pointer events
-    - retrying click action
-      - waiting 500ms
-
-
-------------------------------------------------------------
-
-[Route / / Module 查看公交路线]
-
-Failed to open module 查看公交路线: Locator.click: Timeout 5000ms exceeded.
-Call log:
-  - waiting for locator("button").nth(6)
-    - locator resolved to <button data-v-d515ae9e="" class="action-button">查看公交路线</button>
-  - attempting click action
-    2 × waiting for element to be visible, enabled and stable
-      - element is visible, enabled and stable
-      - scrolling into view if needed
-      - done scrolling
-      - <div data-v-e6570249="" class="modal-footer">…</div> from <div data-v-e6570249="" data-v-72131fde="" class="welcome-modal-overlay">…</div> subtree intercepts pointer events
-    - retrying click action
-    - waiting 20ms
-    2 × waiting for element to be visible, enabled and stable
-      - element is visible, enabled and stable
-      - scrolling into view if needed
-      - done scrolling
-      - <li data-v-e6570249="">新增中留服学历学位认证流程与指南</li> from <div data-v-e6570249="" data-v-72131fde="" class="welcome-modal-overlay">…</div> subtree intercepts pointer events
-    - retrying click action
-      - waiting 100ms
-    2 × waiting for element to be visible, enabled and stable
-      - element is visible, enabled and stable
-      - scrolling into view if needed
-      - done scrolling
-      - <li data-v-e6570249="">新增中留服学历学位认证流程与指南</li> from <div data-v-e6570249="" data-v-72131fde="" class="welcome-modal-overlay">…</div> subtree intercepts pointer events
-    - retrying click action
-      - waiting 500ms
-      - waiting for element to be visible, enabled and stable
-      - element is visible, enabled and stable
-      - scrolling into view if needed
-      - done scrolling
-      - <div data-v-e6570249="" class="modal-footer">…</div> from <div data-v-e6570249="" data-v-72131fde="" class="welcome-modal-overlay">…</div> subtree intercepts pointer events
-    - retrying click action
-      - waiting 500ms
-      - waiting for element to be visible, enabled and stable
-      - element is visible, enabled and stable
-      - scrolling into view if needed
-      - done scrolling
-      - <li data-v-e6570249="">新增中留服学历学位认证流程与指南</li> from <div data-v-e6570249="" data-v-72131fde="" class="welcome-modal-overlay">…</div> subtree intercepts pointer events
-    - retrying click action
-      - waiting 500ms
-      - waiting for element to be visible, enabled and stable
-      - element is visible, enabled and stable
-      - scrolling into view if needed
-      - done scrolling
-      - <li data-v-e6570249="">新增中留服学历学位认证流程与指南</li> from <div data-v-e6570249="" data-v-72131fde="" class="welcome-modal-overlay">…</div> subtree intercepts pointer events
-    - retrying click action
-      - waiting 500ms
-    - waiting for element to be visible, enabled and stable
-    - element is visible, enabled and stable
-    - scrolling into view if needed
-    - done scrolling
-    - <li data-v-e6570249="">新增中留服学历学位认证流程与指南</li> from <div data-v-e6570249="" data-v-72131fde="" class="welcome-modal-overlay">…</div> subtree intercepts pointer events
-  - retrying click action
-    - waiting 500ms
-
-
-------------------------------------------------------------
-
-[Route / / Module 查看联系方式]
-
-Failed to open module 查看联系方式: Locator.click: Timeout 5000ms exceeded.
-Call log:
-  - waiting for locator("button").nth(7)
-    - locator resolved to <button data-v-d515ae9e="" class="action-button">查看联系方式</button>
-  - attempting click action
-    2 × waiting for element to be visible, enabled and stable
-      - element is visible, enabled and stable
-      - scrolling into view if needed
-      - done scrolling
-      - <div data-v-e6570249="" class="modal-footer">…</div> from <div data-v-e6570249="" data-v-72131fde="" class="welcome-modal-overlay">…</div> subtree intercepts pointer events
-    - retrying click action
-    - waiting 20ms
-    2 × waiting for element to be visible, enabled and stable
-      - element is visible, enabled and stable
-      - scrolling into view if needed
-      - done scrolling
-      - <li data-v-e6570249="">新增中留服学历学位认证流程与指南</li> from <div data-v-e6570249="" data-v-72131fde="" class="welcome-modal-overlay">…</div> subtree intercepts pointer events
-    - retrying click action
-      - waiting 100ms
-    2 × waiting for element to be visible, enabled and stable
-      - element is visible, enabled and stable
-      - scrolling into view if needed
-      - done scrolling
-      - <li data-v-e6570249="">新增中留服学历学位认证流程与指南</li> from <div data-v-e6570249="" data-v-72131fde="" class="welcome-modal-overlay">…</div> subtree intercepts pointer events
-    - retrying click action
-      - waiting 500ms
-      - waiting for element to be visible, enabled and stable
-      - element is visible, enabled and stable
-      - scrolling into view if needed
-      - done scrolling
-      - <div data-v-e6570249="" class="modal-footer">…</div> from <div data-v-e6570249="" data-v-72131fde="" class="welcome-modal-overlay">…</div> subtree intercepts pointer events
-    - retrying click action
-      - waiting 500ms
-      - waiting for element to be visible, enabled and stable
-      - element is visible, enabled and stable
-      - scrolling into view if needed
-      - done scrolling
-      - <li data-v-e6570249="">新增中留服学历学位认证流程与指南</li> from <div data-v-e6570249="" data-v-72131fde="" class="welcome-modal-overlay">…</div> subtree intercepts pointer events
-    - retrying click action
-      - waiting 500ms
-      - waiting for element to be visible, enabled and stable
-      - element is visible, enabled and stable
-      - scrolling into view if needed
-      - done scrolling
-      - <li data-v-e6570249="">新增中留服学历学位认证流程与指南</li> from <div data-v-e6570249="" data-v-72131fde="" class="welcome-modal-overlay">…</div> subtree intercepts pointer events
-    - retrying click action
-      - waiting 500ms
-    - waiting for element to be visible, enabled and stable
-    - element is visible, enabled and stable
-    - scrolling into view if needed
-    - done scrolling
-    - <li data-v-e6570249="">新增中留服学历学位认证流程与指南</li> from <div data-v-e6570249="" data-v-72131fde="" class="welcome-modal-overlay">…</div> subtree intercepts pointer events
-  - retrying click action
-    - waiting 500ms
-
-
-------------------------------------------------------------
-
-[Route / / Module 🔒 网络安全课表]
-
-Failed to open module 🔒 网络安全课表: Locator.click: Timeout 5000ms exceeded.
-Call log:
-  - waiting for locator("button").nth(8)
-    - locator resolved to <button data-v-d515ae9e="" class="multi-nav-item">…</button>
-  - attempting click action
-    2 × waiting for element to be visible, enabled and stable
-      - element is visible, enabled and stable
-      - scrolling into view if needed
-      - done scrolling
-      - <div data-v-e6570249="" data-v-72131fde="" class="welcome-modal-overlay">…</div> intercepts pointer events
-    - retrying click action
-    - waiting 20ms
-    2 × waiting for element to be visible, enabled and stable
-      - element is visible, enabled and stable
-      - scrolling into view if needed
-      - done scrolling
-      - <div data-v-e6570249="" data-v-72131fde="" class="welcome-modal-overlay">…</div> intercepts pointer events
-    - retrying click action
-      - waiting 100ms
-    9 × waiting for element to be visible, enabled and stable
-      - element is visible, enabled and stable
-      - scrolling into view if needed
-      - done scrolling
-      - <div data-v-e6570249="" data-v-72131fde="" class="welcome-modal-overlay">…</div> intercepts pointer events
-    - retrying click action
-      - waiting 500ms
-
-
-------------------------------------------------------------
-
-[Route / / Module 📊 数据科学课表]
-
-Failed to open module 📊 数据科学课表: Locator.click: Timeout 5000ms exceeded.
-Call log:
-  - waiting for locator("button").nth(9)
-    - locator resolved to <button data-v-d515ae9e="" class="multi-nav-item">…</button>
-  - attempting click action
-    2 × waiting for element to be visible, enabled and stable
-      - element is visible, enabled and stable
-      - scrolling into view if needed
-      - done scrolling
-      - <div data-v-e6570249="" data-v-72131fde="" class="welcome-modal-overlay">…</div> intercepts pointer events
-    - retrying click action
-    - waiting 20ms
-    2 × waiting for element to be visible, enabled and stable
-      - element is visible, enabled and stable
-      - scrolling into view if needed
-      - done scrolling
-      - <div data-v-e6570249="" data-v-72131fde="" class="welcome-modal-overlay">…</div> intercepts pointer events
-    - retrying click action
-      - waiting 100ms
-    9 × waiting for element to be visible, enabled and stable
-      - element is visible, enabled and stable
-      - scrolling into view if needed
-      - done scrolling
-      - <div data-v-e6570249="" data-v-72131fde="" class="welcome-modal-overlay">…</div> intercepts pointer events
-    - retrying click action
-      - waiting 500ms
-
-
-------------------------------------------------------------
-
-[Route / / Module 🏥 健康信息课表]
-
-Failed to open module 🏥 健康信息课表: Locator.click: Timeout 5000ms exceeded.
-Call log:
-  - waiting for locator("button").nth(10)
-    - locator resolved to <button data-v-d515ae9e="" class="multi-nav-item">…</button>
-  - attempting click action
-    2 × waiting for element to be visible, enabled and stable
-      - element is visible, enabled and stable
-      - scrolling into view if needed
-      - done scrolling
-      - <div data-v-e6570249="" data-v-72131fde="" class="welcome-modal-overlay">…</div> intercepts pointer events
-    - retrying click action
-    - waiting 20ms
-    2 × waiting for element to be visible, enabled and stable
-      - element is visible, enabled and stable
-      - scrolling into view if needed
-      - done scrolling
-      - <div data-v-e6570249="" data-v-72131fde="" class="welcome-modal-overlay">…</div> intercepts pointer events
-    - retrying click action
-      - waiting 100ms
-    9 × waiting for element to be visible, enabled and stable
-      - element is visible, enabled and stable
-      - scrolling into view if needed
-      - done scrolling
-      - <div data-v-e6570249="" data-v-72131fde="" class="welcome-modal-overlay">…</div> intercepts pointer events
-    - retrying click action
-      - waiting 500ms
-
-
-------------------------------------------------------------
-
-[Route / / Module 👥 协调员信息]
-
-Failed to open module 👥 协调员信息: Locator.click: Timeout 5000ms exceeded.
-Call log:
-  - waiting for locator("button").nth(11)
-    - locator resolved to <button data-v-d515ae9e="" class="multi-nav-item">…</button>
-  - attempting click action
-    2 × waiting for element to be visible, enabled and stable
-      - element is visible, enabled and stable
-      - scrolling into view if needed
-      - done scrolling
-      - <div data-v-e6570249="" data-v-72131fde="" class="welcome-modal-overlay">…</div> intercepts pointer events
-    - retrying click action
-    - waiting 20ms
-    2 × waiting for element to be visible, enabled and stable
-      - element is visible, enabled and stable
-      - scrolling into view if needed
-      - done scrolling
-      - <div data-v-e6570249="" data-v-72131fde="" class="welcome-modal-overlay">…</div> intercepts pointer events
-    - retrying click action
-      - waiting 100ms
-    9 × waiting for element to be visible, enabled and stable
-      - element is visible, enabled and stable
-      - scrolling into view if needed
-      - done scrolling
-      - <div data-v-e6570249="" data-v-72131fde="" class="welcome-modal-overlay">…</div> intercepts pointer events
-    - retrying click action
-      - waiting 500ms
-
-
-------------------------------------------------------------
-
-[Route / / Module ×]
+[Route / / Button 2 查看假期 / 🗓️ 马来西亚公共假期 2026-2027年马来西亚各州公共假期查询 查看假期]
 
 UKM FTSM学术科研与校园服务门户
 首页
@@ -596,6 +152,2560 @@ UKM FOLIO上课系统
 健康信息课表
 👥
 协调员信息
+🇲🇾 马来西亚公共假期
+
+Malaysia Public Holidays
+
+2026年
+2027年
+
+共有 59 个假期
+
+1月
+1月1日
+星期四
+元旦新年
+所有州属除了 柔佛, 吉打,吉兰丹, 玻璃市 & 登嘉楼
+1月14日
+星期三
+森美兰州元首诞辰
+森美兰州
+1月17日
+星期六
+穆罕默德迁移日
+吉打, 森美兰州, 玻璃市 & 登嘉楼
+1月18日
+星期日
+穆罕默德迁移日 (补假)
+登嘉楼
+2月
+2月1日
+星期日
+大宝森节
+柔佛, 吉隆坡, 森美兰州, 槟城, 霹雳, 布城 & 雪兰莪
+2月1日
+星期日
+联邦直辖区日
+吉隆坡, 纳闽 & 布城
+2月2日
+星期一
+联邦直辖区日 (补假)
+吉隆坡, 纳闽 & 布城
+2月2日
+星期一
+大宝森节 (补假)
+柔佛, 吉隆坡, 森美兰州, 槟城, 霹雳, 布城 & 雪兰莪
+2月17日
+星期二
+农历新年
+所有州属
+2月18日
+星期三
+农历新年第2天
+所有州属
+2月19日
+星期四
+斋戒月首日
+柔佛 & 吉打
+2月20日
+星期五
+宣布独立纪念日
+马六甲
+3月
+3月4日
+星期三
+登嘉楼苏丹登基日
+登嘉楼
+3月7日
+星期六
+可兰经降世日
+所有州属除了 柔佛, 吉打, 马六甲, 森美兰州, 沙巴 & 砂劳越
+3月8日
+星期日
+可兰经降世日 (补假)
+吉兰丹 & 登嘉楼
+3月21日
+星期六
+开斋节
+所有州属
+3月22日
+星期日
+开斋节第2天
+所有州属
+3月23日
+星期一
+柔佛苏丹诞辰
+柔佛
+3月23日
+星期一
+开斋节 (补假)
+所有州属除了 吉打
+3月24日
+星期二
+开斋节 (补假)
+马六甲
+3月30日
+星期一
+沙巴元首诞辰
+沙巴
+4月
+4月3日
+星期五
+耶稣受难日
+沙巴 & 砂劳越
+4月26日
+星期日
+登嘉楼苏丹诞辰
+登嘉楼
+5月
+5月1日
+星期五
+劳动节
+所有州属
+5月3日
+星期日
+劳动节 (补假)
+吉打
+5月17日
+星期日
+玻璃市拉惹诞辰
+玻璃市
+5月18日
+星期一
+玻璃市拉惹诞辰 (补假)
+玻璃市
+5月22日
+星期五
+彭亨祭祀日
+彭亨
+5月26日
+星期二
+阿拉法特日
+吉兰丹 & 登嘉楼
+5月27日
+星期三
+哈芝节
+所有州属
+5月28日
+星期四
+哈芝节第2天
+吉打, 吉兰丹, 玻璃市 & 登嘉楼
+5月30日
+星期六
+丰收节
+纳闽 & 沙巴
+5月31日
+星期日
+卫塞节
+所有州属
+5月31日
+星期日
+丰收节第2天
+纳闽 & 沙巴
+6月
+6月1日
+星期一
+达雅节
+砂劳越
+6月1日
+星期一
+国家最高元首诞辰
+所有州属
+6月1日
+星期一
+卫塞节 (补假)
+所有州属除了 吉打, 吉兰丹 & 登嘉楼
+6月2日
+星期二
+达雅节第2天
+砂劳越
+6月17日
+星期三
+回历元旦
+所有州属
+6月21日
+星期日
+吉打苏丹诞辰
+吉打
+7月
+7月7日
+星期二
+乔治市世界遗产日
+槟城
+7月11日
+星期六
+槟城元首诞辰
+槟城
+7月21日
+星期二
+柔佛已故苏丹忌日
+柔佛
+7月22日
+星期三
+砂劳越自治日
+砂劳越
+7月31日
+星期五
+彭亨苏丹诞辰
+彭亨
+8月
+8月24日
+星期一
+马六甲元首诞辰
+马六甲
+8月25日
+星期二
+回教先知穆罕默德诞辰
+所有州属
+8月31日
+星期一
+国庆日
+所有州属
+9月
+9月16日
+星期三
+马来西亚成立日
+所有州属
+9月29日
+星期二
+吉兰丹苏丹诞辰
+吉兰丹
+9月30日
+星期三
+吉兰丹苏丹诞辰第2天
+吉兰丹
+10月
+10月10日
+星期六
+砂劳越元首诞辰
+砂劳越
+11月
+11月6日
+星期五
+霹雳苏丹诞辰
+霹雳
+11月8日
+星期日
+屠妖节
+所有州属除了 砂劳越
+11月9日
+星期一
+屠妖节 (补假)
+所有州属除了 吉打, 吉兰丹, 砂劳越 & 登嘉楼
+12月
+12月11日
+星期五
+雪兰莪苏丹诞辰
+雪兰莪
+12月24日
+星期四
+圣诞节前夕
+沙巴
+12月25日
+星期五
+圣诞节
+所有州属
+12月27日
+星期日
+圣诞节 (补假)
+吉打
+NCT Lab, Research Center for Cyber Security, FTSM, UKM Bangi, Selangor, Malaysia
+Author:
+Prof. ChatGPT & 一位路人甲学长
+2025-2026 © FTSM, UKM | Version: V2.4.1
+更新日志
+
+------------------------------------------------------------
+
+[Route / / Button 3 查看校历 / 📅 校历 查看2025-2026学年校历安排 查看校历]
+
+UKM FTSM学术科研与校园服务门户
+首页
+学术科研
+系统导航
+办事指南
+毕业指南
+关于我们
+📢
+欢迎使用UKM FTSM学术科研与校园服务门户，推荐您使用电脑访问，获取最佳体验。
+欢迎使用UKM FTSM学术科研与校园服务门户，推荐您使用电脑访问，获取最佳体验。
+点击查看
+常用服务
+
+快速访问常用功能
+
+🗓️
+马来西亚公共假期
+
+2026-2027年马来西亚各州公共假期查询
+
+查看假期
+📅
+校历
+
+查看2025-2026学年校历安排
+
+查看校历
+📚
+硕士课程表（课程模式）
+
+FTSM硕士研究生课程时间表（课程模式）
+
+查看课程表
+🗺️
+FTSM学院地图
+
+交互式学院平面图，点击建筑查看教室分布
+
+查看学院地图
+访问学院官网
+🚌
+UKM公交线路和各部门联系方式
+
+查看UKM校园公交路线和运营时间，以及各部门的联系方式。
+
+查看公交路线
+查看联系方式
+💻
+UKM FOLIO上课系统
+
+课堂教学、作业、小测、课件集中管理
+
+访问 UKM FOLIO
+🚀
+快速导航
+
+网络安全、数据科学、健康信息、协调员
+
+🔒
+网络安全课表
+📊
+数据科学课表
+🏥
+健康信息课表
+👥
+协调员信息
+UKM 2025-2026 学年校历
+×
+‹
+2026年 五月
+›
+今天
+日
+一
+二
+三
+四
+五
+六
+1
+三月十五
+2
+三月十六
+3
+三月十七
+4
+三月十八
+5
+三月十九
+6
+三月二十
+7
+三月廿一
+8
+三月廿二
+9
+三月廿三
+10
+三月廿四
+11
+三月廿五
+12
+三月廿六
+13
+三月廿七
+14
+三月廿八
+15
+三月廿九
+16
+三月三十
+17
+四月初一
+18
+四月初二
+19
+四月初三
+20
+四月初四
+21
+四月初五
+22
+四月初六
+23
+四月初七
+24
+四月初八
+25
+四月初九
+26
+四月初十
+27
+四月十一
+28
+四月十二
+29
+四月十三
+30
+四月十四
+31
+四月十五
+图例说明
+注册
+上课
+期中休息
+毕业典礼
+期末复习周
+期末考试
+假期
+公共假期
+2026-05-28
+第二学期上课
+NCT Lab, Research Center for Cyber Security, FTSM, UKM Bangi, Selangor, Malaysia
+Author:
+Prof. ChatGPT & 一位路人甲学长
+2025-2026 © FTSM, UKM | Version: V2.4.1
+更新日志
+
+------------------------------------------------------------
+
+[Route / / Button 4 查看课程表 / 📚 硕士课程表（课程模式） FTSM硕士研究生课程时间表（课程模式） 查看课程表]
+
+UKM FTSM学术科研与校园服务门户
+首页
+学术科研
+系统导航
+办事指南
+毕业指南
+关于我们
+📢
+欢迎使用UKM FTSM学术科研与校园服务门户，推荐您使用电脑访问，获取最佳体验。
+欢迎使用UKM FTSM学术科研与校园服务门户，推荐您使用电脑访问，获取最佳体验。
+点击查看
+常用服务
+
+快速访问常用功能
+
+🗓️
+马来西亚公共假期
+
+2026-2027年马来西亚各州公共假期查询
+
+查看假期
+📅
+校历
+
+查看2025-2026学年校历安排
+
+查看校历
+📚
+硕士课程表（课程模式）
+
+FTSM硕士研究生课程时间表（课程模式）
+
+查看课程表
+🗺️
+FTSM学院地图
+
+交互式学院平面图，点击建筑查看教室分布
+
+查看学院地图
+访问学院官网
+🚌
+UKM公交线路和各部门联系方式
+
+查看UKM校园公交路线和运营时间，以及各部门的联系方式。
+
+查看公交路线
+查看联系方式
+💻
+UKM FOLIO上课系统
+
+课堂教学、作业、小测、课件集中管理
+
+访问 UKM FOLIO
+🚀
+快速导航
+
+网络安全、数据科学、健康信息、协调员
+
+🔒
+网络安全课表
+📊
+数据科学课表
+🏥
+健康信息课表
+👥
+协调员信息
+FACULTY OF INFORMATION SCIENCE AND TECHNOLOGY
+
+POSTGRADUATE TIMETABLE (COURSE WORK MODE)
+
+×
+最新
+SEM 2 · 2025/2026
+已过期
+SEM 1 · 2025/2026
+星期一
+09:00–13:00
+TC6244
+Advanced Machine Learning
+讲师:
+NurSamsiah/Shanorbanun
+地点:
+BK16, Block F
+TE6304
+Software Engineering Practice
+讲师:
+Zulkefli
+地点:
+BK14, Block F
+TN6014
+Network Modeling and Simulation
+讲师:
+Azana Hafizah
+地点:
+BK15, Block F
+14:00–18:00
+TH6124
+Interface Design
+讲师:
+Tengku Siti Meriam Tg Wook/Siti Fadzilah
+地点:
+BK15, Block F
+星期二
+09:00–13:00
+TP6084
+Information Retrieval
+讲师:
+Shahrul Azman Mohd Noah, Nurlzyan
+地点:
+BK16, Block F
+TN6224
+Computer Security and Defense
+讲师:
+MKamrul
+地点:
+BK14, Block F
+TM6124
+Advanced Research Methods in Computing
+讲师:
+Program Coordinator
+地点:
+Online
+14:00–18:00
+TC6544
+Advanced Artificial Intelligence
+讲师:
+Salwani/Amirin
+地点:
+BK16, Block F
+TH6234
+Mix Reality
+讲师:
+Lam Meng Chun
+地点:
+BK15, Block F
+15:00–19:00
+TR6244
+Simulation Modelling
+讲师:
+Zainal Rasyid
+地点:
+MP2, Block B
+星期三
+09:00–13:00
+TP6554
+Computational Social Science
+讲师:
+Masnizah
+地点:
+BK14, Block F
+TU6234
+Data Warehousing
+讲师:
+MFaidzul
+地点:
+BK15, Block F
+星期四
+09:00–13:00
+TC6414
+Knowledge Discovery and Data Mining
+讲师:
+Zalinda
+地点:
+BK14, Block F
+TN6484
+System and Network Management
+讲师:
+Azana Hafizah
+地点:
+BK16, Block F
+14:00–18:00
+TH6114
+Game Art and 3D Modeling
+讲师:
+Hafizah/Rimaniza
+地点:
+BK12, Block F
+TU6294
+Project and Change Management
+讲师:
+Yazrina
+地点:
+BK16, Block F
+星期五
+09:00–13:00
+TA6434
+Advanced Algorithm and Data Structure
+讲师:
+Kauthar/Syshanim
+地点:
+BK16, Block F
+TU6134
+Business Process Management
+讲师:
+Dalbir Singh
+地点:
+BK14, Block F
+星期六
+09:00–13:00
+TM6112
+Research Method in Computing
+讲师:
+Program Coordinator
+地点:
+Online
+TM6114
+Set 1 Research Method in Computing
+讲师:
+Program Coordinator
+地点:
+Online
+星期日
+09:00–13:00
+TM6114
+Set 2 Research Method in Computing
+讲师:
+Program Coordinator
+地点:
+Online
+
+注意:
+
+课程时间表可能会根据实际情况进行调整，请以最新通知为准。
+最后更新：2026年03月15日 2025/2026第2学期课程表。
+NCT Lab, Research Center for Cyber Security, FTSM, UKM Bangi, Selangor, Malaysia
+Author:
+Prof. ChatGPT & 一位路人甲学长
+2025-2026 © FTSM, UKM | Version: V2.4.1
+更新日志
+
+------------------------------------------------------------
+
+[Route / / Button 5 查看学院地图 / 🗺️ FTSM学院地图 交互式学院平面图，点击建筑查看教室分布 查看学院地图 访问学院官网]
+
+UKM FTSM学术科研与校园服务门户
+首页
+学术科研
+系统导航
+办事指南
+毕业指南
+关于我们
+📢
+欢迎使用UKM FTSM学术科研与校园服务门户，推荐您使用电脑访问，获取最佳体验。
+欢迎使用UKM FTSM学术科研与校园服务门户，推荐您使用电脑访问，获取最佳体验。
+点击查看
+常用服务
+
+快速访问常用功能
+
+🗓️
+马来西亚公共假期
+
+2026-2027年马来西亚各州公共假期查询
+
+查看假期
+📅
+校历
+
+查看2025-2026学年校历安排
+
+查看校历
+📚
+硕士课程表（课程模式）
+
+FTSM硕士研究生课程时间表（课程模式）
+
+查看课程表
+🗺️
+FTSM学院地图
+
+交互式学院平面图，点击建筑查看教室分布
+
+查看学院地图
+访问学院官网
+🚌
+UKM公交线路和各部门联系方式
+
+查看UKM校园公交路线和运营时间，以及各部门的联系方式。
+
+查看公交路线
+查看联系方式
+💻
+UKM FOLIO上课系统
+
+课堂教学、作业、小测、课件集中管理
+
+访问 UKM FOLIO
+🚀
+快速导航
+
+网络安全、数据科学、健康信息、协调员
+
+🔒
+网络安全课表
+📊
+数据科学课表
+🏥
+健康信息课表
+👥
+协调员信息
+FTSM 学院地图
+
+点击建筑查看楼内教室
+
+×
+底图
+学院平面图
+卫星图
+覆盖层透明度 40%
+选择一栋建筑以查看教室列表
+Block A
+Block B
+Block C
+Block D
+Block E
+Block F
+Block G
+Block H
+Dewan Multimedia
+NCT Lab, Research Center for Cyber Security, FTSM, UKM Bangi, Selangor, Malaysia
+Author:
+Prof. ChatGPT & 一位路人甲学长
+2025-2026 © FTSM, UKM | Version: V2.4.1
+更新日志
+
+------------------------------------------------------------
+
+[Route / / Button 6 查看公交路线 / 🚌 UKM公交线路和各部门联系方式 查看UKM校园公交路线和运营时间，以及各部门的联系方式。 查看公交路线 查看联系方式]
+
+UKM FTSM学术科研与校园服务门户
+首页
+学术科研
+系统导航
+办事指南
+毕业指南
+关于我们
+📢
+欢迎使用UKM FTSM学术科研与校园服务门户，推荐您使用电脑访问，获取最佳体验。
+欢迎使用UKM FTSM学术科研与校园服务门户，推荐您使用电脑访问，获取最佳体验。
+点击查看
+常用服务
+
+快速访问常用功能
+
+🗓️
+马来西亚公共假期
+
+2026-2027年马来西亚各州公共假期查询
+
+查看假期
+📅
+校历
+
+查看2025-2026学年校历安排
+
+查看校历
+📚
+硕士课程表（课程模式）
+
+FTSM硕士研究生课程时间表（课程模式）
+
+查看课程表
+🗺️
+FTSM学院地图
+
+交互式学院平面图，点击建筑查看教室分布
+
+查看学院地图
+访问学院官网
+🚌
+UKM公交线路和各部门联系方式
+
+查看UKM校园公交路线和运营时间，以及各部门的联系方式。
+
+查看公交路线
+查看联系方式
+💻
+UKM FOLIO上课系统
+
+课堂教学、作业、小测、课件集中管理
+
+访问 UKM FOLIO
+🚀
+快速导航
+
+网络安全、数据科学、健康信息、协调员
+
+🔒
+网络安全课表
+📊
+数据科学课表
+🏥
+健康信息课表
+👥
+协调员信息
+UKM公交路线
+×
+ZON 1
+ZON 2
+ZON 3
+ZON 4
+ZON 5
+ZON 6
+ZON 7
+ZON 8
+ZON 1
+23 个站点
+📷 查看平面图
+KPZ
+FUU
+PPA
+FKAB
+FPEND(PBL)
+KBH
+KUO(FST)
+PUSANIKA
+FPI(CANSELORI)
+DECTAR
+KRK
+UKMSHAPE(DANAU)
+PENGAJARAN(GSB UKM)
+KIZ
+KRK(STADIUM)
+KDO
+FSSK(CANSELORI)
+PTSL
+KIY(FST)
+KBH(PKU)
+FPEND
+FKAB
+KPZ
+路线说明
+
+ZON 1 是一条环线公交路线，共经过 23 个站点。
+
+运营时间
+运营时间：
+工作日早上7:30-晚上11:30
+发车频率：
+每30分钟一班
+休息时间：
+下午1:00-2:00、晚上7:00-8:00
+NCT Lab, Research Center for Cyber Security, FTSM, UKM Bangi, Selangor, Malaysia
+Author:
+Prof. ChatGPT & 一位路人甲学长
+2025-2026 © FTSM, UKM | Version: V2.4.1
+更新日志
+
+------------------------------------------------------------
+
+[Route / / Button 7 查看联系方式 / 🚌 UKM公交线路和各部门联系方式 查看UKM校园公交路线和运营时间，以及各部门的联系方式。 查看公交路线 查看联系方式]
+
+UKM FTSM学术科研与校园服务门户
+首页
+学术科研
+系统导航
+办事指南
+毕业指南
+关于我们
+📢
+欢迎使用UKM FTSM学术科研与校园服务门户，推荐您使用电脑访问，获取最佳体验。
+欢迎使用UKM FTSM学术科研与校园服务门户，推荐您使用电脑访问，获取最佳体验。
+点击查看
+常用服务
+
+快速访问常用功能
+
+🗓️
+马来西亚公共假期
+
+2026-2027年马来西亚各州公共假期查询
+
+查看假期
+📅
+校历
+
+查看2025-2026学年校历安排
+
+查看校历
+📚
+硕士课程表（课程模式）
+
+FTSM硕士研究生课程时间表（课程模式）
+
+查看课程表
+🗺️
+FTSM学院地图
+
+交互式学院平面图，点击建筑查看教室分布
+
+查看学院地图
+访问学院官网
+🚌
+UKM公交线路和各部门联系方式
+
+查看UKM校园公交路线和运营时间，以及各部门的联系方式。
+
+查看公交路线
+查看联系方式
+💻
+UKM FOLIO上课系统
+
+课堂教学、作业、小测、课件集中管理
+
+访问 UKM FOLIO
+🚀
+快速导航
+
+网络安全、数据科学、健康信息、协调员
+
+🔒
+网络安全课表
+📊
+数据科学课表
+🏥
+健康信息课表
+👥
+协调员信息
+UKM常用联系方式
+问题
+电话号码
+E-Mail
+VISA & Student Pass
+016-3566066
+visashape@ukm.edu.my
+Admission / Registration of New Students
+03-8927 2112 / 2129
+admission.shape@ukm.edu.my
+Finance
+03-8927 2110 / 03-8927 2108 / 011-29824629
+accshape@ukm.edu.my
+Course Registration / Student Records
+03-8927 2111 / 03-8927 2114
+upprpshape@ukm.edu.my
+Undergraduate UKMi
+03-8927-2115
+ukm.i@ukm.edu.my
+Postgraduate International
+03-8927-2123
+pgi@ukm.edu.my
+HEET Training (Formally known as PEP)
+03-8927 2122
+HEETtrain@ukm.edu.my
+Examinations / Convocation
+03-8927 2111 / 03-8927 2114
+uppshape@ukm.edu.my
+Microsoft Teams / Microsoft 365 / Siswa Email
+03-8921 7070
+helpdeskptm@ukm.edu.my
+UKMShape System Technical issues
+03-8927 2118 / 03-8921 6131 / 03-8921 6187 / 011-29824781
+aduanbptm@ukm.edu.my
+General Info
+03-8927 2100
+–
+Accommodation / Student Card / Goodies / Financial Aid
+03-8927 2116 / 03-8927 2117 / 03-8927 2139 / 010- 7760500
+ukmcare@ukm.edu.my
+Marketing / Agent
+03-8927 2134
+marketingshape@ukm.edu.my
+Pre-University
+03-8927-2113 / 011-5755 0593
+sp.shape@ukm.edu.my
+Gifted & Talented International (GTI)
+–
+gtishape@ukm.edu.my
+Flexible Education (FlexEd)
+03-8927-2126
+flexed@ukm.edu.my
+Open and Distance Learning – ODL UKM
+03- 8927 2120 / 010-8070049
+akademik.odl@ukm.edu.my
+APEL
+03-8927-2120
+apel.ukmshape@ukm.edu.my
+Micro-credential & Professional Certificate
+03- 8927 2124 / 017-8112270
+studymc@ukm.edu.my
+Human Resource / Reading Material
+03-8927 2106 / 019-2272 2174
+ptdshape@ukm.edu.my
+NCT Lab, Research Center for Cyber Security, FTSM, UKM Bangi, Selangor, Malaysia
+Author:
+Prof. ChatGPT & 一位路人甲学长
+2025-2026 © FTSM, UKM | Version: V2.4.1
+更新日志
+
+------------------------------------------------------------
+
+[Route / / Button 8 🔒 网络安全课表 / 🚀 快速导航 网络安全、数据科学、健康信息、协调员 🔒 网络安全课表 📊 数据科学课表 🏥 健康信息课表 👥 协调员信息]
+
+UKM FTSM学术科研与校园服务门户
+首页
+学术科研
+系统导航
+办事指南
+毕业指南
+关于我们
+📢
+欢迎使用UKM FTSM学术科研与校园服务门户，推荐您使用电脑访问，获取最佳体验。
+欢迎使用UKM FTSM学术科研与校园服务门户，推荐您使用电脑访问，获取最佳体验。
+点击查看
+常用服务
+
+快速访问常用功能
+
+🗓️
+马来西亚公共假期
+
+2026-2027年马来西亚各州公共假期查询
+
+查看假期
+📅
+校历
+
+查看2025-2026学年校历安排
+
+查看校历
+📚
+硕士课程表（课程模式）
+
+FTSM硕士研究生课程时间表（课程模式）
+
+查看课程表
+🗺️
+FTSM学院地图
+
+交互式学院平面图，点击建筑查看教室分布
+
+查看学院地图
+访问学院官网
+🚌
+UKM公交线路和各部门联系方式
+
+查看UKM校园公交路线和运营时间，以及各部门的联系方式。
+
+查看公交路线
+查看联系方式
+💻
+UKM FOLIO上课系统
+
+课堂教学、作业、小测、课件集中管理
+
+访问 UKM FOLIO
+🚀
+快速导航
+
+网络安全、数据科学、健康信息、协调员
+
+🔒
+网络安全课表
+📊
+数据科学课表
+🏥
+健康信息课表
+👥
+协调员信息
+网络安全硕士课程时间表
+第一学期
+第二学期
+2025-2026 第一学期
+2025年10月6日-2025年10月10日
+[C] TTTX6114 COMPUTER SECURITY
+地点：Cyber Security Lab
+讲师：DR ROSSILAWATI SULAIMAN
+2025年10月13日-2025年10月17日
+[C] TTTX6144 INFORMATION SECURITY MANAGEMENT
+地点：BK7, Block G
+讲师：DR ROZILAWATI RAZALI
+2025年10月13日-2025年10月17日
+[E] TTTX6254 SECURITY AUDIT AND ASSESSMENT
+地点：Cyber Security Lab
+讲师：DR. IBRAHIM MOHAMED
+2025年11月3日-2025年11月7日
+[C] TTTX6124 NETWORK SECURITY
+地点：Cyber Security Lab
+讲师：DR KHAIRUL AZMI ABU BAKAR
+2025年11月3日-2025年11月7日
+[C] TTTX6134 CYBERLAW AND ETHICS
+地点：BK7, Block G
+讲师：AP DR MASNIZAH MOHD
+2025年11月17日-2025年11月21日
+[E] TTTD6214 DATA RECOVERY & ANALYSIS
+地点：Cyber Security Lab
+讲师：AP DR KHAIRUL AKRAM ZAINOLARIFFIN
+2025年12月1日-2025年12月5日
+[E] TTTD6314 DIGITAL MEDIA FORENSIC ANALYSIS
+地点：Cyber Security Lab
+讲师：DR KOK VEN JYN
+2025年12月15日-2025年12月19日
+[E] TTTX6244 ETHICAL HACKING AND PENETRATION TESTING
+地点：Cyber Security Lab
+讲师：DR WAN FARIZA
+2026年1月26日-2026年2月15日
+考试周
+
+注意：
+
+[C] = 核心模块，[E] = 选修模块
+所有课程（全日制和非全日制）均以面授形式进行，时间为周一至周五上午 8:30 至下午 5:30
+所提供模块的开课时间取决于课程最低名额，如有取消，恕不另行通知
+以上时间表可能会有所变更
+NCT Lab, Research Center for Cyber Security, FTSM, UKM Bangi, Selangor, Malaysia
+Author:
+Prof. ChatGPT & 一位路人甲学长
+2025-2026 © FTSM, UKM | Version: V2.4.1
+更新日志
+
+------------------------------------------------------------
+
+[Route / / Button 9 📊 数据科学课表 / 🚀 快速导航 网络安全、数据科学、健康信息、协调员 🔒 网络安全课表 📊 数据科学课表 🏥 健康信息课表 👥 协调员信息]
+
+UKM FTSM学术科研与校园服务门户
+首页
+学术科研
+系统导航
+办事指南
+毕业指南
+关于我们
+📢
+欢迎使用UKM FTSM学术科研与校园服务门户，推荐您使用电脑访问，获取最佳体验。
+欢迎使用UKM FTSM学术科研与校园服务门户，推荐您使用电脑访问，获取最佳体验。
+点击查看
+常用服务
+
+快速访问常用功能
+
+🗓️
+马来西亚公共假期
+
+2026-2027年马来西亚各州公共假期查询
+
+查看假期
+📅
+校历
+
+查看2025-2026学年校历安排
+
+查看校历
+📚
+硕士课程表（课程模式）
+
+FTSM硕士研究生课程时间表（课程模式）
+
+查看课程表
+🗺️
+FTSM学院地图
+
+交互式学院平面图，点击建筑查看教室分布
+
+查看学院地图
+访问学院官网
+🚌
+UKM公交线路和各部门联系方式
+
+查看UKM校园公交路线和运营时间，以及各部门的联系方式。
+
+查看公交路线
+查看联系方式
+💻
+UKM FOLIO上课系统
+
+课堂教学、作业、小测、课件集中管理
+
+访问 UKM FOLIO
+🚀
+快速导航
+
+网络安全、数据科学、健康信息、协调员
+
+🔒
+网络安全课表
+📊
+数据科学课表
+🏥
+健康信息课表
+👥
+协调员信息
+数据科学硕士课程时间表
+第一学期
+第二学期
+2025-2026 第一学期
+2025年10月6日-2025年10月10日
+[C] TTTC6424 FUNDAMENTAL OF DATA SCIENCE
+地点：Data Science Lab
+讲师：PROF DR AZURALIZA ABU BAKAR & AP DR SUHAILA ZAINUDIN
+2025年11月3日-2025年11月7日
+[C] TTTR6124 STATISTICAL METHODS FOR DATA ANALYTICS
+地点：Data Science Lab
+讲师：AP DR SHAHNORBANUN SAHRAN & PN SITI AISHAH HANAWI
+2025年11月17日-2025年11月21日
+[C] TTTC6444 MACHINE LEARNING FOR DATA SCIENCE
+地点：Data Science Lab
+讲师：AP DR NOR SAMSIAH SANI & DR AFZAN ADAM
+2025年12月1日-2025年12月5日
+[E] TTTU6434 BIG DATA ANALYTICS AND MANAGEMENT
+地点：Data Science Lab
+讲师：AP DR MOHD RIDZWAN YAAKUB & AP DR ELANKOVAN A. SUNDARARAJAN
+2025年12月1日-2025年12月5日
+[C] TTTU6314 BUSINESS ANALYTICS
+地点：BK7, Block G
+讲师：AP DR MOHD ZAKREE AHMAD NAZRI & DR KAUTHAR MD DAUD
+2025年12月15日-2025年12月19日
+[E] TTTP6234 UNSTRUCTURED DATA ANALYTICS
+地点：Data Science Lab
+讲师：AP DR NAZLIA OMAR
+2026年1月26日-2026年2月15日
+考试周
+
+注意：
+
+[C] = 核心模块，[E] = 选修模块
+所有课程（全日制和非全日制）均以面授形式进行，时间为周一至周五上午 8:30 至下午 5:30
+所提供模块的开课时间取决于课程最低名额，如有取消，恕不另行通知
+以上时间表可能会有所变更
+NCT Lab, Research Center for Cyber Security, FTSM, UKM Bangi, Selangor, Malaysia
+Author:
+Prof. ChatGPT & 一位路人甲学长
+2025-2026 © FTSM, UKM | Version: V2.4.1
+更新日志
+
+------------------------------------------------------------
+
+[Route / / Button 10 🏥 健康信息课表 / 🚀 快速导航 网络安全、数据科学、健康信息、协调员 🔒 网络安全课表 📊 数据科学课表 🏥 健康信息课表 👥 协调员信息]
+
+UKM FTSM学术科研与校园服务门户
+首页
+学术科研
+系统导航
+办事指南
+毕业指南
+关于我们
+📢
+欢迎使用UKM FTSM学术科研与校园服务门户，推荐您使用电脑访问，获取最佳体验。
+欢迎使用UKM FTSM学术科研与校园服务门户，推荐您使用电脑访问，获取最佳体验。
+点击查看
+常用服务
+
+快速访问常用功能
+
+🗓️
+马来西亚公共假期
+
+2026-2027年马来西亚各州公共假期查询
+
+查看假期
+📅
+校历
+
+查看2025-2026学年校历安排
+
+查看校历
+📚
+硕士课程表（课程模式）
+
+FTSM硕士研究生课程时间表（课程模式）
+
+查看课程表
+🗺️
+FTSM学院地图
+
+交互式学院平面图，点击建筑查看教室分布
+
+查看学院地图
+访问学院官网
+🚌
+UKM公交线路和各部门联系方式
+
+查看UKM校园公交路线和运营时间，以及各部门的联系方式。
+
+查看公交路线
+查看联系方式
+💻
+UKM FOLIO上课系统
+
+课堂教学、作业、小测、课件集中管理
+
+访问 UKM FOLIO
+🚀
+快速导航
+
+网络安全、数据科学、健康信息、协调员
+
+🔒
+网络安全课表
+📊
+数据科学课表
+🏥
+健康信息课表
+👥
+协调员信息
+健康信息学硕士课程时间表
+第一学期
+第二学期
+2025-2026 第一学期
+2025年10月6日-2025年10月10日
+[E] TTTC6424 FUNDAMENTAL OF DATA SCIENCE
+地点：Data Science Lab
+讲师：PROF DR AZURALIZA ABU BAKAR & AP DR SUHAILA ZAINUDIN
+2025年10月13日-2025年10月17日
+[C] TTTS6024 INFORMATION MODELING AND DATABASES
+地点：Data Science Lab
+讲师：DR HAFIZ MOHD SARIM & PROF DR ZULAIHA ALI OTHMAN
+2025年11月3日-2025年11月7日
+[E] TTTX6134 CYBERLAW AND ETHICS
+地点：BK7, Block G
+讲师：AP DR MASNIZAH MOHD
+2025年11月17日-2025年11月21日
+[C] TTTY6024 HEALTH INFORMATICS
+地点：BK7, Block G
+讲师：AP DR MARYATI MOHD YUSOF
+2025年11月17日-2025年11月21日
+[E] TTTC6444 MACHINE LEARNING FOR DATA SCIENCE
+地点：Data Science Lab
+讲师：AP DR NOR SAMSIAH SANI & DR AFZAN ADAM
+2025年12月1日-2025年12月5日
+[E] TTTU6314 BUSINESS ANALYTICS
+地点：BK7, Block G
+讲师：AP DR MOHD ZAKREE AHMAD NAZRI & DR KAUTHAR MD DAUD
+2025年12月15日-2025年12月19日
+[C] TTTY6034 ANALYSIS AND DESIGN OF HEALTH INFORMATION SYSTEMS
+地点：BK7, Block G
+讲师：DR. HASIMI SALLEHUDDIN & DR ZAIHOSNITA HOOD
+2026年1月26日-2026年2月15日
+考试周
+
+注意：
+
+[C] = 核心模块，[E] = 选修模块
+所有课程（全日制和非全日制）均以面授形式进行，时间为周一至周五上午 8:30 至下午 5:30
+所提供模块的开课时间取决于课程最低名额，如有取消，恕不另行通知
+以上时间表可能会有所变更
+NCT Lab, Research Center for Cyber Security, FTSM, UKM Bangi, Selangor, Malaysia
+Author:
+Prof. ChatGPT & 一位路人甲学长
+2025-2026 © FTSM, UKM | Version: V2.4.1
+更新日志
+
+------------------------------------------------------------
+
+[Route / / Button 11 👥 协调员信息 / 🚀 快速导航 网络安全、数据科学、健康信息、协调员 🔒 网络安全课表 📊 数据科学课表 🏥 健康信息课表 👥 协调员信息]
+
+UKM FTSM学术科研与校园服务门户
+首页
+学术科研
+系统导航
+办事指南
+毕业指南
+关于我们
+📢
+欢迎使用UKM FTSM学术科研与校园服务门户，推荐您使用电脑访问，获取最佳体验。
+欢迎使用UKM FTSM学术科研与校园服务门户，推荐您使用电脑访问，获取最佳体验。
+点击查看
+常用服务
+
+快速访问常用功能
+
+🗓️
+马来西亚公共假期
+
+2026-2027年马来西亚各州公共假期查询
+
+查看假期
+📅
+校历
+
+查看2025-2026学年校历安排
+
+查看校历
+📚
+硕士课程表（课程模式）
+
+FTSM硕士研究生课程时间表（课程模式）
+
+查看课程表
+🗺️
+FTSM学院地图
+
+交互式学院平面图，点击建筑查看教室分布
+
+查看学院地图
+访问学院官网
+🚌
+UKM公交线路和各部门联系方式
+
+查看UKM校园公交路线和运营时间，以及各部门的联系方式。
+
+查看公交路线
+查看联系方式
+💻
+UKM FOLIO上课系统
+
+课堂教学、作业、小测、课件集中管理
+
+访问 UKM FOLIO
+🚀
+快速导航
+
+网络安全、数据科学、健康信息、协调员
+
+🔒
+网络安全课表
+📊
+数据科学课表
+🏥
+健康信息课表
+👥
+协调员信息
+硕士课程协调员
+硕士（课程模式）
+协调员
+Dr. Ahmad Tarmizi Abdul Ghani
+atag@ukm.edu.my
+行政秘书
+Nur Iffah Syaheera Md Khair
+nuriffahsyaheera@ukm.edu.my
+硕士（混合模式）
+协调员
+Dr. Wandeep Kaur a/p Ratan Singh
+wandeep@ukm.edu.my
+行政秘书
+Syafiqah Najwa Jamali
+snajwajamali@ukm.edu.my
+NCT Lab, Research Center for Cyber Security, FTSM, UKM Bangi, Selangor, Malaysia
+Author:
+Prof. ChatGPT & 一位路人甲学长
+2025-2026 © FTSM, UKM | Version: V2.4.1
+更新日志
+
+------------------------------------------------------------
+
+[FTSM map modal visible text]
+
+UKM FTSM学术科研与校园服务门户
+首页
+学术科研
+系统导航
+办事指南
+毕业指南
+关于我们
+📢
+欢迎使用UKM FTSM学术科研与校园服务门户，推荐您使用电脑访问，获取最佳体验。
+欢迎使用UKM FTSM学术科研与校园服务门户，推荐您使用电脑访问，获取最佳体验。
+点击查看
+常用服务
+
+快速访问常用功能
+
+🗓️
+马来西亚公共假期
+
+2026-2027年马来西亚各州公共假期查询
+
+查看假期
+📅
+校历
+
+查看2025-2026学年校历安排
+
+查看校历
+📚
+硕士课程表（课程模式）
+
+FTSM硕士研究生课程时间表（课程模式）
+
+查看课程表
+🗺️
+FTSM学院地图
+
+交互式学院平面图，点击建筑查看教室分布
+
+查看学院地图
+访问学院官网
+🚌
+UKM公交线路和各部门联系方式
+
+查看UKM校园公交路线和运营时间，以及各部门的联系方式。
+
+查看公交路线
+查看联系方式
+💻
+UKM FOLIO上课系统
+
+课堂教学、作业、小测、课件集中管理
+
+访问 UKM FOLIO
+🚀
+快速导航
+
+网络安全、数据科学、健康信息、协调员
+
+🔒
+网络安全课表
+📊
+数据科学课表
+🏥
+健康信息课表
+👥
+协调员信息
+FTSM 学院地图
+
+点击建筑查看楼内教室
+
+×
+底图
+学院平面图
+卫星图
+覆盖层透明度 40%
+选择一栋建筑以查看教室列表
+Block A
+Block B
+Block C
+Block D
+Block E
+Block F
+Block G
+Block H
+Dewan Multimedia
+NCT Lab, Research Center for Cyber Security, FTSM, UKM Bangi, Selangor, Malaysia
+Author:
+Prof. ChatGPT & 一位路人甲学长
+2025-2026 © FTSM, UKM | Version: V2.4.1
+更新日志
+
+------------------------------------------------------------
+
+[FTSM map media assets]
+
+Image: alt='UKM'; size=1488x860; src=https://ftsm.pages.dev/assets/UKMOfficialLogo.svg
+Image: alt='map'; size=2164x1439; src=https://ftsm.pages.dev/assets/ftsm-satellite.png
+Image: alt='map'; size=2558x1418; src=https://ftsm.pages.dev/assets/ftsm-plan.png
+imageUrls: https://ftsm.pages.dev/assets/UKMOfficialLogo.svg
+imageUrls: https://ftsm.pages.dev/assets/ftsm-plan.png
+imageUrls: https://ftsm.pages.dev/assets/ftsm-satellite.png
+
+------------------------------------------------------------
+
+[FTSM map block Block A at (805, 564)]
+
+UKM FTSM学术科研与校园服务门户
+首页
+学术科研
+系统导航
+办事指南
+毕业指南
+关于我们
+📢
+欢迎使用UKM FTSM学术科研与校园服务门户，推荐您使用电脑访问，获取最佳体验。
+欢迎使用UKM FTSM学术科研与校园服务门户，推荐您使用电脑访问，获取最佳体验。
+点击查看
+常用服务
+
+快速访问常用功能
+
+🗓️
+马来西亚公共假期
+
+2026-2027年马来西亚各州公共假期查询
+
+查看假期
+📅
+校历
+
+查看2025-2026学年校历安排
+
+查看校历
+📚
+硕士课程表（课程模式）
+
+FTSM硕士研究生课程时间表（课程模式）
+
+查看课程表
+🗺️
+FTSM学院地图
+
+交互式学院平面图，点击建筑查看教室分布
+
+查看学院地图
+访问学院官网
+🚌
+UKM公交线路和各部门联系方式
+
+查看UKM校园公交路线和运营时间，以及各部门的联系方式。
+
+查看公交路线
+查看联系方式
+💻
+UKM FOLIO上课系统
+
+课堂教学、作业、小测、课件集中管理
+
+访问 UKM FOLIO
+🚀
+快速导航
+
+网络安全、数据科学、健康信息、协调员
+
+🔒
+网络安全课表
+📊
+数据科学课表
+🏥
+健康信息课表
+👥
+协调员信息
+FTSM 学院地图
+
+点击建筑查看楼内教室
+
+×
+底图
+学院平面图
+卫星图
+覆盖层透明度 40%
+Block A
+Rooms & Facilities
+清除
+Lower Level
+Academic Management Unit Office
+Deputy Dean's Room (Academic)
+Assistant Dean's Room (Students & Alumni Affairs)
+Head of Master Programme Room
+Head of Doctoral Programme Room
+Senior Assistant Registrar Room
+Student Centre
+Upper Level
+Assistant Dean's Room (Entrepreneurship & Creativity)
+Head of Artificial Intelligence Programme Room
+Head of Information Technology Programme Room
+Head of Software Engineering Programme Room
+Head of Software Networking Programme Room
+Programme Coordinator (Master By Module) Room
+Glass Discussion Room
+Block A
+Block B
+Block C
+Block D
+Block E
+Block F
+Block G
+Block H
+Dewan Multimedia
+NCT Lab, Research Center for Cyber Security, FTSM, UKM Bangi, Selangor, Malaysia
+Author:
+Prof. ChatGPT & 一位路人甲学长
+2025-2026 © FTSM, UKM | Version: V2.4.1
+更新日志
+
+------------------------------------------------------------
+
+[FTSM map block Block B at (847, 473)]
+
+UKM FTSM学术科研与校园服务门户
+首页
+学术科研
+系统导航
+办事指南
+毕业指南
+关于我们
+📢
+欢迎使用UKM FTSM学术科研与校园服务门户，推荐您使用电脑访问，获取最佳体验。
+欢迎使用UKM FTSM学术科研与校园服务门户，推荐您使用电脑访问，获取最佳体验。
+点击查看
+常用服务
+
+快速访问常用功能
+
+🗓️
+马来西亚公共假期
+
+2026-2027年马来西亚各州公共假期查询
+
+查看假期
+📅
+校历
+
+查看2025-2026学年校历安排
+
+查看校历
+📚
+硕士课程表（课程模式）
+
+FTSM硕士研究生课程时间表（课程模式）
+
+查看课程表
+🗺️
+FTSM学院地图
+
+交互式学院平面图，点击建筑查看教室分布
+
+查看学院地图
+访问学院官网
+🚌
+UKM公交线路和各部门联系方式
+
+查看UKM校园公交路线和运营时间，以及各部门的联系方式。
+
+查看公交路线
+查看联系方式
+💻
+UKM FOLIO上课系统
+
+课堂教学、作业、小测、课件集中管理
+
+访问 UKM FOLIO
+🚀
+快速导航
+
+网络安全、数据科学、健康信息、协调员
+
+🔒
+网络安全课表
+📊
+数据科学课表
+🏥
+健康信息课表
+👥
+协调员信息
+FTSM 学院地图
+
+点击建筑查看楼内教室
+
+×
+底图
+学院平面图
+卫星图
+覆盖层透明度 40%
+Block B
+Rooms & Facilities
+清除
+Ground Floor
+Meeting Room 1
+Meeting Room 2
+Viva Room
+Level 1
+Lecture Room 1
+Lecture Room 2
+Lecture Room 3
+Level 2
+Lecture Room 4
+Lecture Room 5
+Lecture Room 6
+Block A
+Block B
+Block C
+Block D
+Block E
+Block F
+Block G
+Block H
+Dewan Multimedia
+NCT Lab, Research Center for Cyber Security, FTSM, UKM Bangi, Selangor, Malaysia
+Author:
+Prof. ChatGPT & 一位路人甲学长
+2025-2026 © FTSM, UKM | Version: V2.4.1
+更新日志
+
+------------------------------------------------------------
+
+[FTSM map block Block C at (957, 512)]
+
+UKM FTSM学术科研与校园服务门户
+首页
+学术科研
+系统导航
+办事指南
+毕业指南
+关于我们
+📢
+欢迎使用UKM FTSM学术科研与校园服务门户，推荐您使用电脑访问，获取最佳体验。
+欢迎使用UKM FTSM学术科研与校园服务门户，推荐您使用电脑访问，获取最佳体验。
+点击查看
+常用服务
+
+快速访问常用功能
+
+🗓️
+马来西亚公共假期
+
+2026-2027年马来西亚各州公共假期查询
+
+查看假期
+📅
+校历
+
+查看2025-2026学年校历安排
+
+查看校历
+📚
+硕士课程表（课程模式）
+
+FTSM硕士研究生课程时间表（课程模式）
+
+查看课程表
+🗺️
+FTSM学院地图
+
+交互式学院平面图，点击建筑查看教室分布
+
+查看学院地图
+访问学院官网
+🚌
+UKM公交线路和各部门联系方式
+
+查看UKM校园公交路线和运营时间，以及各部门的联系方式。
+
+查看公交路线
+查看联系方式
+💻
+UKM FOLIO上课系统
+
+课堂教学、作业、小测、课件集中管理
+
+访问 UKM FOLIO
+🚀
+快速导航
+
+网络安全、数据科学、健康信息、协调员
+
+🔒
+网络安全课表
+📊
+数据科学课表
+🏥
+健康信息课表
+👥
+协调员信息
+FTSM 学院地图
+
+点击建筑查看楼内教室
+
+×
+底图
+学院平面图
+卫星图
+覆盖层透明度 40%
+Block C
+Rooms & Facilities
+清除
+Ground Floor
+Autonomous Robotics & Vision System (ARVIS) Lab
+Network & Pervasive (MyXLab)
+Artificial Intelligence Lab
+Level 1
+Teaching Lab 3
+Software Engineering Lab
+Real-Time Lab
+Level 2
+Teaching Lab 1
+Teaching Lab 2
+Block A
+Block B
+Block C
+Block D
+Block E
+Block F
+Block G
+Block H
+Dewan Multimedia
+NCT Lab, Research Center for Cyber Security, FTSM, UKM Bangi, Selangor, Malaysia
+Author:
+Prof. ChatGPT & 一位路人甲学长
+2025-2026 © FTSM, UKM | Version: V2.4.1
+更新日志
+
+------------------------------------------------------------
+
+[FTSM map block Block D at (917, 600)]
+
+UKM FTSM学术科研与校园服务门户
+首页
+学术科研
+系统导航
+办事指南
+毕业指南
+关于我们
+📢
+欢迎使用UKM FTSM学术科研与校园服务门户，推荐您使用电脑访问，获取最佳体验。
+欢迎使用UKM FTSM学术科研与校园服务门户，推荐您使用电脑访问，获取最佳体验。
+点击查看
+常用服务
+
+快速访问常用功能
+
+🗓️
+马来西亚公共假期
+
+2026-2027年马来西亚各州公共假期查询
+
+查看假期
+📅
+校历
+
+查看2025-2026学年校历安排
+
+查看校历
+📚
+硕士课程表（课程模式）
+
+FTSM硕士研究生课程时间表（课程模式）
+
+查看课程表
+🗺️
+FTSM学院地图
+
+交互式学院平面图，点击建筑查看教室分布
+
+查看学院地图
+访问学院官网
+🚌
+UKM公交线路和各部门联系方式
+
+查看UKM校园公交路线和运营时间，以及各部门的联系方式。
+
+查看公交路线
+查看联系方式
+💻
+UKM FOLIO上课系统
+
+课堂教学、作业、小测、课件集中管理
+
+访问 UKM FOLIO
+🚀
+快速导航
+
+网络安全、数据科学、健康信息、协调员
+
+🔒
+网络安全课表
+📊
+数据科学课表
+🏥
+健康信息课表
+👥
+协调员信息
+FTSM 学院地图
+
+点击建筑查看楼内教室
+
+×
+底图
+学院平面图
+卫星图
+覆盖层透明度 40%
+Block D
+Rooms & Facilities
+清除
+Level 1
+Innovation Space
+Discussion Room 1
+Discussion Room 2
+Discussion Room 3
+Student Association Room
+Level 2
+Innovation Studio
+Audio Room
+Distributed & Platform Technology Lab
+Level 3
+Innovation Farm
+Block A
+Block B
+Block C
+Block D
+Block E
+Block F
+Block G
+Block H
+Dewan Multimedia
+NCT Lab, Research Center for Cyber Security, FTSM, UKM Bangi, Selangor, Malaysia
+Author:
+Prof. ChatGPT & 一位路人甲学长
+2025-2026 © FTSM, UKM | Version: V2.4.1
+更新日志
+
+------------------------------------------------------------
+
+[FTSM map block Block E at (795, 653)]
+
+UKM FTSM学术科研与校园服务门户
+首页
+学术科研
+系统导航
+办事指南
+毕业指南
+关于我们
+📢
+欢迎使用UKM FTSM学术科研与校园服务门户，推荐您使用电脑访问，获取最佳体验。
+欢迎使用UKM FTSM学术科研与校园服务门户，推荐您使用电脑访问，获取最佳体验。
+点击查看
+常用服务
+
+快速访问常用功能
+
+🗓️
+马来西亚公共假期
+
+2026-2027年马来西亚各州公共假期查询
+
+查看假期
+📅
+校历
+
+查看2025-2026学年校历安排
+
+查看校历
+📚
+硕士课程表（课程模式）
+
+FTSM硕士研究生课程时间表（课程模式）
+
+查看课程表
+🗺️
+FTSM学院地图
+
+交互式学院平面图，点击建筑查看教室分布
+
+查看学院地图
+访问学院官网
+🚌
+UKM公交线路和各部门联系方式
+
+查看UKM校园公交路线和运营时间，以及各部门的联系方式。
+
+查看公交路线
+查看联系方式
+💻
+UKM FOLIO上课系统
+
+课堂教学、作业、小测、课件集中管理
+
+访问 UKM FOLIO
+🚀
+快速导航
+
+网络安全、数据科学、健康信息、协调员
+
+🔒
+网络安全课表
+📊
+数据科学课表
+🏥
+健康信息课表
+👥
+协调员信息
+FTSM 学院地图
+
+点击建筑查看楼内教室
+
+×
+底图
+学院平面图
+卫星图
+覆盖层透明度 40%
+Block E
+Rooms & Facilities
+清除
+Level 1
+Lecturer Rooms
+Level 2
+Lecturer Rooms
+Level 3
+Lecturer Rooms
+Level 4
+Lecturer Rooms
+Tutorial Rooms 5
+Block A
+Block B
+Block C
+Block D
+Block E
+Block F
+Block G
+Block H
+Dewan Multimedia
+NCT Lab, Research Center for Cyber Security, FTSM, UKM Bangi, Selangor, Malaysia
+Author:
+Prof. ChatGPT & 一位路人甲学长
+2025-2026 © FTSM, UKM | Version: V2.4.1
+更新日志
+
+------------------------------------------------------------
+
+[FTSM map block Block F at (821, 738)]
+
+UKM FTSM学术科研与校园服务门户
+首页
+学术科研
+系统导航
+办事指南
+毕业指南
+关于我们
+📢
+欢迎使用UKM FTSM学术科研与校园服务门户，推荐您使用电脑访问，获取最佳体验。
+欢迎使用UKM FTSM学术科研与校园服务门户，推荐您使用电脑访问，获取最佳体验。
+点击查看
+常用服务
+
+快速访问常用功能
+
+🗓️
+马来西亚公共假期
+
+2026-2027年马来西亚各州公共假期查询
+
+查看假期
+📅
+校历
+
+查看2025-2026学年校历安排
+
+查看校历
+📚
+硕士课程表（课程模式）
+
+FTSM硕士研究生课程时间表（课程模式）
+
+查看课程表
+🗺️
+FTSM学院地图
+
+交互式学院平面图，点击建筑查看教室分布
+
+查看学院地图
+访问学院官网
+🚌
+UKM公交线路和各部门联系方式
+
+查看UKM校园公交路线和运营时间，以及各部门的联系方式。
+
+查看公交路线
+查看联系方式
+💻
+UKM FOLIO上课系统
+
+课堂教学、作业、小测、课件集中管理
+
+访问 UKM FOLIO
+🚀
+快速导航
+
+网络安全、数据科学、健康信息、协调员
+
+🔒
+网络安全课表
+📊
+数据科学课表
+🏥
+健康信息课表
+👥
+协调员信息
+FTSM 学院地图
+
+点击建筑查看楼内教室
+
+×
+底图
+学院平面图
+卫星图
+覆盖层透明度 40%
+Block F
+Rooms & Facilities
+清除
+Level Ground
+BK10
+BK11
+BK12
+BK13
+Level 1
+BK14
+BK15
+BK16
+BK17
+Block A
+Block B
+Block C
+Block D
+Block E
+Block F
+Block G
+Block H
+Dewan Multimedia
+NCT Lab, Research Center for Cyber Security, FTSM, UKM Bangi, Selangor, Malaysia
+Author:
+Prof. ChatGPT & 一位路人甲学长
+2025-2026 © FTSM, UKM | Version: V2.4.1
+更新日志
+
+------------------------------------------------------------
+
+[FTSM map block Block G at (695, 743)]
+
+UKM FTSM学术科研与校园服务门户
+首页
+学术科研
+系统导航
+办事指南
+毕业指南
+关于我们
+📢
+欢迎使用UKM FTSM学术科研与校园服务门户，推荐您使用电脑访问，获取最佳体验。
+欢迎使用UKM FTSM学术科研与校园服务门户，推荐您使用电脑访问，获取最佳体验。
+点击查看
+常用服务
+
+快速访问常用功能
+
+🗓️
+马来西亚公共假期
+
+2026-2027年马来西亚各州公共假期查询
+
+查看假期
+📅
+校历
+
+查看2025-2026学年校历安排
+
+查看校历
+📚
+硕士课程表（课程模式）
+
+FTSM硕士研究生课程时间表（课程模式）
+
+查看课程表
+🗺️
+FTSM学院地图
+
+交互式学院平面图，点击建筑查看教室分布
+
+查看学院地图
+访问学院官网
+🚌
+UKM公交线路和各部门联系方式
+
+查看UKM校园公交路线和运营时间，以及各部门的联系方式。
+
+查看公交路线
+查看联系方式
+💻
+UKM FOLIO上课系统
+
+课堂教学、作业、小测、课件集中管理
+
+访问 UKM FOLIO
+🚀
+快速导航
+
+网络安全、数据科学、健康信息、协调员
+
+🔒
+网络安全课表
+📊
+数据科学课表
+🏥
+健康信息课表
+👥
+协调员信息
+FTSM 学院地图
+
+点击建筑查看楼内教室
+
+×
+底图
+学院平面图
+卫星图
+覆盖层透明度 40%
+Block G
+Rooms & Facilities
+清除
+Ground Floor
+Multimedia Hall
+Industrial Lab
+Cyber Security Lab
+Data Science Lab
+Cyber Executive Seminar Room
+Postgraduate Common Room
+ICT Service Center
+Cafeteria / Photostat Service
+Level 1
+Dean's Office
+Dean's Room
+Deputy Dean's Room (Research & Innovation)
+Deputy Dean's Room (Industry Engagement, Alumni and Income Generation)
+Assistant Dean's Room (Quality & Strategy)
+Assistant Dean's Room (Teaching and CITRA)
+Head of HEJIM Room
+Head of Assistant Registrar Room
+Head of ICT Unit Room
+Information Technology Officer's Room
+Finance Office (Zone 2)
+Lecture Room 7
+Lecture Room 8
+Lecture Room 9
+Level 2
+Executive Discussion Room
+Lecturer Rooms
+Tutorial Room 1
+Tutorial Room 2
+Level 3
+Lecturer Rooms
+Tutorial Room 3
+Tutorial Room 4
+Block A
+Block B
+Block C
+Block D
+Block E
+Block F
+Block G
+Block H
+Dewan Multimedia
+NCT Lab, Research Center for Cyber Security, FTSM, UKM Bangi, Selangor, Malaysia
+Author:
+Prof. ChatGPT & 一位路人甲学长
+2025-2026 © FTSM, UKM | Version: V2.4.1
+更新日志
+
+------------------------------------------------------------
+
+[FTSM map block Block H at (790, 835)]
+
+UKM FTSM学术科研与校园服务门户
+首页
+学术科研
+系统导航
+办事指南
+毕业指南
+关于我们
+📢
+欢迎使用UKM FTSM学术科研与校园服务门户，推荐您使用电脑访问，获取最佳体验。
+欢迎使用UKM FTSM学术科研与校园服务门户，推荐您使用电脑访问，获取最佳体验。
+点击查看
+常用服务
+
+快速访问常用功能
+
+🗓️
+马来西亚公共假期
+
+2026-2027年马来西亚各州公共假期查询
+
+查看假期
+📅
+校历
+
+查看2025-2026学年校历安排
+
+查看校历
+📚
+硕士课程表（课程模式）
+
+FTSM硕士研究生课程时间表（课程模式）
+
+查看课程表
+🗺️
+FTSM学院地图
+
+交互式学院平面图，点击建筑查看教室分布
+
+查看学院地图
+访问学院官网
+🚌
+UKM公交线路和各部门联系方式
+
+查看UKM校园公交路线和运营时间，以及各部门的联系方式。
+
+查看公交路线
+查看联系方式
+💻
+UKM FOLIO上课系统
+
+课堂教学、作业、小测、课件集中管理
+
+访问 UKM FOLIO
+🚀
+快速导航
+
+网络安全、数据科学、健康信息、协调员
+
+🔒
+网络安全课表
+📊
+数据科学课表
+🏥
+健康信息课表
+👥
+协调员信息
+FTSM 学院地图
+
+点击建筑查看楼内教室
+
+×
+底图
+学院平面图
+卫星图
+覆盖层透明度 40%
+Block H
+Rooms & Facilities
+清除
+Level 1
+CYBER Research Labs
+Meeting Room
+Level 2
+Research Center Office
+CAIT Chairperson's Room
+SOFTAM Chairperson's Room
+CYBER Chairperson's Room
+CAIT Research Labs
+Meeting Room
+Resource Center
+Level 3
+SOFTAM Research Labs
+Meeting Room
+Level 4
+CAIT Research Labs
+Meeting Room
+Block A
+Block B
+Block C
+Block D
+Block E
+Block F
+Block G
+Block H
+Dewan Multimedia
+NCT Lab, Research Center for Cyber Security, FTSM, UKM Bangi, Selangor, Malaysia
+Author:
+Prof. ChatGPT & 一位路人甲学长
+2025-2026 © FTSM, UKM | Version: V2.4.1
+更新日志
+
+------------------------------------------------------------
+
+[FTSM map block Dewan Multimedia at (614, 659)]
+
+UKM FTSM学术科研与校园服务门户
+首页
+学术科研
+系统导航
+办事指南
+毕业指南
+关于我们
+📢
+欢迎使用UKM FTSM学术科研与校园服务门户，推荐您使用电脑访问，获取最佳体验。
+欢迎使用UKM FTSM学术科研与校园服务门户，推荐您使用电脑访问，获取最佳体验。
+点击查看
+常用服务
+
+快速访问常用功能
+
+🗓️
+马来西亚公共假期
+
+2026-2027年马来西亚各州公共假期查询
+
+查看假期
+📅
+校历
+
+查看2025-2026学年校历安排
+
+查看校历
+📚
+硕士课程表（课程模式）
+
+FTSM硕士研究生课程时间表（课程模式）
+
+查看课程表
+🗺️
+FTSM学院地图
+
+交互式学院平面图，点击建筑查看教室分布
+
+查看学院地图
+访问学院官网
+🚌
+UKM公交线路和各部门联系方式
+
+查看UKM校园公交路线和运营时间，以及各部门的联系方式。
+
+查看公交路线
+查看联系方式
+💻
+UKM FOLIO上课系统
+
+课堂教学、作业、小测、课件集中管理
+
+访问 UKM FOLIO
+🚀
+快速导航
+
+网络安全、数据科学、健康信息、协调员
+
+🔒
+网络安全课表
+📊
+数据科学课表
+🏥
+健康信息课表
+👥
+协调员信息
+FTSM 学院地图
+
+点击建筑查看楼内教室
+
+×
+底图
+学院平面图
+卫星图
+覆盖层透明度 40%
+Dewan Multimedia
+Rooms & Facilities
+清除
+Main Hall
+Multimedia Hall
+Block A
+Block B
+Block C
+Block D
+Block E
+Block F
+Block G
+Block H
+Dewan Multimedia
 NCT Lab, Research Center for Cyber Security, FTSM, UKM Bangi, Selangor, Malaysia
 Author:
 Prof. ChatGPT & 一位路人甲学长
@@ -643,7 +2753,7 @@ Prof. ChatGPT & 一位路人甲学长
 
 ------------------------------------------------------------
 
-[Route /research / Module 谷歌学术搜索 快捷使用谷歌学术搜索，支持高级检索语拼装]
+[Route /research / Button 3 谷歌学术搜索 快捷使用谷歌学术搜索，支持高级检索语拼装]
 
 UKM FTSM学术科研与校园服务门户
 首页
@@ -682,7 +2792,7 @@ Prof. ChatGPT & 一位路人甲学长
 
 ------------------------------------------------------------
 
-[Route /research / Module 期刊信息查询 整合 JCR 与中科院分区，支持 ISSN / 关键词检索]
+[Route /research / Button 4 期刊信息查询 整合 JCR 与中科院分区，支持 ISSN / 关键词检索]
 
 UKM FTSM学术科研与校园服务门户
 首页
@@ -726,7 +2836,7 @@ Prof. ChatGPT & 一位路人甲学长
 
 ------------------------------------------------------------
 
-[Route /research / Module 科研导航 整合多款搜索与常用科研服务入口]
+[Route /research / Button 5 科研导航 整合多款搜索与常用科研服务入口]
 
 UKM FTSM学术科研与校园服务门户
 首页
@@ -791,7 +2901,7 @@ Prof. ChatGPT & 一位路人甲学长
 
 ------------------------------------------------------------
 
-[Route /research / Module CCF推荐国际学术会议 中国计算机学会推荐 A/B/C 类会议列表 📋]
+[Route /research / Button 6 CCF推荐国际学术会议 中国计算机学会推荐 A/B/C 类会议列表 📋]
 
 UKM FTSM学术科研与校园服务门户
 首页
@@ -1218,7 +3328,7 @@ Prof. ChatGPT & 一位路人甲学长
 
 ------------------------------------------------------------
 
-[Route /research / Module CCF推荐国际学术期刊 中国计算机学会推荐 A/B/C 类期刊列表 📚]
+[Route /research / Button 7 CCF推荐国际学术期刊 中国计算机学会推荐 A/B/C 类期刊列表 📚]
 
 UKM FTSM学术科研与校园服务门户
 首页
@@ -1562,7 +3672,7 @@ Prof. ChatGPT & 一位路人甲学长
 
 ------------------------------------------------------------
 
-[Route /research / Module 2026 QS世界大学排名 查看全球大学排名，支持搜索和按国家筛选 🏆]
+[Route /research / Button 8 2026 QS世界大学排名 查看全球大学排名，支持搜索和按国家筛选 🏆]
 
 UKM FTSM学术科研与校园服务门户
 首页
@@ -1739,7 +3849,7 @@ Prof. ChatGPT & 一位路人甲学长
 
 ------------------------------------------------------------
 
-[Route /systems / Module 查看校历]
+[Route /systems / Button 3 查看校历 / 校历 查看2025-2026学年校历安排 查看校历]
 
 UKM FTSM学术科研与校园服务门户
 首页
@@ -1958,7 +4068,7 @@ Prof. ChatGPT & 一位路人甲学长
 
 ------------------------------------------------------------
 
-[Route /systems / Module 查看课程表]
+[Route /systems / Button 4 查看课程表 / 硕士课程表（课程模式） FTSM硕士研究生课程时间表（课程模式） 查看课程表]
 
 UKM FTSM学术科研与校园服务门户
 首页
@@ -2249,7 +4359,7 @@ Prof. ChatGPT & 一位路人甲学长
 
 ------------------------------------------------------------
 
-[Route /systems / Module 查看课程结构]
+[Route /systems / Button 5 查看课程结构 / 硕士课程结构 查看FTSM各硕士课程的详细课程结构 查看课程结构]
 
 UKM FTSM学术科研与校园服务门户
 首页
@@ -2454,7 +4564,7 @@ Prof. ChatGPT & 一位路人甲学长
 
 ------------------------------------------------------------
 
-[Route /systems / Module 查看课程表]
+[Route /systems / Button 6 查看课程表 / 网络安全硕士课程表 网络安全硕士2025-2026学年课程时间安排 查看课程表]
 
 UKM FTSM学术科研与校园服务门户
 首页
@@ -2632,7 +4742,7 @@ Prof. ChatGPT & 一位路人甲学长
 
 ------------------------------------------------------------
 
-[Route /systems / Module 查看课程表]
+[Route /systems / Button 7 查看课程表 / 数据科学硕士课程表 数据科学硕士2025-2026学年课程时间安排 查看课程表]
 
 UKM FTSM学术科研与校园服务门户
 首页
@@ -2802,7 +4912,7 @@ Prof. ChatGPT & 一位路人甲学长
 
 ------------------------------------------------------------
 
-[Route /systems / Module 查看课程表]
+[Route /systems / Button 8 查看课程表 / 健康信息学硕士课程表 健康信息学硕士2025-2026学年课程时间安排 查看课程表]
 
 UKM FTSM学术科研与校园服务门户
 首页
@@ -2976,7 +5086,7 @@ Prof. ChatGPT & 一位路人甲学长
 
 ------------------------------------------------------------
 
-[Route /systems / Module 查看联系方式]
+[Route /systems / Button 9 查看联系方式 / 硕士课程协调员 硕士课程协调员及行政秘书联系方式 查看联系方式]
 
 UKM FTSM学术科研与校园服务门户
 首页
@@ -3124,7 +5234,7 @@ Prof. ChatGPT & 一位路人甲学长
 
 ------------------------------------------------------------
 
-[Route /systems / Module 查看学院地图]
+[Route /systems / Button 10 查看学院地图 / FTSM学院地图 交互式学院平面图，点击建筑查看教室分布 查看学院地图]
 
 UKM FTSM学术科研与校园服务门户
 首页
@@ -3354,7 +5464,7 @@ Prof. ChatGPT & 一位路人甲学长
 
 ------------------------------------------------------------
 
-[Route /guide / Module 查看指南]
+[Route /guide / Button 3 查看指南 / UKM注册指南 新生注册流程详解，包含线上注册、体检、认证换签、领取护照等完整步骤。 查看指南]
 
 UKM FTSM学术科研与校园服务门户
 首页
@@ -3462,7 +5572,7 @@ Prof. ChatGPT & 一位路人甲学长
 
 ------------------------------------------------------------
 
-[Route /guide / Module 查看指南]
+[Route /guide / Button 4 查看指南 / 如何申请首次签证(EMGS申请指南) EMGS首次签证申请完整流程，包含账号注册、信息填写、付款等详细步骤。 查看指南]
 
 UKM FTSM学术科研与校园服务门户
 首页
@@ -3586,7 +5696,7 @@ Prof. ChatGPT & 一位路人甲学长
 
 ------------------------------------------------------------
 
-[Route /guide / Module 查看指南]
+[Route /guide / Button 5 查看指南 / UKM续签指南 学生签证续签流程详解，包含所需资料、填写表格、提交护照、领取护照等步骤。 查看指南]
 
 UKM FTSM学术科研与校园服务门户
 首页
@@ -3688,7 +5798,7 @@ Prof. ChatGPT & 一位路人甲学长
 
 ------------------------------------------------------------
 
-[Route /guide / Module 查看指南]
+[Route /guide / Button 6 查看指南 / FTSM硕士选课指南 FTSM硕士选课(课程模式)详细流程，包含SMP系统操作步骤、选课注意事项和课程结构要求。 查看指南]
 
 UKM FTSM学术科研与校园服务门户
 首页
@@ -3779,7 +5889,7 @@ Prof. ChatGPT & 一位路人甲学长
 
 ------------------------------------------------------------
 
-[Route /guide / Module 查看指南]
+[Route /guide / Button 7 查看指南 / 学生确认信申请指南 学生确认信申请流程详解，包含SMP系统操作步骤和申请理由模板。 查看指南]
 
 UKM FTSM学术科研与校园服务门户
 首页
@@ -3880,7 +5990,7 @@ Prof. ChatGPT & 一位路人甲学长
 
 ------------------------------------------------------------
 
-[Route /guide / Module 查看指南]
+[Route /guide / Button 8 查看指南 / 学生卡领取和开卡流程 学生卡预约领取、图书馆激活、RHB银行开通等完整流程说明。 查看指南]
 
 UKM FTSM学术科研与校园服务门户
 首页
@@ -3976,7 +6086,7 @@ Prof. ChatGPT & 一位路人甲学长
 
 ------------------------------------------------------------
 
-[Route /guide / Module 查看指南]
+[Route /guide / Button 9 查看指南 / MayBank银行卡办理流程 MayBank银行卡办理完整流程，包含材料准备、提交、等待通知、领取激活等步骤。 查看指南]
 
 UKM FTSM学术科研与校园服务门户
 首页
@@ -4082,7 +6192,7 @@ Prof. ChatGPT & 一位路人甲学长
 
 ------------------------------------------------------------
 
-[Route /guide / Module 查看指南]
+[Route /guide / Button 10 查看指南 / 行政费用及罚款/罚金 UKM行政费用及罚款详细列表，包含签证申请、续签、保险、逾期罚款等各项费用说明。 查看指南]
 
 UKM FTSM学术科研与校园服务门户
 首页
@@ -4194,7 +6304,7 @@ Prof. ChatGPT & 一位路人甲学长
 
 ------------------------------------------------------------
 
-[Route /guide / Module 查看指南]
+[Route /guide / Button 11 查看指南 / UKM公交路线 UKM校园8条环线公交路线图，包含各站点信息和地铁风格路线展示，方便学生出行规划。 查看指南]
 
 UKM FTSM学术科研与校园服务门户
 首页
@@ -4319,7 +6429,7 @@ Prof. ChatGPT & 一位路人甲学长
 
 ------------------------------------------------------------
 
-[Route /guide / Module 查看指南]
+[Route /guide / Button 12 查看指南 / UKM常用联系方式 UKM各部门联系方式汇总，包含VISA、注册、财务、课程注册、考试等各项服务的电话和邮箱。 查看指南]
 
 UKM FTSM学术科研与校园服务门户
 首页
@@ -4492,7 +6602,7 @@ Prof. ChatGPT & 一位路人甲学长
 
 ------------------------------------------------------------
 
-[Route /certification / Module 查看详情]
+[Route /certification / Button 2 查看详情 / 毕业典礼视频回放 FTSM学院历届毕业典礼精彩回顾 查看详情]
 
 UKM FTSM学术科研与校园服务门户
 首页
@@ -4543,7 +6653,7 @@ Prof. ChatGPT & 一位路人甲学长
 
 ------------------------------------------------------------
 
-[Route /certification / Module 查看详情]
+[Route /certification / Button 3 查看详情 / 留服认证流程 学历学位认证完整流程指南 查看详情]
 
 UKM FTSM学术科研与校园服务门户
 首页
@@ -4664,6 +6774,847 @@ Welcome to UKM FTSM Academic & Campus Service Portal
 
 NCT Lab, Research Center for Cyber Security, FTSM, UKM Bangi, Selangor, Malaysia
 Author:
+Prof. ChatGPT & 一位路人甲学长
+2025-2026 © FTSM, UKM | Version: V2.4.1
+更新日志
+
+------------------------------------------------------------
+
+[Portal asset inventory]
+
+Page: https://ftsm.pages.dev/
+Title: UKM FTSM学术科研与校园服务门户
+Page: https://ftsm.pages.dev/research
+Title: UKM FTSM学术科研与校园服务门户
+Page: https://ftsm.pages.dev/systems
+Title: UKM FTSM学术科研与校园服务门户
+Page: https://ftsm.pages.dev/guide
+Title: UKM FTSM学术科研与校园服务门户
+Page: https://ftsm.pages.dev/certification
+Title: UKM FTSM学术科研与校园服务门户
+Page: https://ftsm.pages.dev/about
+Title: UKM FTSM学术科研与校园服务门户
+
+------------------------------------------------------------
+
+[Portal media and visual assets]
+
+Image: alt='UKM'; size=1488x860; src=https://ftsm.pages.dev/assets/UKMOfficialLogo.svg
+imageUrls: https://ftsm.pages.dev/assets/UKMOfficialLogo.svg
+
+------------------------------------------------------------
+
+[Readable strings from asset https://ftsm.pages.dev/assets/CertificationView-Cj2b_6Qf.js]
+
+,steps:[{text:'打开
+},{text:'点击右上角
+},{text:'点击
+},{text:'登陆成功后，自动返回到
+，然后点击
+},{text:'完成实名认证后，选择
+},{text:'根据毕业证上的信息填写
+学习经历
+然后填写其他学习经历。从高中阶段开始填写，至少填写两条经历。
+上传材料：本人近期标准证件照（底色不限）、在线签署授权声明、出入境记录、护照首页、所有学生签证页以及销签盖章页、学位证书（英文和马来语）、成绩单（英文和马来语）。
+交费并提交。
+颁证学校所在地点
+马来西亚
+颁证学校外文名称
+颁证学校中文名称
+马来西亚国立大学
+学位外文名称
+学位中文名称
+计算机科学硕士
+学位层次
+硕士学位
+认证学位/证书授予时间
+学习专业（外文）
+学习专业（中文）
+网络技术
+无专业
+,{src:i.image,alt:`步骤 ${w+1}`},null,8,j)])):n(
+学位信息
+查看详情
+
+------------------------------------------------------------
+
+[Readable strings from asset https://ftsm.pages.dev/assets/CoordinatorModal-adRNWuP_.js]
+
+,text:o.name,color:o.color})}),A})(),R=he(()=>{const A=[],I=b(t.value),o=B(t.value);for(let a=0;a<I;a++)A.push(null);for(let a=1;a<=o;a++){const d=new Date(t.value.getFullYear(),t.value.getMonth(),a),D=n(d),f=G(d),h=F[D]||[];A.push({date:a,fullDate:d,dateStr:D,lunar:`${f.month}月${f.day}`,academicEvents:h})}return A}),g=[
+十一月
+十二月
+data-v-23d3f333><h4 data-v-23d3f333>图例说明</h4><div class=
+data-v-23d3f333></div><span data-v-23d3f333>注册</span></div><div class=
+data-v-23d3f333></div><span data-v-23d3f333>上课</span></div><div class=
+data-v-23d3f333></div><span data-v-23d3f333>期中休息</span></div><div class=
+data-v-23d3f333></div><span data-v-23d3f333>毕业典礼</span></div><div class=
+data-v-23d3f333></div><span data-v-23d3f333>期末复习周</span></div><div class=
+data-v-23d3f333></div><span data-v-23d3f333>期末考试</span></div><div class=
+data-v-23d3f333></div><span data-v-23d3f333>假期</span></div><div class=
+data-v-23d3f333></div><span data-v-23d3f333>公共假期</span></div></div></div>',1)),s.value?(c(),l(
+Block B
+Block C
+Block D
+Block E
+Block F
+BK10
+BK11
+BK12
+BK13
+BK14
+BK15
+BK16
+BK17
+Block G
+Block H
+硕士（课程模式）
+硕士（混合模式）
+协调员
+行政秘书
+
+------------------------------------------------------------
+
+[Readable strings from asset https://ftsm.pages.dev/assets/GuideView-D1KPId-d.js]
+
+,content:'提前打印填写
+→到校医院→19号窗口→交表格和250马体检费→A3, A2, A1检查一遍→回A3等待报告单→回19号窗口交报告单→叫号让医生盖章签字→校医院2楼复印室进行复印(约5马，只收现金)→19号窗口交原件和复印件→扫描体检报告(原件+复印件第一页)上传JoinUKM系统。',link:{text:
+,content:'体检完成后到UKMShape→验证JoinUKM资料是否上传完整→验证学费、个人保证金和签证费→验证学历(
+的原件及复印件)→换签，先扫描二维码填写信息，然后提交
+UKM不再支持线下刷卡交费，个人保证金可以用过线下刷卡缴费，仅支持Visa或Mastercard，不支持银联。
+上述内容更新于2025年10月7日，仅供参考。
+UKM续签指南
+一、所需资料
+需要的资料有：出勤报告、成绩报告、护照扫描件(含封面)、续签申请表、学生财务系统截图、学生确认信、签证处理费、EMGS费用。
+续签申请表下载
+https://www.ukm.my/ukmshape/wp-content/uploads/2025/01/Borang-2-RENEWAL-OF-STUDENT-PASS-APPLICATION-CHECK-LIST-v21-updated_03012025-210125.pdf
+二、填写表格
+填写续签谷歌表格，等待邮件通知。
+谷歌表格
+三、提交护照
+EMGS到50%时，去PKP交护照。
+四、领取护照
+EMGS到达100%的第2天，带着临时护照去PKP领取。
+如果您身处马来西亚境外，也必须在保险到期前至少 2 个月提交 Ikad/保险续保文件，以避免累积罚款（续保申请将暂停，直至您返回马来西亚前 2 个月）。请在您返回马来西亚的日期通知我们，以供参考。
+行政费用及罚款/罚金
+According to EMGS proforma invoice
+},{no:4,item:'Late passport submission for student pass sticker process if passport received after 3 working days from UKMShape email notification (for special pass / shorten and endorsement transfer); EMGS status changed to
+},{no:5,item:'Late passport collection (passport collected after 3 working days from UKMShape email notification for Special Pass / Shorten and endorsement transfer; or EMGS status changed to
+FTSM硕士选课指南
+选课步骤
+打开并登录SMP系统
+点击右侧Registration
+然后点击Course Registration / Add Drop Courses
+弹窗个人信息对话框，仅填写带有星号的必填项
+开始选课，注意马来语在最上方的【CITRA】
+/images/crad.png
+在选课期间，可以随时选课、随时Drop
+如果你选择已经开课的课程，你需要补交之前Assignment
+可以先选课试听，有难度，果断放弃，选择其他课程
+务必遵照课程结构的要求进行选择，不要瞎选、乱选（课程结构参照本站的硕士课程结构）
+如果课程结构里的选修课全部没开，可选择其他课程的必修来当选修，但是务必与协调员沟通确认，否则不能选择
+学生确认信申请指南
+申请步骤
+点击右侧Application Document
+然后点击New Application
+在"B: Document Information"中填写相关信息
+填写信息
+申请理由示例
+银行账户申请
+移民局续签
+下载确认信
+等5个工作日左右，再次登录SMP系统，下载PDF版学生确认信。
+/images/losc.png
+申请理由必须包含预计毕业时间
+建议提前5个工作日申请，避免紧急情况
+确认信可用于银行开户、签证续签等多种用途
+学生卡领取和开卡流程
+预约领取学生卡
+打开链接：<a href="https://on.sprintful.com/my-siswa-card-appointment" target="_blank" rel="noopener noreferrer">https://on.sprintful.com/my-siswa-card-appointment</a>
+填写信息：姓名、学生邮箱、大马手机号、学号、学院
+提交预约申请
+按预约时间前往UKMShape柜台领取学生卡
+图书馆激活学生卡
+RHB银行开通学生卡账户
+谷歌地图搜索RHB Bangi（在EVO Mall附近），拿着学生卡、护照、offer、学生确认信到银行填写资料，工作人员会帮你进行激活。（毕业退签时，可以将RM1500保证金退到学生卡里，会快很多）<br><strong>注意：</strong><br>1. 学生银行卡没有账户管理费；<br>2. 银行卡如果超6个月不使用，账户进入睡眠状态，需要到Maybank解除睡眠状态。
+MayBank银行卡办理流程
+准备材料
+提交材料
+将上述①-⑥的材料打印出来，并带齐所有材料（上述①-⑦）到Pusanika的Maybank提交材料。
+等待通知
+等待15-30个工作日，银行工作人员会通过电话或者WhatsApp通知你领取银行卡。
+领取银行卡
+领取银行卡时带着RM 250的现金，开卡时需要预存，同时，手机上下载好MAE by Maybank2u这个应用：
+/images/app-01.png
+/images/app-02.png
+/images/app-03.png
+开卡激活
+工作人员帮你开卡激活。
+注意事项
+1. 银行卡每年需要缴纳RM 8账户管理费；<br>2. 每次续签完成后需要到Maybank进行材料更新，否则账户将进入不可用状态；<br>3. 银行卡如果超6个月不使用，账户进入睡眠状态，需要到Maybank解除睡眠状态。
+如何申请首次签证(EMGS申请指南)
+1. 账号注册
+打开EMGS官网：https://visa.educationmalaysia.gov.my/，点击右上角Register进行账号注册
+/images/emgs1.png
+2. 填写注册信息
+输入个人信息和密码，点击Submit提交注册
+/images/emgs2.png
+3. 邮箱确认
+完成注册后，到刚刚填写的邮箱地址进行确认。
+4. 登录账号
+再次返回官网，点击右上角Log in登陆刚刚注册的账号。
+5. 进入签证申请
+然后点击首页的Student Visa进入签证申请
+/images/emgs3.png
+6. 填写基础信息
+然后填写基础信息，填写完毕后点击Create Application
+/images/emgs4.png
+7. 继续填写信息
+跳转到下一页面，继续填写信息，填写完毕后点击Create Application
+/images/emgs5.png
+/images/emgs6.png
+/images/emgs7.png
+8. 核对付款信息
+进入付款页面，请务必再次核对信息
+/images/emgs8.png
+9. 填写付款信息
+填写付款信息，点击Continue
+/images/emgs9.png
+10. 填写银行卡信息
+继续填写银行卡信息（Visa或MasterCard）
+/images/emgs10.png
+11. 完成申请
+支付完成后，将收到订单号（E+数字），至此已经完成了EMGS的相关申请操作。
+行政费用 (Administrative Fees)
+罚款/罚金 (FINE / PENALTY)
+UKM注册指南
+新生注册流程详解，包含线上注册、体检、认证换签、领取护照等完整步骤。
+EMGS首次签证申请完整流程，包含账号注册、信息填写、付款等详细步骤。
+学生签证续签流程详解，包含所需资料、填写表格、提交护照、领取护照等步骤。
+FTSM硕士选课(课程模式)详细流程，包含SMP系统操作步骤、选课注意事项和课程结构要求。
+学生确认信申请流程详解，包含SMP系统操作步骤和申请理由模板。
+学生卡预约领取、图书馆激活、RHB银行开通等完整流程说明。
+MayBank银行卡办理完整流程，包含材料准备、提交、等待通知、领取激活等步骤。
+UKM行政费用及罚款详细列表，包含签证申请、续签、保险、逾期罚款等各项费用说明。
+UKM公交路线
+UKM校园8条环线公交路线图，包含各站点信息和地铁风格路线展示，方便学生出行规划。
+UKM常用联系方式
+UKM各部门联系方式汇总，包含VISA、注册、财务、课程注册、考试等各项服务的电话和邮箱。
+GayaUKM 论文样式模板
+UKM官方论文格式模板，包含论文排版、引用格式等规范，适用于学位论文撰写。
+Word模板
+查看详情
+查看指南
+
+------------------------------------------------------------
+
+[Readable strings from asset https://ftsm.pages.dev/assets/HomeView-CdgyvIvG.js]
+
+欢迎使用UKM FTSM学术科研与校园服务门户，推荐您使用电脑访问，获取最佳体验。
+点击查看
+搜索假期名称、日期或州属...
+马来西亚公共假期
+2026-2027年马来西亚各州公共假期查询
+欢迎访问UKM FTSM学术科研与校园服务门户
+近期更新如下：
+我知道了
+
+------------------------------------------------------------
+
+[Readable strings from asset https://ftsm.pages.dev/assets/ResearchView-kVYlhSGI.js]
+
+?b.postMessage({workerId:n.WORKER_ID,results:n.parse(r.input,r.config),finished:!0}):(b.File&&r.input instanceof File||r.input instanceof Object)&&(r=n.parse(r.input,r.config))&&b.postMessage({workerId:n.WORKER_ID,results:r,finished:!0})}),(W.prototype=Object.create(_.prototype)).constructor=W,(R.prototype=Object.create(_.prototype)).constructor=R,(T.prototype=Object.create(T.prototype)).constructor=T,(f.prototype=Object.create(_.prototype)).constructor=f,n})})(oe);var Cr=oe.exports;const yr=pe(Cr);async function Wt(C,{header:v=!0}={}){const I=await fetch(C);if(!I.ok)throw new Error(`无法加载文件：${C} (${I.status})`);const b=await I.text(),{data:w,errors:M}=yr.parse(b,{header:v,skipEmptyLines:!0,transformHeader:i=>i.trim(),transform:i=>typeof i==
+?i.trim():i});return M.length&&console.warn(`解析 CSV 时产生 ${M.length} 个警告`,M.slice(0,3)),w}const _r=
+:w.value?`查询失败：${w.value}`:!i.value||!g.value.trim()?
+:`筛选结果 ${f.value.length} / ${I.value.length} · 数据总量 ${M.value}`);function st(){clearTimeout(_),_=null,W(!0)}return(K,q)=>(a(),l(
+输入期刊名、关键词或 ISSN 进行检索
+仅显示 Top 期刊
+示例：
+正在加载期刊数据，请稍候…
+谷歌学术
+微软学术
+输入关键词后回车 / 点击搜索
+中国大陆
+中国香港
+中国澳门
+中国台湾
+阿根廷
+亚美尼亚
+澳大利亚
+奥地利
+阿塞拜疆
+哥斯达黎加
+克罗地亚
+多米尼加
+厄瓜多尔
+新西兰
+尼日利亚
+北塞浦路斯
+波多黎各
+卡塔尔
+俄罗斯
+沙特阿拉伯
+塞尔维亚
+新加坡
+斯洛伐克
+斯洛文尼亚
+斯里兰卡
+叙利亚
+阿联酋
+委内瑞拉
+刊物全称
+专业领域
+谷歌学术搜索
+快捷使用谷歌学术搜索，支持高级检索语拼装
+期刊信息查询
+整合 JCR 与中科院分区，支持 ISSN / 关键词检索
+科研导航
+整合多款搜索与常用科研服务入口
+CCF推荐国际学术会议
+中国计算机学会推荐 A/B/C 类会议列表
+CCF推荐国际学术期刊
+中国计算机学会推荐 A/B/C 类期刊列表
+2026 QS世界大学排名
+查看全球大学排名，支持搜索和按国家筛选
+
+------------------------------------------------------------
+
+[Readable strings from asset https://ftsm.pages.dev/assets/SystemsView-DSqQDfr5.js]
+
+必修课（20学分）
+TC6544 Advanced Artificial Intelligence
+选修课（8学分）
+TC6404 Image Processing and Computer Vision
+TC6244 Machine Learning
+论文（12学分）
+必修课（12学分）
+选修课（12学分）
+论文（28学分）
+TC6414 Knowledge Discovery and Data Mining
+TC6244 Advanced Machine Learning
+TC6404 Image Processing & Comp Vision
+旁听（如果需要）
+计算机硕士（研究型硕士课程）学生需在所选领域进行全日制研究，并修读并通过研究方法课程。课程结束时，学生需提交论文，由学院指定的考官小组进行评审。在整个学习过程中，学生需遵守以下要求：
+所有候选人必须参加并通过研究方法考试。
+所有候选人须最迟于第二学期向指定委员会提交研究计划及研究进展，并完成答辩，方可继续攻读硕士学位。未能提交研究计划及研究进展的，可能导致其学业终止。
+所有研究成果必须以论文报告的形式撰写。候选人须在院系指定的评审小组面前进行论文答辩。
+候选人必须至少发表一篇包含 1 篇期刊文章（ISI/Scopus）的出版物。
+TM6112 Research Method in Computing (旁听)
+TC6424 Fundamental of Data Science
+TC6444 Machine Learning for Data Science
+data-v-736790ea>选课建议（仅适用于课程模式）</h3><div class=
+data-v-736790ea>1年毕业：</h4><ul class=
+data-v-736790ea><li data-v-736790ea><strong data-v-736790ea>第一学期</strong>：Project 1、TM6114必选，2必修+1选修，总计20学分</li><li data-v-736790ea><strong data-v-736790ea>第二学期</strong>：2必修+1选修+Project 2+马来语，总计20学分</li></ul></div><div class=
+data-v-736790ea>1.5年毕业：</h4><ul class=
+data-v-736790ea><li data-v-736790ea><strong data-v-736790ea>第一学期</strong>：2必修+2选修+马来语，总计16学分</li><li data-v-736790ea><strong data-v-736790ea>第二学期</strong>：2必修+TM6114+Project 1，总计16学分</li><li data-v-736790ea><strong data-v-736790ea>第三学期</strong>：Project 2，总计8学分</li></ul></div></div><div class=
+data-v-736790ea><strong data-v-736790ea>注意：</strong></p><ol class=
+data-v-736790ea><li data-v-736790ea>上述选课建议来自多数学长学姐选课建议，仅供参考，务必以实际情况为准。</li><li data-v-736790ea>选修课：务必从课程结构中选2个，不得选择课程结构中以外的课程。若特殊情况，需和课程协调员沟通。</li></ol></div></div></div>',1))])]))}},ie=P(ae,[[
+SMPWEB 学生档案
+进行每学期课程注册、查看个人档案与学籍信息。
+进入 SMPWEB
+UKM FOLIO 上课系统
+课堂教学、作业、小测、课件集中管理，支持移动端访问。
+访问 UKM FOLIO
+UKM SISWAMAIL 学生邮箱
+首次申请需使用护照号登录 SPEEP，后续在 Gmail 域名内收发邮件。
+首次申请 SPEEP
+邮箱登录
+UKM E-KEWANGAN 财务系统
+查询学费账单、付款记录及奖助学金发放情况。
+进入财务系统
+UKM 教授成果查询
+检索教授发表文章及研究方向，方便对接导师。
+UKM Sarjana
+UKM Library 电子资源
+访问校图书馆电子资源与期刊数据库（需校园账号或 VPN）。
+UKM e-Resources
+学生签证办理和续签
+查询UKMShape最新的国际学生签证程序
+签证办理
+EMGS进度查询
+查询签证办理的实时进度
+进度查询
+MDAC电子入境卡
+MDAC官网，方便各位学生协助亲朋好友办理电子入境卡
+MDAC官网
+MyRapid公交路线查询
+查询公交实时位置信息
+公交查询
+
+------------------------------------------------------------
+
+[Readable strings from asset https://ftsm.pages.dev/assets/UKMContactsModal-C7xJOZxe.js]
+
+PENGAJARAN(GSB UKM)
+工作日早上7:30-晚上11:30
+每30分钟一班
+下午1:00-2:00
+晚上7:00-8:00
+FTSM
+工作日
+每天3班
+早上8:00
+中午12:00
+下午5:00
+💡 提示：使用双指缩放，拖拽移动图片
+💡 提示：使用鼠标滚轮缩放，拖拽移动图片
+运营时间：
+发车频率：
+休息时间：
+发车时间：
+,{src:w.value,alt:`${a.value.name} 平面路线图`,class:
+请检查图片文件是否存在
+电话号码
+
+------------------------------------------------------------
+
+[Readable strings from asset https://ftsm.pages.dev/assets/index-BFZbaSMw.js]
+
+新增马来西亚2026-2027年公共假期
+新增中留服学历学位认证流程与指南
+新增毕业典礼视频回放功能（来自Youtube，国内网络可能无法访问）
+2025年10月20日
+新增EMGS首次签证申请指南
+2025年10月12日
+新增全局搜索功能，支持全站内容搜索
+新增FTSM硕士选课指南
+新增学生确认信申请指南
+新增学生卡领取和开卡流程指南
+新增MayBank银行卡办理流程指南
+2025年10月10日
+新增2026 QS世界大学排名查询功能
+新增GayaUKM论文样式模板查询功能
+修复日历周末被标记为上课日的问题
+修复公共假期仍显示为上课日的问题
+优化稳定性，解决了一些其他问题
+2025年10月08日
+新增UKM公交路线功能，包含8条校园公交路线及运营时间
+新增UKM常用联系方式查询功能，包含20个部门的联系方式
+优化首页常用服务布局，整合公交路线和联系方式功能
+修复移动端联系方式表格显示问题
+优化移动端联系方式卡片式布局设计
+2025年10月7日
+采用全新样式设计
+修复页面小几率无法滑动的Bug
+修复学院地图中存在无法滑动的Bug
+修复期刊信息查询等弹窗关闭后无法滑动的Bug
+修复校历中存在显示不全的Bug
+更新10.7日最新研究生课程表
+新增滚动公告栏功能
+新增UKM办事指南板块（注册指南、续签指南、行政费用及罚款）
+新增硕士课程结构查询功能，支持12个硕士专业课程结构查看
+新增选课建议功能，提供1年和1.5年毕业方案参考
+新增网络安全硕士专业课程表（2025-2026学年）
+新增数据科学硕士专业课程表（2025-2026学年）
+新增健康信息学硕士专业课程表（2025-2026学年）
+新增课程协调员信息
+2025年10月5日
+版本上线
+影响因子
+中科院分区
+期刊查询
+期刊检索
+期刊搜索
+期刊数据库
+学术期刊
+期刊投稿
+谷歌学术搜索
+快捷使用谷歌学术搜索，支持高级检索语法拼装
+学术科研
+学术搜索
+谷歌学术
+文献搜索
+学术文献
+论文搜索
+高级检索
+检索语法
+科研导航
+整合多款搜索与常用科研服务入口
+学术导航
+索引库
+写作翻译
+出版社
+百度学术
+微软学术
+中国知网
+万方数据
+科研工具
+学术资源
+科研服务
+学术平台
+2026 QS世界大学排名
+查看全球大学排名，支持搜索和按国家筛选
+QS排名
+世界大学排名
+大学排名
+全球排名
+高校排名
+院校排名
+学校排名
+排行榜
+世界排名
+国际排名
+FTSM系统
+FTSM学院相关系统入口，包含校历、课表、学院地图、硕士课程结构等
+系统导航
+FTSM
+学院系统
+SMP
+课程表
+时间表
+学院地图
+硕士课程
+官方网站
+学院官网
+课程结构
+信息科学技术学院
+FTSM学院官网
+信息科学技术学院官方网站
+FTSM官网
+学院网站
+学院主页
+官方主页
+FTSM教授讲师信息
+查询信息科学技术学院教授和讲师的信息
+FTSM教授
+FTSM讲师
+学院师资
+师资信息
+教授信息
+讲师信息
+教师信息
+导师信息
+FTSM不同领域专家
+查询信息科学技术学院各个研究领域的专家
+研究领域
+领域专家
+FTSM专家
+学院专家
+研究方向
+专业领域
+学术专家
+研究专家
+专业方向
+学术方向
+硕士课程协调员
+硕士课程协调员和秘书联系方式
+协调员
+课程协调员
+硕士协调员
+联系方式
+指导老师
+课程指导
+行政秘书
+课程管理
+课程负责人
+硕士课程表（课程模式）
+FTSM硕士研究生课程时间表（课程模式），包含各专业课程安排
+研究生
+课程模式
+课程安排
+上课时间
+课程时间
+时间安排
+网络安全课表
+网络安全专业硕士课程时间表
+网络安全
+数据科学课表
+数据科学专业硕士课程时间表
+数据科学
+健康信息学课表
+健康信息学专业硕士课程时间表
+健康信息学
+UKM系统
+UKM大学相关系统入口，包含学生档案、上课系统、邮箱、财务等
+UKM
+大学系统
+学生系统
+学生档案
+FOLIO
+上课系统
+学生邮箱
+财务系统
+教授成果
+UKM Sarjana
+图书馆
+电子资源
+UKM 教授成果查询
+检索教授发表文章及研究方向，方便对接导师
+发表文章
+对接导师
+学术成果
+导师查询
+教授查询
+研究成果
+SMPWEB 学生档案
+进行每学期课程注册、查看个人档案与学籍信息
+课程注册
+个人档案
+学籍信息
+档案系统
+课堂教学
+移动端
+学习系统
+在线学习
+教学平台
+学习平台
+UKM SISWAMAIL 学生邮箱
+首次申请需使用护照号登录 SPEEP，后续在 Gmail 域名内收发邮件
+护照号
+收发邮件
+学生邮箱系统
+电子邮件
+邮箱申请
+UKM E-KEWANGAN 财务系统
+查询学费账单、付款记录及奖助学金发放情况
+付款记录
+奖助学金
+奖学金
+学费查询
+账单查询
+UKM Library 电子资源
+访问校图书馆电子资源与期刊数据库（需校园账号或 VPN）
+UKM e-Resources
+校园账号
+数据库
+电子图书
+电子期刊
+学生签证办理和续签
+查询UKMShape最新的国际学生签证程序
+国际学生
+签证程序
+学生签证
+签证申请
+签证办理
+签证流程
+签证服务
+EMGS进度查询
+查询签证办理的实时进度
+EMGS
+进度查询
+签证进度
+实时进度
+办理进度
+签证状态
+马来西亚
+签证查询
+MDAC电子入境卡
+MDAC官网，方便各位学生协助亲朋好友办理电子入境卡
+电子入境卡
+入境卡
+亲朋好友
+移民局
+电子卡
+入境申请
+MyRapid公交路线查询
+查询公交实时位置信息
+路线查询
+实时位置
+公交查询
+公交车
+公共交通
+公交线路
+UKM注册指南
+新生注册流程详解，包含线上注册、体检、认证换签、领取护照等完整步骤
+办事指南
+注册指南
+新生注册
+注册流程
+线上注册
+学生注册
+入学注册
+UKM续签指南
+学生签证续签流程详解，包含所需资料、填写表格、提交护照、领取护照等步骤
+续签指南
+签证续签
+续签流程
+如何申请首次签证(EMGS申请指南)
+EMGS首次签证申请完整流程，包含账号注册、信息填写、付款等详细步骤
+首次签证
+账号注册
+银行卡
+订单号
+EMGS申请
+首次申请
+FTSM硕士选课指南
+FTSM硕士选课(课程模式)详细流程，包含SMP系统操作步骤、选课注意事项和课程结构要求
+马来语
+选课指南
+选课流程
+选课系统
+选课说明
+硕士选课
+研究生选课
+学生确认信申请指南
+学生确认信申请流程详解，包含SMP系统操作步骤和申请理由模板
+确认信
+学生信
+确认信申请
+学生确认信
+申请流程
+确认信指南
+在读证明
+学生卡领取和开卡流程
+学生卡预约领取、图书馆激活和RHB银行开户的完整流程指南
+学生卡
+学生证
+RHB银行
+银行开户
+学生卡申请
+学生卡激活
+学生卡领取
+学生卡开户
+学生卡流程
+学生卡指南
+学生卡办理
+学生卡开通
+学生卡使用
+学生卡功能
+学生卡服务
+学生卡账户
+学生卡银行
+学生卡图书馆
+学生卡进出
+学生卡刷卡
+学生卡保证金
+学生卡退签
+学生卡毕业
+学生卡RM1500
+学生卡EVO Mall
+学生卡Bangi
+学生卡谷歌地图
+学生卡护照
+学生卡offer
+学生卡柜台
+学生卡工作人员
+学生卡右侧
+学生卡刷卡机
+学生卡入口
+学生卡新学生
+学生卡两三分钟
+学生卡自由出入
+学生卡恭喜
+学生卡预约时间
+学生卡填写信息
+学生卡姓名
+学生卡邮箱
+学生卡手机号
+学生卡学号
+学生卡学院
+学生卡提交
+学生卡链接
+学生卡sprintful
+学生卡appointment
+学生卡my-siswa-card
+学生卡on.sprintful.com
+MayBank银行卡办理流程
+MayBank银行卡申请、材料准备、提交和激活的完整办理流程指南
+银行卡办理
+银行卡申请
+银行卡流程
+银行卡指南
+银行卡开户
+银行卡激活
+银行申请
+银行办理
+银行流程
+银行指南
+EMGS Approval Letter
+EMGS 100% Status
+签证部
+提交材料
+15-30个工作日
+电话通知
+WhatsApp通知
+领取银行卡
+华为应用商店
+应用下载
+手机应用
+银行应用
+银行APP
+银行软件
+银行系统
+银行服务
+银行账户
+银行功能
+银行使用
+银行操作
+银行步骤
+银行材料
+银行文件
+银行证件
+银行证明
+银行信函
+银行确认
+银行验证
+银行审核
+银行审批
+银行处理
+银行激活
+银行通知
+银行领取
+银行预存
+银行现金
+银行费用
+银行收费
+银行服务费
+银行手续费
+银行管理费
+银行年费
+银行维护费
+银行使用费
+银行交易费
+银行转账费
+银行取款费
+银行存款费
+银行查询费
+银行打印费
+银行复印费
+银行证明费
+银行确认费
+银行验证费
+银行审核费
+银行审批费
+银行处理费
+银行办理费
+银行申请费
+银行开户费
+银行激活费
+银行通知费
+银行领取费
+银行预存费
+银行现金费
+行政费用及罚款/罚金
+UKM行政费用及罚款详细列表，包含签证申请、续签、保险、逾期罚款等各项费用说明
+行政费用
+费用说明
+收费标准
+费用列表
+UKM公交路线
+UKM校园8条环线公交路线图，包含各站点信息和地铁风格路线展示，方便学生出行规划
+公交路线
+校园公交
+公交地图
+UKM常用联系方式
+UKM各部门联系方式汇总，包含VISA、注册、财务、课程注册、考试等各项服务的电话和邮箱
+部门电话
+联系电话
+服务电话
+咨询电话
+GayaUKM 论文样式模板
+UKM官方论文格式模板，包含论文排版、引用格式等规范，适用于学位论文撰写
+论文模板
+论文格式
+论文样式
+学位论文
+毕业论文
+论文写作
+论文规范
+)){E.preventDefault();return}},N=E=>({首页:
+,学术科研:
+,系统导航:
+,办事指南:
+,关于我们:
+尝试使用其他关键词或检查拼写
 Prof. ChatGPT & 一位路人甲学长
 2025-2026 © FTSM, UKM | Version: V2.4.1
 更新日志
