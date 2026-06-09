@@ -18,6 +18,12 @@ from langchain_core.embeddings import Embeddings
 from utils.config_handler import rag_conf
 
 
+_ALLOWED_DASHSCOPE_BASE_URLS = {
+    "https://dashscope.aliyuncs.com/api/v1",
+    "https://dashscope-intl.aliyuncs.com/api/v1",
+}
+
+
 def _apply_endpoint() -> None:
     """每次创建客户端前同步当前环境里的 base url。
 
@@ -26,6 +32,9 @@ def _apply_endpoint() -> None:
     """
     base_url = os.getenv("DASHSCOPE_BASE_URL", "").strip()
     if base_url:
+        base_url = base_url.rstrip("/")
+        if base_url not in _ALLOWED_DASHSCOPE_BASE_URLS:
+            raise ValueError("DASHSCOPE_BASE_URL must use an official DashScope endpoint")
         dashscope.base_http_api_url = base_url
         os.environ["DASHSCOPE_BASE_URL"] = base_url
     else:

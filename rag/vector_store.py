@@ -132,6 +132,14 @@ class VectorStoreService:
 
         chunk_ids = record.get("chunk_ids", [])
         vector_delete_ok = self._delete_chunk_ids(chunk_ids, doc_id)
+        if not vector_delete_ok:
+            return {
+                "doc_id": doc_id,
+                "manifest_found": True,
+                "vector_delete_ok": False,
+                "deleted_chunks": 0,
+            }
+
         del manifest["documents"][doc_id]
         update_manifest_index_state(manifest, bump_version=True)
         save_manifest(manifest)
@@ -170,7 +178,7 @@ class VectorStoreService:
 
         return metadata
 
-    def load_document(self, target_paths: list[str | Path] | None = None):
+    def load_document(self, target_paths: list[str | Path] | None = None) -> dict:
         manifest = load_manifest()
         manifest.setdefault("documents", {})
         modified = False
@@ -186,7 +194,9 @@ class VectorStoreService:
             for doc_id, record in list(manifest["documents"].items()):
                 if not doc_id.startswith("file:") or doc_id in current_doc_ids:
                     continue
-                self._delete_chunk_ids(record.get("chunk_ids", []), doc_id)
+                if not self._delete_chunk_ids(record.get("chunk_ids", []), doc_id):
+                    errors.append(f"{doc_id}: failed to remove chunks for missing source")
+                    continue
                 del manifest["documents"][doc_id]
                 modified = True
                 save_manifest(manifest)
@@ -222,6 +232,7 @@ class VectorStoreService:
 
                 documents: list[Document] = self._get_file_documents(path)
                 if not documents:
+                    errors.append(f"{Path(path).name}: no valid text found")
                     logger.warning(
                         f"[knowledge load] No valid text found in {path}. Skipping."
                     )
@@ -229,6 +240,7 @@ class VectorStoreService:
 
                 split_document: list[Document] = self.spliter.split_documents(documents)
                 if not split_document:
+                    errors.append(f"{Path(path).name}: no valid chunks produced")
                     logger.warning(
                         f"[knowledge load] No valid chunks produced from {path}. Skipping."
                     )
@@ -274,7 +286,8 @@ class VectorStoreService:
                     previous_ids = previous.get("chunk_ids", [])
                     new_ids = set(chunk_ids)
                     stale_ids = [cid for cid in previous_ids if cid not in new_ids]
-                    self._delete_chunk_ids(stale_ids, source.doc_id)
+                    if stale_ids and not self._delete_chunk_ids(stale_ids, source.doc_id):
+                        raise RuntimeError("Failed to remove stale chunks from the previous index")
 
                 manifest["documents"][source.doc_id] = source_to_manifest_record(
                     source,
@@ -310,6 +323,12 @@ class VectorStoreService:
             pipeline_fingerprint=self.index_fingerprint,
         )
         save_manifest(manifest)
+        return {
+            "success": not errors,
+            "errors": errors,
+            "error_summary": "; ".join(errors),
+            "modified": modified,
+        }
 
 
 if __name__ == "__main__":
