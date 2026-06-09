@@ -157,7 +157,9 @@ def _run_crawl_and_update(
             _mark_indexing(result)
             target_paths = [getattr(result, "output_file")] if getattr(result, "output_file", None) else None
             with indexing_lock:
-                VectorStoreService().load_document(target_paths=target_paths)
+                index_result = VectorStoreService().load_document(target_paths=target_paths)
+            if not index_result["success"]:
+                raise RuntimeError(index_result["error_summary"] or "Indexing crawled content failed")
 
             if _on_index_updated is not None:
                 _on_index_updated()

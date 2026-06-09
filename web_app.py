@@ -106,7 +106,9 @@ def _training_worker() -> None:
             from rag.vector_store import VectorStoreService
             with indexing_lock:
                 vs = VectorStoreService()
-                vs.load_document()
+                result = vs.load_document()
+            if not result["success"]:
+                raise RuntimeError(result["error_summary"] or "Indexing failed")
             # 知识库更新后重置 RAG 单例，确保 BM25 索引随新文档重建
             _reset_agent()
             with _TRAINING_LOCK:
@@ -116,6 +118,7 @@ def _training_worker() -> None:
         except Exception as exc:
             with _TRAINING_LOCK:
                 _TRAINING_STATE["running"] = False
+                _TRAINING_STATE["pending"] = False
                 _TRAINING_STATE["last_error"] = str(exc)
             break
 
@@ -137,11 +140,38 @@ def _start_training() -> bool:
 app = FastAPI(title="FTSM-RAG")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://tauri.localhost",
+        "https://tauri.localhost",
+        "tauri://localhost",
+    ],
+    allow_origin_regex=r"^https?://(?:127\.0\.0\.1|localhost)(?::\d+)?$",
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+def _is_trusted_browser_origin(origin: str) -> bool:
+    if origin in {"http://tauri.localhost", "https://tauri.localhost", "tauri://localhost"}:
+        return True
+    try:
+        from urllib.parse import urlparse
+
+        parsed = urlparse(origin)
+        return parsed.scheme in {"http", "https"} and parsed.hostname in {"127.0.0.1", "localhost"}
+    except ValueError:
+        return False
+
+
+@app.middleware("http")
+async def reject_untrusted_api_origins(request: Request, call_next):
+    origin = request.headers.get("origin", "").strip()
+    if request.url.path.startswith("/api/") and origin and not _is_trusted_browser_origin(origin):
+        return JSONResponse(status_code=403, content={"detail": "Untrusted request origin."})
+    return await call_next(request)
+
+
 app.mount("/static", StaticFiles(directory=WEB_DIR / "static"), name="static")
 if (REACT_DIST_DIR / "assets").exists():
     app.mount("/assets", StaticFiles(directory=REACT_DIST_DIR / "assets"), name="react_assets")
@@ -294,6 +324,23 @@ class SettingsPayload(BaseModel):
     chat_model_name: str = Field(default="")
 
 
+_ALLOWED_DASHSCOPE_BASE_URLS = {
+    "",
+    "https://dashscope.aliyuncs.com/api/v1",
+    "https://dashscope-intl.aliyuncs.com/api/v1",
+}
+
+
+def _validate_dashscope_base_url(value: str) -> str:
+    normalized = value.strip().rstrip("/")
+    if normalized not in _ALLOWED_DASHSCOPE_BASE_URLS:
+        raise HTTPException(
+            status_code=400,
+            detail="Only official DashScope China or international endpoints are allowed.",
+        )
+    return normalized
+
+
 def _mask_api_key(key: str) -> str:
     """返回掩码形式，仅保留末 4 位，如 sk-****abcd"""
     if not key:
@@ -323,7 +370,7 @@ async def save_settings(payload: SettingsPayload) -> JSONResponse:
     if raw_key and not is_masked:
         updates["DASHSCOPE_API_KEY"] = raw_key
     # 空字符串表示恢复默认（base_url 不设 = 国内版；模型名不设 = rag.yml 默认值）
-    updates["DASHSCOPE_BASE_URL"] = payload.dashscope_base_url.strip()
+    updates["DASHSCOPE_BASE_URL"] = _validate_dashscope_base_url(payload.dashscope_base_url)
     updates["CHAT_MODEL_NAME"] = payload.chat_model_name.strip()
 
     _write_env_file(_env_path, updates)

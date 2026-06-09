@@ -529,7 +529,9 @@ def retrain_chroma():
 
     with indexing_lock:
         vs = VectorStoreService()
-        vs.load_document()
+        result = vs.load_document()
+    if not result["success"]:
+        raise RuntimeError(result["error_summary"] or "Chroma training failed")
     print("[DONE] Chroma training complete!")
 
 

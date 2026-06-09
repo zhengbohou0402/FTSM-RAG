@@ -22,7 +22,15 @@ interface Props {
 }
 
 export default function Chat({ isDark, onToggleTheme }: Props) {
-  const { messages, streaming, conversationId, send, loadConversation, clearMessages } = useChat();
+  const {
+    messages,
+    streaming,
+    conversationId,
+    send,
+    loadConversation,
+    clearMessages,
+    setConversationId,
+  } = useChat();
   const { conversations, loading: convLoading, refresh, create, remove } = useConversations();
   const chatRef = useRef<HTMLDivElement>(null);
 
@@ -37,8 +45,9 @@ export default function Chat({ isDark, onToggleTheme }: Props) {
   }, [messages]);
 
   const handleNewChat = async () => {
-    await create();
+    const conv = await create();
     clearMessages();
+    setConversationId(conv.id);
   };
 
   const handleSelectConv = (id: string) => {
