@@ -1,28 +1,18 @@
 import { useEffect, useState, useMemo } from "react";
 import { Input, Button, Select, Typography, Space, message, Tag, Radio } from "antd";
 import {
-  AppstoreOutlined,
-  ArrowLeftOutlined,
-  BulbFilled,
-  BulbOutlined,
-  DashboardOutlined,
   EyeInvisibleOutlined,
   EyeOutlined,
   ReloadOutlined,
 } from "@ant-design/icons";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useSettings } from "../hooks/useSettings";
 
 const { Text } = Typography;
 
 const BUILTIN_MODELS: string[] = ["qwen-turbo"];
 
-interface Props {
-  isDark: boolean;
-  onToggleTheme: () => void;
-}
-
-export default function Settings({ isDark, onToggleTheme }: Props) {
+export default function Settings() {
   const { settings: saved, models, saving, load, loadModels, save } = useSettings();
   const navigate = useNavigate();
 
@@ -145,18 +135,11 @@ export default function Settings({ isDark, onToggleTheme }: Props) {
     <div className="admin-shell settings-shell">
       <div className="admin-header settings-header">
         <div>
-          <Text type="secondary" className="page-kicker">FTSM-RAG</Text>
+          <Text type="secondary" className="page-kicker">FTSM GPT</Text>
           <h1>Settings</h1>
           <p>Configure the DashScope API key, service region, and Qwen chat model.</p>
         </div>
-        <Space wrap>
-          <Button icon={isDark ? <BulbFilled /> : <BulbOutlined />} onClick={onToggleTheme}>
-            {isDark ? "Light" : "Dark"}
-          </Button>
-          <Link to="/dashboard"><Button icon={<DashboardOutlined />}>Dashboard</Button></Link>
-          <Link to="/manage"><Button icon={<AppstoreOutlined />}>Manage</Button></Link>
-          <Link to="/"><Button icon={<ArrowLeftOutlined />}>Back to Chat</Button></Link>
-        </Space>
+
       </div>
 
       <div className="settings-layout">

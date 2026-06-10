@@ -1,0 +1,961 @@
+[
+    {
+        "Page":  5,
+        "Start":  1168,
+        "End":  1178,
+        "Text":  "Kebangsaan",
+        "Context":  "d staff of the Faculty of Information Science and Technology (FTSM), Universiti Kebangsaan Malaysia (UKM), for providing a conducive research environment and necessary re"
+    },
+    {
+        "Page":  11,
+        "Start":  7854,
+        "End":  7861,
+        "Text":  "Fakulti",
+        "Context":  "Application Programming Interface FAQ　　　　   Frequently Asked Questions FTSM　　　　Fakulti Teknologi \u0026 Sains Maklumat (Faculty of Information Science and Technology) LLM"
+    },
+    {
+        "Page":  11,
+        "Start":  7862,
+        "End":  7871,
+        "Text":  "Teknologi",
+        "Context":  "tion Programming Interface FAQ　　　　   Frequently Asked Questions FTSM　　　　Fakulti Teknologi \u0026 Sains Maklumat (Faculty of Information Science and Technology) LLM　　　　  Large"
+    },
+    {
+        "Page":  11,
+        "Start":  8071,
+        "End":  8076,
+        "Text":  "ReAct",
+        "Context":  "ge Processing QA　　　　　Question Answering RAG　　　　  Retrieval-Augmented Generation ReAct　　　　Reasoning and Acting UI　　　　　  User Interface UKM　　　　 Universiti Kebangsaan M"
+    },
+    {
+        "Page":  11,
+        "Start":  8144,
+        "End":  8154,
+        "Text":  "Kebangsaan",
+        "Context":  "ration ReAct　　　　Reasoning and Acting UI　　　　　  User Interface UKM　　　　 Universiti Kebangsaan Malaysia \f\u000b\u000b\u000bINTRODUCTION OVERVIEW The fast development of large language model"
+    },
+    {
+        "Page":  12,
+        "Start":  9172,
+        "End":  9178,
+        "Text":  "Kuhail",
+        "Context":  "difficult for international students to do due to potential language barriers (Kuhail et al., 2023). In light of this, this research suggests designing and implement"
+    },
+    {
+        "Page":  13,
+        "Start":  10200,
+        "End":  10210,
+        "Text":  "Kebangsaan",
+        "Context":  "l environment in the Faculty of Information Science and Technology , Universiti Kebangsaan Malaysia. This chapter covers the background of the study, problem statement, r"
+    },
+    {
+        "Page":  13,
+        "Start":  10664,
+        "End":  10674,
+        "Text":  "Kebangsaan",
+        "Context":  "en a noticeable rise in the number of students coming from China. At Universiti Kebangsaan Malaysia (UKM), especially in the Faculty of Information Science and Technology"
+    },
+    {
+        "Page":  14,
+        "Start":  12996,
+        "End":  13002,
+        "Text":  "Kuhail",
+        "Context":  "lications, thus illustrating the potential of conversational AI in this sector (Kuhail et al., 2023). It has also been shown that retrieval-augmented generation (RAG)"
+    },
+    {
+        "Page":  14,
+        "Start":  13909,
+        "End":  13918,
+        "Text":  "Elheneidy",
+        "Context":  "h, or Malay, such a limitation becomes even more crucial (Neupane et al., 2024; Elheneidy and Mohd, 2025). Thus, the problem addressed in the current paper is related to"
+    },
+    {
+        "Page":  15,
+        "Start":  15426,
+        "End":  15433,
+        "Text":  "analyze",
+        "Context":  "ncrease the effectiveness and relevance of the generated answers. The aim is to analyze the performance of the created system in university information question answer"
+    },
+    {
+        "Page":  16,
+        "Start":  17376,
+        "End":  17382,
+        "Text":  "Kuhail",
+        "Context":  "ity information service and can be valuable for further research in this field (Kuhail et al., 2023).  Finally, this research adds value in terms of knowledge managem"
+    },
+    {
+        "Page":  17,
+        "Start":  19045,
+        "End":  19047,
+        "Text":  "it",
+        "Context":  "will be limited to topics covered by the known dataset without any additions to it including open-ended dialogues outside of standard knowledge area. On the techn"
+    },
+    {
+        "Page":  18,
+        "Start":  22371,
+        "End":  22377,
+        "Text":  "Kuhail",
+        "Context":  "ndered them ineffective in answering open-ended and context-specific questions (Kuhail et al., 2023). The more recent literature explores the possibility of applying"
+    },
+    {
+        "Page":  18,
+        "Start":  23420,
+        "End":  23429,
+        "Text":  "Elheneidy",
+        "Context":  "type of information requires knowledge of more than one language and platform (Elheneidy \u0026 Mohd, 2025; Singh \u0026 Jack, 2022). Thus, these aspects could create problems fo"
+    },
+    {
+        "Page":  19,
+        "Start":  25814,
+        "End":  25821,
+        "Text":  "Izacard",
+        "Context":  "significantly enhance the accuracy of model\u0027s question-answering performance. (Izacard \u0026 Grave, 2021; Karpukhin et al., 2020). In comparison with other large models,"
+    },
+    {
+        "Page":  20,
+        "Start":  25837,
+        "End":  25846,
+        "Text":  "Karpukhin",
+        "Context":  "the accuracy of model\u0027s question-answering performance. (Izacard \u0026 Grave, 2021; Karpukhin et al., 2020). In comparison with other large models, the RAG model involves re"
+    },
+    {
+        "Page":  20,
+        "Start":  26533,
+        "End":  26542,
+        "Text":  "Karpukhin",
+        "Context":  "ectors and matching or selecting similar items based on semantic similarities. (Karpukhin et al., 2020). Retrieved paragraphs are further introduced into the model in or"
+    },
+    {
+        "Page":  20,
+        "Start":  26788,
+        "End":  26795,
+        "Text":  "Izacard",
+        "Context":  "formation can be incorporated in order to improve the accuracy of the answers. (Izacard \u0026 Grave, 2021; Lewis et al., 2020). According to studies, RAG can considerably"
+    },
+    {
+        "Page":  20,
+        "Start":  27438,
+        "End":  27445,
+        "Text":  "Izacard",
+        "Context":  "rove the quality of responses through incorporation of additional information. (Izacard \u0026 Grave, 2021; Karpukhin et al., 2020). However, at the same time, the relevanc"
+    },
+    {
+        "Page":  20,
+        "Start":  27461,
+        "End":  27470,
+        "Text":  "Karpukhin",
+        "Context":  "ponses through incorporation of additional information. (Izacard \u0026 Grave, 2021; Karpukhin et al., 2020). However, at the same time, the relevance and reliability of sear"
+    },
+    {
+        "Page":  20,
+        "Start":  28084,
+        "End":  28090,
+        "Text":  "Kuhail",
+        "Context":  "titutions seeking scalable solutions for supporting students and staff members (Kuhail et al., 2023; Okonkwo \u0026 Ade-Ibijola, 2021). Systematic research demonstrates th"
+    },
+    {
+        "Page":  20,
+        "Start":  28119,
+        "End":  28126,
+        "Text":  "Ibijola",
+        "Context":  "s for supporting students and staff members (Kuhail et al., 2023; Okonkwo \u0026 Ade-Ibijola, 2021). Systematic research demonstrates that educational chatbots have been im"
+    },
+    {
+        "Page":  21,
+        "Start":  28877,
+        "End":  28883,
+        "Text":  "Kuhail",
+        "Context":  "stions required a broader understanding of context and ambiguity of intentions (Kuhail et al., 2023; Okonkwo \u0026 Ade-Ibijola, 2021). In recent years, educational chatbo"
+    },
+    {
+        "Page":  21,
+        "Start":  28912,
+        "End":  28919,
+        "Text":  "Ibijola",
+        "Context":  "ding of context and ambiguity of intentions (Kuhail et al., 2023; Okonkwo \u0026 Ade-Ibijola, 2021). In recent years, educational chatbots have included LLMs and knowledge"
+    },
+    {
+        "Page":  21,
+        "Start":  29390,
+        "End":  29398,
+        "Text":  "Barkplug",
+        "Context":  "al of using RAG to create an educational chatbot for universities. For example, Barkplug V.2 effectively used university resources to provide answers concerning academi"
+    },
+    {
+        "Page":  21,
+        "Start":  29732,
+        "End":  29738,
+        "Text":  "Unimib",
+        "Context":  "considered the conversational tone and structured presentation of the answer by Unimib Assistant as valuable. Nevertheless, the evaluation showed some omissions, inac"
+    },
+    {
+        "Page":  22,
+        "Start":  31068,
+        "End":  31074,
+        "Text":  "Kuhail",
+        "Context":  "ational artificial intelligence in multicultural and multilingual environments (Kuhail et al., 2023). Reviews of educational chatbots revealed that among the criteria"
+    },
+    {
+        "Page":  22,
+        "Start":  31468,
+        "End":  31475,
+        "Text":  "Conneau",
+        "Context":  "possible with multilingual pretrained models and sentence embedding techniques (Conneau et al., 2020; Reimers \u0026 Gurevych, 2020). Multilingual support will be useful wh"
+    },
+    {
+        "Page":  22,
+        "Start":  31500,
+        "End":  31508,
+        "Text":  "Gurevych",
+        "Context":  "ained models and sentence embedding techniques (Conneau et al., 2020; Reimers \u0026 Gurevych, 2020). Multilingual support will be useful when addressing questions formulate"
+    },
+    {
+        "Page":  22,
+        "Start":  31950,
+        "End":  31957,
+        "Text":  "Conneau",
+        "Context":  "etter performance on cross-lingual classification and question answering tasks (Conneau et al., 2020). Also, sentence embedding techniques enable comparing documents a"
+    },
+    {
+        "Page":  22,
+        "Start":  32218,
+        "End":  32226,
+        "Text":  "Gurevych",
+        "Context":  "ere created in English, Malay, or other languages (Feng et al., 2022; Reimers \u0026 Gurevych, 2020). The developments contribute to cross-lingual semantic search, although"
+    },
+    {
+        "Page":  22,
+        "Start":  32819,
+        "End":  32826,
+        "Text":  "Conneau",
+        "Context":  "tence embeddings enable connecting queries and documents in multiple languages (Conneau et al., 2020; Feng et al., 2022; Reimers \u0026 Gurevych, 2020). The findings are im"
+    },
+    {
+        "Page":  22,
+        "Start":  32870,
+        "End":  32878,
+        "Text":  "Gurevych",
+        "Context":  "ments in multiple languages (Conneau et al., 2020; Feng et al., 2022; Reimers \u0026 Gurevych, 2020). The findings are important for the project as the search for evidence w"
+    },
+    {
+        "Page":  23,
+        "Start":  33363,
+        "End":  33369,
+        "Text":  "Unimib",
+        "Context":  "nal graduate students based on LLMs and RAG. Antico et al. (2024) developed the Unimib Assistant and confirmed that institutional grounding helped enhance answer rele"
+    },
+    {
+        "Page":  25,
+        "Start":  36692,
+        "End":  36698,
+        "Text":  "Kuhail",
+        "Context":  "blem of international Chinese students\u0027 studying at the Malaysian universities (Kuhail et al., 2023; Saha \u0026 Saha, 2024). Such students need unique information support"
+    },
+    {
+        "Page":  25,
+        "Start":  37179,
+        "End":  37186,
+        "Text":  "Conneau",
+        "Context":  "ions in trilingual interaction with Chinese, English, and Malay language users (Conneau et al., 2020; Feng et al., 2022; Reimers \u0026 Gurevych, 2020). Additionally, exist"
+    },
+    {
+        "Page":  25,
+        "Start":  37230,
+        "End":  37238,
+        "Text":  "Gurevych",
+        "Context":  "h, and Malay language users (Conneau et al., 2020; Feng et al., 2022; Reimers \u0026 Gurevych, 2020). Additionally, existing university case studies on RAG do not include of"
+    },
+    {
+        "Page":  27,
+        "Start":  38815,
+        "End":  38821,
+        "Text":  "Kuhail",
+        "Context":  "sing, and many other aspects that are essential for a smooth campus experience (Kuhail et al., 2023). Such needs arise particularly when universities accommodate stud"
+    },
+    {
+        "Page":  27,
+        "Start":  39045,
+        "End":  39054,
+        "Text":  "Elheneidy",
+        "Context":  "for their communication such as Chinese, English, and Malay. Recent research by Elheneidy and Mohd (2025) highlights these challenges within multilingual universities. A"
+    },
+    {
+        "Page":  28,
+        "Start":  40256,
+        "End":  40265,
+        "Text":  "LangChain",
+        "Context":  "M, the Faculty of Information Science and Technology. The system will include a LangChain-based agentic framework (Chase, 2022), Chroma vector database, DashScope text-e"
+    },
+    {
+        "Page":  28,
+        "Start":  40329,
+        "End":  40338,
+        "Text":  "DashScope",
+        "Context":  "lude a LangChain-based agentic framework (Chase, 2022), Chroma vector database, DashScope text-embedding-v4 model and Qwen LLM, all of which are connected via the FastAP"
+    },
+    {
+        "Page":  28,
+        "Start":  40412,
+        "End":  40419,
+        "Text":  "FastAPI",
+        "Context":  "hScope text-embedding-v4 model and Qwen LLM, all of which are connected via the FastAPI back-end. One of the major innovations in the architecture proposed is that of"
+    },
+    {
+        "Page":  28,
+        "Start":  40596,
+        "End":  40609,
+        "Text":  "multilinguism",
+        "Context":  "and a multilingual query processing mechanism to address the latency issues and multilinguism challenges seen in other applications of RAGs on campuses (Singh and Gupta, 202"
+    },
+    {
+        "Page":  28,
+        "Start":  40937,
+        "End":  40967,
+        "Text":  "RecursiveCharacterTextSplitter",
+        "Context":  "ection 3.3 elaborates on the process of document extraction, text chunking with RecursiveCharacterTextSplitter, and text embedding using DashScope model. Section 3.4 discusses the process of"
+    },
+    {
+        "Page":  28,
+        "Start":  40994,
+        "End":  41003,
+        "Text":  "DashScope",
+        "Context":  "on, text chunking with RecursiveCharacterTextSplitter, and text embedding using DashScope model. Section 3.4 discusses the process of processing multilingual queries by"
+    },
+    {
+        "Page":  28,
+        "Start":  41293,
+        "End":  41302,
+        "Text":  "LangChain",
+        "Context":  "s the retrieval augmented generation process by discussing the interplay of the LangChain agent, rag_summarize tool and Qwen. Section 3.6 talks about the semantic cache"
+    },
+    {
+        "Page":  28,
+        "Start":  41310,
+        "End":  41323,
+        "Text":  "rag_summarize",
+        "Context":  "ugmented generation process by discussing the interplay of the LangChain agent, rag_summarize tool and Qwen. Section 3.6 talks about the semantic cache optimization techniqu"
+    },
+    {
+        "Page":  28,
+        "Start":  41514,
+        "End":  41521,
+        "Text":  "FastAPI",
+        "Context":  "ine similarity threshold as well as TTL-based expiry. Section 3.7 discusses the FastAPI architecture, project files and data storage. SYSTEM ARCHITECTURE OF FTSM-RAG A"
+    },
+    {
+        "Page":  29,
+        "Start":  43341,
+        "End":  43348,
+        "Text":  "FastAPI",
+        "Context":  "component separately. In reality, the Application Service is implemented using FastAPI, Langchain agentic framework is used as the foundation for Intelligent Processi"
+    },
+    {
+        "Page":  29,
+        "Start":  43350,
+        "End":  43359,
+        "Text":  "Langchain",
+        "Context":  "t separately. In reality, the Application Service is implemented using FastAPI, Langchain agentic framework is used as the foundation for Intelligent Processing Module ("
+    },
+    {
+        "Page":  29,
+        "Start":  43508,
+        "End":  43514,
+        "Text":  "Tongyi",
+        "Context":  "ng Module (Chase, 2022), Vector Database works on Chroma technology, and LLM is Tongyi Qwen retrieved via DashScope API (Zhao et al., 2023). Moreover, optimization me"
+    },
+    {
+        "Page":  29,
+        "Start":  43534,
+        "End":  43543,
+        "Text":  "DashScope",
+        "Context":  "ector Database works on Chroma technology, and LLM is Tongyi Qwen retrieved via DashScope API (Zhao et al., 2023). Moreover, optimization mechanisms such as multilingual"
+    },
+    {
+        "Page":  29,
+        "Start":  43803,
+        "End":  43809,
+        "Text":  "Qdrant",
+        "Context":  "ing Module and described in sections 3.4 and 3.6 accordingly (Gao et al., 2023; Qdrant, 2024; Singh and Gupta, 2026). Figure 3."
+    },
+    {
+        "Page":  30,
+        "Start":  44580,
+        "End":  44594,
+        "Text":  "SourceDocument",
+        "Context":  "pipeline, the ingested file is checked against validity rules to see whether a SourceDocument metadata object needs to be created, consisting of parameters like doc_id, hash"
+    },
+    {
+        "Page":  30,
+        "Start":  44662,
+        "End":  44668,
+        "Text":  "doc_id",
+        "Context":  "urceDocument metadata object needs to be created, consisting of parameters like doc_id, hash, filename, and file_path. Then, if the hash value of the ingested file is"
+    },
+    {
+        "Page":  30,
+        "Start":  44690,
+        "End":  44699,
+        "Text":  "file_path",
+        "Context":  "needs to be created, consisting of parameters like doc_id, hash, filename, and file_path. Then, if the hash value of the ingested file is already stored in ingestion_ma"
+    },
+    {
+        "Page":  30,
+        "Start":  44767,
+        "End":  44790,
+        "Text":  "ingestion_manifest.json",
+        "Context":  "nd file_path. Then, if the hash value of the ingested file is already stored in ingestion_manifest.json, the file is ignored because hashing is a suggested best practice for de-duplic"
+    },
+    {
+        "Page":  30,
+        "Start":  45637,
+        "End":  45647,
+        "Text":  "chunk_size",
+        "Context":  "and characters to the extent that each of the chunks does not exceed configured chunk_size with an overlapping of configured chunk_overlap values to provide smooth transi"
+    },
+    {
+        "Page":  30,
+        "Start":  45682,
+        "End":  45695,
+        "Text":  "chunk_overlap",
+        "Context":  "chunks does not exceed configured chunk_size with an overlapping of configured chunk_overlap values to provide smooth transition between chunks (Chase, 2022). Contrary to f"
+    },
+    {
+        "Page":  30,
+        "Start":  45863,
+        "End":  45893,
+        "Text":  "RecursiveCharacterTextSplitter",
+        "Context":  "itters, which produce equal-sized text chunks regardless of document structure, RecursiveCharacterTextSplitter starts cutting large chunks of text, falling back to smaller chunks only if it"
+    },
+    {
+        "Page":  30,
+        "Start":  46154,
+        "End":  46162,
+        "Text":  "chunk_id",
+        "Context":  "dition, each text chunk is annotated with a set of chunk-level metadata fields: chunk_id, chunk_index, doc_id, and source_type, to help retrieve documents by provenance"
+    },
+    {
+        "Page":  30,
+        "Start":  46164,
+        "End":  46175,
+        "Text":  "chunk_index",
+        "Context":  "ch text chunk is annotated with a set of chunk-level metadata fields: chunk_id, chunk_index, doc_id, and source_type, to help retrieve documents by provenance information."
+    },
+    {
+        "Page":  30,
+        "Start":  46177,
+        "End":  46183,
+        "Text":  "doc_id",
+        "Context":  "is annotated with a set of chunk-level metadata fields: chunk_id, chunk_index, doc_id, and source_type, to help retrieve documents by provenance information. Chunkin"
+    },
+    {
+        "Page":  30,
+        "Start":  46189,
+        "End":  46200,
+        "Text":  "source_type",
+        "Context":  "d with a set of chunk-level metadata fields: chunk_id, chunk_index, doc_id, and source_type, to help retrieve documents by provenance information. Chunking strategy and ov"
+    },
+    {
+        "Page":  31,
+        "Start":  46519,
+        "End":  46528,
+        "Text":  "DashScope",
+        "Context":  "In the final sub-stage, chunks are converted into vector representations using DashScope text-embedding-v4 model as shown in Figure 3.2. This model was chosen due to it"
+    },
+    {
+        "Page":  31,
+        "Start":  46711,
+        "End":  46720,
+        "Text":  "text_type",
+        "Context":  "ncy in benchmark tests, possibility to tune task instructions with a parameter (text_type), and support for sparse and dense vector output, making it the most versatile"
+    },
+    {
+        "Page":  31,
+        "Start":  46816,
+        "End":  46825,
+        "Text":  "DashScope",
+        "Context":  "or sparse and dense vector output, making it the most versatile model of all in DashScope API library (Alibaba Cloud, 2025). Obtained embeddings are stored together with"
+    },
+    {
+        "Page":  31,
+        "Start":  47050,
+        "End":  47058,
+        "Text":  "chunk_id",
+        "Context":  "ctor Database (Gao et al., 2023). After successful indexing, the document hash, chunk_id(s), and indexed_at field are added to ingestion_manifest.json (Alibaba Cloud, 2"
+    },
+    {
+        "Page":  31,
+        "Start":  47067,
+        "End":  47077,
+        "Text":  "indexed_at",
+        "Context":  "o et al., 2023). After successful indexing, the document hash, chunk_id(s), and indexed_at field are added to ingestion_manifest.json (Alibaba Cloud, 2025). MULTILINGUAL"
+    },
+    {
+        "Page":  31,
+        "Start":  47097,
+        "End":  47120,
+        "Text":  "ingestion_manifest.json",
+        "Context":  "ful indexing, the document hash, chunk_id(s), and indexed_at field are added to ingestion_manifest.json (Alibaba Cloud, 2025). MULTILINGUAL QUERY PROCESSING One of the crucial challen"
+    },
+    {
+        "Page":  32,
+        "Start":  49113,
+        "End":  49121,
+        "Text":  "penyelia",
+        "Context":  "e, English, and Malay. For example, the term \"supervisor\" can be replaced with \"penyelia\" in Malay or \"导师\" in Chinese, while \"scholarship\" can become \"biasiswa\" or \"奖学金"
+    },
+    {
+        "Page":  32,
+        "Start":  49184,
+        "End":  49192,
+        "Text":  "biasiswa",
+        "Context":  "ed with \"penyelia\" in Malay or \"导师\" in Chinese, while \"scholarship\" can become \"biasiswa\" or \"奖学金\". Expansion is performed using a domain synonym dictionary specificall"
+    },
+    {
+        "Page":  33,
+        "Start":  49806,
+        "End":  49818,
+        "Text":  "page_content",
+        "Context":  "is subsequently passed to the  retrieval module, and duplicates with regard to page_content are filtered out before context extraction occurs. Figure 3."
+    },
+    {
+        "Page":  33,
+        "Start":  50193,
+        "End":  50206,
+        "Text":  "parameterised",
+        "Context":  "question answering model. Contrary to traditional models that solely depend on parameterised knowledge to generate responses, RAG generates answers by retrieving relevant i"
+    },
+    {
+        "Page":  33,
+        "Start":  50747,
+        "End":  50756,
+        "Text":  "LangChain",
+        "Context":  "n. As depicted in the left portion of Figure 3.3, all user queries go through a LangChain Agent which is initialized by the create_agent function. The create_agent funct"
+    },
+    {
+        "Page":  33,
+        "Start":  50791,
+        "End":  50803,
+        "Text":  "create_agent",
+        "Context":  "3.3, all user queries go through a LangChain Agent which is initialized by the create_agent function. The create_agent function binds the Qwen LLM with the rag_summarize t"
+    },
+    {
+        "Page":  33,
+        "Start":  50818,
+        "End":  50830,
+        "Text":  "create_agent",
+        "Context":  "hrough a LangChain Agent which is initialized by the create_agent function. The create_agent function binds the Qwen LLM with the rag_summarize tool, an operation that make"
+    },
+    {
+        "Page":  33,
+        "Start":  50868,
+        "End":  50881,
+        "Text":  "rag_summarize",
+        "Context":  "he create_agent function. The create_agent function binds the Qwen LLM with the rag_summarize tool, an operation that makes the agent work under the ReAct (Reasoning and Act"
+    },
+    {
+        "Page":  33,
+        "Start":  50937,
+        "End":  50942,
+        "Text":  "ReAct",
+        "Context":  "M with the rag_summarize tool, an operation that makes the agent work under the ReAct (Reasoning and Acting) approach by Yao et al. (2022). Upon receiving a query fr"
+    },
+    {
+        "Page":  33,
+        "Start":  51059,
+        "End":  51064,
+        "Text":  "ReAct",
+        "Context":  "ao et al. (2022). Upon receiving a query from the student, the agent conducts a ReAct-based tool decision. In particular, in case there is a need for domain knowledg"
+    },
+    {
+        "Page":  33,
+        "Start":  51177,
+        "End":  51190,
+        "Text":  "rag_summarize",
+        "Context":  "ar, in case there is a need for domain knowledge, the agent decides to call the rag_summarize tool; otherwise, the agent provides the response without calling any tools (Cha"
+    },
+    {
+        "Page":  34,
+        "Start":  51302,
+        "End":  51315,
+        "Text":  "rag_summarize",
+        "Context":  "ides the response without calling any tools (Chase, 2022). Upon invocation, the rag_summarize tool receives the aligned and expanded query variants produced by the multiling"
+    },
+    {
+        "Page":  34,
+        "Start":  52037,
+        "End":  52046,
+        "Text":  "DashScope",
+        "Context":  "r than the sum of both. A dense vector retriever encodes each variant using the DashScope text-embedding-v4 model and submits it to the Chroma Vector Database for top-𝑘"
+    },
+    {
+        "Page":  35,
+        "Start":  53972,
+        "End":  53981,
+        "Text":  "DashScope",
+        "Context":  "s-encoder re-ranking, the top candidates produced by RRF are rescored using the DashScope gte-rerank-v2 cross-encoder model. In contrast to the bi-encoder architecture u"
+    },
+    {
+        "Page":  36,
+        "Start":  55409,
+        "End":  55416,
+        "Text":  "FastAPI",
+        "Context":  "answers against institutional documents. Then, the response is sent back to the FastAPI Backend for session management before being sent to the Frontend Display with i"
+    },
+    {
+        "Page":  37,
+        "Start":  57050,
+        "End":  57059,
+        "Text":  "DashScope",
+        "Context":  "query, the system first generates an embedding vector out of it with the use of DashScope text-embedding-v4 model. Then, the system calculates the similarity of this que"
+    },
+    {
+        "Page":  37,
+        "Start":  57184,
+        "End":  57203,
+        "Text":  "semantic_cache.json",
+        "Context":  "lculates the similarity of this query vector to all cached vectors available in semantic_cache.json by performing cosine similarity measurement. By finding the angle between two v"
+    },
+    {
+        "Page":  37,
+        "Start":  57862,
+        "End":  57881,
+        "Text":  "semantic_cache.json",
+        "Context":  "ponse, the new query vector, the answer, and the current timestamp get added to semantic_cache.json for future usage. The threshold of 0.92 was chosen in order to minimize chances"
+    },
+    {
+        "Page":  37,
+        "Start":  58142,
+        "End":  58148,
+        "Text":  "Qdrant",
+        "Context":  "e help of the cache, while higher values would make hit rate significantly low (Qdrant, 2024). In order to prevent unbounded cache storage growth and avoid stale answ"
+    },
+    {
+        "Page":  38,
+        "Start":  59212,
+        "End":  59218,
+        "Text":  "Qdrant",
+        "Context":  "ost commonly mentioned advantages of using semantic cache in RAG-based systems (Qdrant, 2024; Gao et al., 2023). To enable runtime monitoring of cache performance met"
+    },
+    {
+        "Page":  38,
+        "Start":  59305,
+        "End":  59308,
+        "Text":  "api",
+        "Context":  "Gao et al., 2023). To enable runtime monitoring of cache performance metrics, /api/cache/stats endpoint is provided that shows hit count, miss count, and hit rate"
+    },
+    {
+        "Page":  38,
+        "Start":  59593,
+        "End":  59602,
+        "Text":  "DashScope",
+        "Context":  "on that runs locally without reliance on any external infrastructure except the DashScope API. Specifically, the FTSM-RAG implementation follows the modular design princ"
+    },
+    {
+        "Page":  38,
+        "Start":  59912,
+        "End":  59919,
+        "Text":  "FastAPI",
+        "Context":  "ies. The entrance point of the application is web_app.py, which initializes the FastAPI application, adds all routes, serves the static frontend and opens up the local"
+    },
+    {
+        "Page":  38,
+        "Start":  60022,
+        "End":  60029,
+        "Text":  "FastAPI",
+        "Context":  "routes, serves the static frontend and opens up the locally hosted web service. FastAPI was chosen as the web backend for the following reasons. First, the capability"
+    },
+    {
+        "Page":  38,
+        "Start":  60388,
+        "End":  60395,
+        "Text":  "FastAPI",
+        "Context":  "at feature response delays of several seconds. Second, the tight integration of FastAPI with the Python ecosystem allows seamless work with LangChain, Chroma, and the"
+    },
+    {
+        "Page":  38,
+        "Start":  60448,
+        "End":  60457,
+        "Text":  "LangChain",
+        "Context":  "ight integration of FastAPI with the Python ecosystem allows seamless work with LangChain, Chroma, and the DashScope SDK. Finally, request validation provided by the fra"
+    },
+    {
+        "Page":  38,
+        "Start":  60475,
+        "End":  60484,
+        "Text":  "DashScope",
+        "Context":  "with the Python ecosystem allows seamless work with LangChain, Chroma, and the DashScope SDK. Finally, request validation provided by the framework eases implementation"
+    },
+    {
+        "Page":  39,
+        "Start":  60733,
+        "End":  60736,
+        "Text":  "api",
+        "Context":  ", and GET /settings routes and exposes a variety of API endpoints, namely POST /api/chat, POST /api/upload, GET /api/documents, GET /api/settings, POST /api/settin"
+    },
+    {
+        "Page":  39,
+        "Start":  60749,
+        "End":  60752,
+        "Text":  "api",
+        "Context":  "ngs routes and exposes a variety of API endpoints, namely POST /api/chat, POST /api/upload, GET /api/documents, GET /api/settings, POST /api/settings, POST /api/tr"
+    },
+    {
+        "Page":  39,
+        "Start":  60766,
+        "End":  60769,
+        "Text":  "api",
+        "Context":  "poses a variety of API endpoints, namely POST /api/chat, POST /api/upload, GET /api/documents, GET /api/settings, POST /api/settings, POST /api/training/start, and"
+    },
+    {
+        "Page":  39,
+        "Start":  60786,
+        "End":  60789,
+        "Text":  "api",
+        "Context":  "PI endpoints, namely POST /api/chat, POST /api/upload, GET /api/documents, GET /api/settings, POST /api/settings, POST /api/training/start, and GET /api/cache/stat"
+    },
+    {
+        "Page":  39,
+        "Start":  60806,
+        "End":  60809,
+        "Text":  "api",
+        "Context":  "POST /api/chat, POST /api/upload, GET /api/documents, GET /api/settings, POST /api/settings, POST /api/training/start, and GET /api/cache/stats. Chatting function"
+    },
+    {
+        "Page":  39,
+        "Start":  60826,
+        "End":  60829,
+        "Text":  "api",
+        "Context":  "T /api/upload, GET /api/documents, GET /api/settings, POST /api/settings, POST /api/training/start, and GET /api/cache/stats. Chatting functionality is achieved vi"
+    },
+    {
+        "Page":  39,
+        "Start":  60855,
+        "End":  60858,
+        "Text":  "api",
+        "Context":  "ents, GET /api/settings, POST /api/settings, POST /api/training/start, and GET /api/cache/stats. Chatting functionality is achieved via POST /api/chat endpoint whi"
+    },
+    {
+        "Page":  39,
+        "Start":  60917,
+        "End":  60920,
+        "Text":  "api",
+        "Context":  "g/start, and GET /api/cache/stats. Chatting functionality is achieved via POST /api/chat endpoint which validates the presence of the configured DASHSCOPE_API_KEY,"
+    },
+    {
+        "Page":  39,
+        "Start":  61084,
+        "End":  61099,
+        "Text":  "conversation_id",
+        "Context":  "cks if the incoming message is not empty, generates or reuses the corresponding conversation_id, and responds with the StreamingResponse providing the generated answer via Ser"
+    },
+    {
+        "Page":  39,
+        "Start":  61123,
+        "End":  61140,
+        "Text":  "StreamingResponse",
+        "Context":  "y, generates or reuses the corresponding conversation_id, and responds with the StreamingResponse providing the generated answer via Server-Sent Events (SSE). SSE is a standard"
+    },
+    {
+        "Page":  39,
+        "Start":  61560,
+        "End":  61578,
+        "Text":  "stream_chat_answer",
+        "Context":  "uitable for RAG chat interfaces where client-server communication suffices. The stream_chat_answer(...) method in services/chat_service.py handles the chat message: invokes seman"
+    },
+    {
+        "Page":  39,
+        "Start":  61840,
+        "End":  61857,
+        "Text":  "ConversationStore",
+        "Context":  "of one single request processing flow. Recent chat messages are fetched via the ConversationStore object and supplied to the agent as the short-term dialogue context (Chase, 202"
+    },
+    {
+        "Page":  39,
+        "Start":  62044,
+        "End":  62053,
+        "Text":  "LangChain",
+        "Context":  "tion features logical separation of components by directories. Agent/ holds the LangChain ReAct agent code (react_agent.py) along with the implementation of the rag_summ"
+    },
+    {
+        "Page":  39,
+        "Start":  62054,
+        "End":  62059,
+        "Text":  "ReAct",
+        "Context":  "res logical separation of components by directories. Agent/ holds the LangChain ReAct agent code (react_agent.py) along with the implementation of the rag_summarize"
+    },
+    {
+        "Page":  39,
+        "Start":  62125,
+        "End":  62138,
+        "Text":  "rag_summarize",
+        "Context":  "angChain ReAct agent code (react_agent.py) along with the implementation of the rag_summarize tool (agent/tools/agent_tools.py). Retrieval and generation operations are enca"
+    },
+    {
+        "Page":  39,
+        "Start":  62589,
+        "End":  62596,
+        "Text":  "FastAPI",
+        "Context":  "nfig/. Static frontend, consisting of HTML templates and JS files, is served by FastAPI directly from the web/ directory. Integration with DashScope API takes place in"
+    },
+    {
+        "Page":  39,
+        "Start":  62648,
+        "End":  62657,
+        "Text":  "DashScope",
+        "Context":  "files, is served by FastAPI directly from the web/ directory. Integration with DashScope API takes place in model/factory.py, which uses the lazy initialization scheme,"
+    },
+    {
+        "Page":  40,
+        "Start":  63419,
+        "End":  63427,
+        "Text":  "ukm_ftsm",
+        "Context":  "using JSON files and a Chroma vector database. Conversations are stored in data/ukm_ftsm/conversations/ directory, where the index.json file maintains the list of all e"
+    },
+    {
+        "Page":  40,
+        "Start":  63464,
+        "End":  63474,
+        "Text":  "index.json",
+        "Context":  ". Conversations are stored in data/ukm_ftsm/conversations/ directory, where the index.json file maintains the list of all existing conversations, while each conversation"
+    },
+    {
+        "Page":  40,
+        "Start":  63613,
+        "End":  63623,
+        "Text":  "updated_at",
+        "Context":  "le each conversation is stored as a UUID-named JSON file holding the id, title, updated_at time, and the array of messages. Each message keeps information about the role,"
+    },
+    {
+        "Page":  40,
+        "Start":  63725,
+        "End":  63735,
+        "Text":  "created_at",
+        "Context":  "f messages. Each message keeps information about the role, message content, and created_at time. Semantic cache is persisted in the data/ukm_ftsm/semantic_cache.json file"
+    },
+    {
+        "Page":  40,
+        "Start":  63782,
+        "End":  63790,
+        "Text":  "ukm_ftsm",
+        "Context":  ", message content, and created_at time. Semantic cache is persisted in the data/ukm_ftsm/semantic_cache.json file, where each entry contains the original question, gene"
+    },
+    {
+        "Page":  40,
+        "Start":  63791,
+        "End":  63810,
+        "Text":  "semantic_cache.json",
+        "Context":  "content, and created_at time. Semantic cache is persisted in the data/ukm_ftsm/semantic_cache.json file, where each entry contains the original question, generated answer, embedd"
+    },
+    {
+        "Page":  40,
+        "Start":  63906,
+        "End":  63916,
+        "Text":  "created_at",
+        "Context":  "h entry contains the original question, generated answer, embedding vector, and created_at time, having a similarity threshold of 0.92, TTL of seven days, and limit of 50"
+    },
+    {
+        "Page":  40,
+        "Start":  64045,
+        "End":  64053,
+        "Text":  "ukm_ftsm",
+        "Context":  "of seven days, and limit of 500 entries. Ingestion metadata are logged in data/ukm_ftsm/ingestion_manifest.json. The Chroma vector store is configured via config/chrom"
+    },
+    {
+        "Page":  40,
+        "Start":  64054,
+        "End":  64077,
+        "Text":  "ingestion_manifest.json",
+        "Context":  "days, and limit of 500 entries. Ingestion metadata are logged in data/ukm_ftsm/ingestion_manifest.json. The Chroma vector store is configured via config/chroma.yml with collection na"
+    },
+    {
+        "Page":  40,
+        "Start":  64128,
+        "End":  64138,
+        "Text":  "chroma.yml",
+        "Context":  "_ftsm/ingestion_manifest.json. The Chroma vector store is configured via config/chroma.yml with collection named ftsm_rag_agent. The Chroma database is stored locally at"
+    },
+    {
+        "Page":  40,
+        "Start":  64161,
+        "End":  64175,
+        "Text":  "ftsm_rag_agent",
+        "Context":  "e Chroma vector store is configured via config/chroma.yml with collection named ftsm_rag_agent. The Chroma database is stored locally at chroma_db_ftsm/ directory with chunk_"
+    },
+    {
+        "Page":  40,
+        "Start":  64218,
+        "End":  64232,
+        "Text":  "chroma_db_ftsm",
+        "Context":  "with collection named ftsm_rag_agent. The Chroma database is stored locally at chroma_db_ftsm/ directory with chunk_size = 800, chunk_overlap = 120, and topk = 6. Local JSON"
+    },
+    {
+        "Page":  40,
+        "Start":  64249,
+        "End":  64259,
+        "Text":  "chunk_size",
+        "Context":  "_agent. The Chroma database is stored locally at chroma_db_ftsm/ directory with chunk_size = 800, chunk_overlap = 120, and topk = 6. Local JSON persistence with the local"
+    },
+    {
+        "Page":  40,
+        "Start":  64267,
+        "End":  64280,
+        "Text":  "chunk_overlap",
+        "Context":  "database is stored locally at chroma_db_ftsm/ directory with chunk_size = 800, chunk_overlap = 120, and topk = 6. Local JSON persistence with the locally deployed Chroma in"
+    },
+    {
+        "Page":  40,
+        "Start":  64292,
+        "End":  64296,
+        "Text":  "topk",
+        "Context":  "ly at chroma_db_ftsm/ directory with chunk_size = 800, chunk_overlap = 120, and topk = 6. Local JSON persistence with the locally deployed Chroma instance was consc"
+    },
+    {
+        "Page":  41,
+        "Start":  65539,
+        "End":  65569,
+        "Text":  "RecursiveCharacterTextSplitter",
+        "Context":  "xing, hash-based duplication removal, structure-aware text chunking by means of RecursiveCharacterTextSplitter, and the generation of text embeddings by using the DashScope text-embedding-v4"
+    },
+    {
+        "Page":  41,
+        "Start":  65622,
+        "End":  65631,
+        "Text":  "DashScope",
+        "Context":  "ursiveCharacterTextSplitter, and the generation of text embeddings by using the DashScope text-embedding-v4 API, where all documents were indexed and stored in the local"
+    },
+    {
+        "Page":  41,
+        "Start":  66118,
+        "End":  66127,
+        "Text":  "LangChain",
+        "Context":  "esented in Section 3.5, which describes the collaborative work performed by the LangChain ReAct agent, rag_summarize utility, a three-stage hybrid retrieval process with"
+    },
+    {
+        "Page":  41,
+        "Start":  66128,
+        "End":  66133,
+        "Text":  "ReAct",
+        "Context":  "Section 3.5, which describes the collaborative work performed by the LangChain ReAct agent, rag_summarize utility, a three-stage hybrid retrieval process with BM25"
+    },
+    {
+        "Page":  41,
+        "Start":  66141,
+        "End":  66154,
+        "Text":  "rag_summarize",
+        "Context":  "which describes the collaborative work performed by the LangChain ReAct agent, rag_summarize utility, a three-stage hybrid retrieval process with BM25 keyword retrieval, RR"
+    },
+    {
+        "Page":  41,
+        "Start":  66722,
+        "End":  66729,
+        "Text":  "FastAPI",
+        "Context":  "larity score exceeds a value of 0.92. The implementation section (3.7) outlined FastAPI architecture, integration with the DashScope API, module structure of the proje"
+    },
+    {
+        "Page":  41,
+        "Start":  66765,
+        "End":  66774,
+        "Text":  "DashScope",
+        "Context":  "mplementation section (3.7) outlined FastAPI architecture, integration with the DashScope API, module structure of the project, as well as design of the local JSON and C"
+    }
+]

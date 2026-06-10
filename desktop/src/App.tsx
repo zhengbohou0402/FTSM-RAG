@@ -5,7 +5,9 @@ import Chat from "./pages/Chat";
 import Settings from "./pages/Settings";
 import Manage from "./pages/Manage";
 import Dashboard from "./pages/Dashboard";
+import Prompts from "./pages/Prompts";
 import ApiKeySetupModal from "./components/ApiKeySetupModal";
+import TopMenuBar from "./components/TopMenuBar";
 import { api } from "./api/client";
 
 const THEME_KEY = "ftsm_theme";
@@ -52,13 +54,19 @@ function AppRoutes({ isDark, onToggleTheme }: { isDark: boolean; onToggleTheme: 
         open={showApiKeyModal}
         onSuccess={() => setDashscopeConfigured(true)}
       />
-      <Routes>
-        <Route path="/" element={<Chat isDark={isDark} onToggleTheme={onToggleTheme} />} />
-        <Route path="/settings" element={<Settings isDark={isDark} onToggleTheme={onToggleTheme} />} />
-        <Route path="/manage" element={<Manage isDark={isDark} onToggleTheme={onToggleTheme} />} />
-        <Route path="/dashboard" element={<Dashboard isDark={isDark} onToggleTheme={onToggleTheme} />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+      <div style={{ display: "flex", flexDirection: "column", height: "100vh", overflow: "hidden" }}>
+        <TopMenuBar isDark={isDark} onToggleTheme={onToggleTheme} />
+        <div style={{ flex: 1, overflow: "hidden" }}>
+          <Routes>
+            <Route path="/" element={<Chat />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/manage" element={<Manage />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/prompts" element={<Prompts />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </div>
+      </div>
     </>
   );
 }

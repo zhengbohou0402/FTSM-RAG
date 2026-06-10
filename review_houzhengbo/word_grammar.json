@@ -1,0 +1,254 @@
+[
+    {
+        "Page":  6,
+        "Start":  1584,
+        "End":  1722,
+        "Text":  "The phenomenon of internationalization has made more and more foreign students studying in the higher education institutions of Malaysia. ",
+        "Context":  "family for their unwavering support, understanding, and motivation throughout my studies. ABSTRACT The phenomenon of internationalization has made more and more foreign students studying in the higher education institutions of Malaysia. Among these students, there are many Chinese ones who face challenges of gathering necessary informa"
+    },
+    {
+        "Page":  14,
+        "Start":  12321,
+        "End":  12551,
+        "Text":  "Thus, while dealing with very localized and subject-specific questions, an LLM can produce erroneous or even hallucinated responses, making its use unreliable in the situations where high precision and factual accuracy is a must. ",
+        "Context":  "any knowledge source of institutional documents, Faculty guidelines, and other reference material. Thus, while dealing with very localized and subject-specific questions, an LLM can produce erroneous or even hallucinated responses, making its use unreliable in the situations where high precision and factual accuracy is a must. The existing information channels at universities are mostly restricted to websites or traditional F"
+    },
+    {
+        "Page":  16,
+        "Start":  17148,
+        "End":  17398,
+        "Text":  "Overall, this study demonstrates how the RAG architecture and prompt engineering could be applied in designing question answering system for university information service and can be valuable for further research in this field (Kuhail et al., 2023). ",
+        "Context":  "ser query, and retrieved context allows increasing answer accuracy, relevancy, and controllability. Overall, this study demonstrates how the RAG architecture and prompt engineering could be applied in designing question answering system for university information service and can be valuable for further research in this field (Kuhail et al., 2023).  Finally, this research adds value in terms of knowledge management and applicability of the results"
+    },
+    {
+        "Page":  16,
+        "Start":  17938,
+        "End":  18015,
+        "Text":  "Therefore, the study has immediate practical value and also great potential. ",
+        "Context":  "such as government consultations, business information, healthcare services, and library services. Therefore, the study has immediate practical value and also great potential.  RESEARCH SCOPE The purpose of this study is to develop a Retrieval-Augmented Generation (RAG) query"
+    },
+    {
+        "Page":  19,
+        "Start":  24879,
+        "End":  25091,
+        "Text":  "Since almost all knowledge in LLMs is encoded in the model\u0027s parameters as a result of training, LLMs cannot verify independently if their answers correspond to any recent changes in institutions (OpenAI, 2023). ",
+        "Context":  "ate and up-to-date information about, say, university policies, legal rules, and medical practices. Since almost all knowledge in LLMs is encoded in the model\u0027s parameters as a result of training, LLMs cannot verify independently if their answers correspond to any recent changes in institutions (OpenAI, 2023). Researches claim that generative models are prone to the problem of hallucination: generating langua"
+    },
+    {
+        "Page":  19,
+        "Start":  25091,
+        "End":  25286,
+        "Text":  "Researches claim that generative models are prone to the problem of hallucination: generating language-based outputs in the absence of factual grounds (Alansari \u0026 Luqman, 2025; Ji et al., 2023). ",
+        "Context":  "ify independently if their answers correspond to any recent changes in institutions (OpenAI, 2023). Researches claim that generative models are prone to the problem of hallucination: generating language-based outputs in the absence of factual grounds (Alansari \u0026 Luqman, 2025; Ji et al., 2023). Therefore, external retrieval of factual information appears crucial for grounding model-generated a"
+    },
+    {
+        "Page":  19,
+        "Start":  25286,
+        "End":  25393,
+        "Text":  "Therefore, external retrieval of factual information appears crucial for grounding model-generated answers.",
+        "Context":  "anguage-based outputs in the absence of factual grounds (Alansari \u0026 Luqman, 2025; Ji et al., 2023). Therefore, external retrieval of factual information appears crucial for grounding model-generated answers. RETRIEVAL-AUGMENTED GENERATION A retrieval of relevant data is performed by the RAGs from the datab"
+    },
+    {
+        "Page":  19,
+        "Start":  25425,
+        "End":  25596,
+        "Text":  "A retrieval of relevant data is performed by the RAGs from the database, which can be updated and replaced in order to enhance the efficiency of purely parametric models. ",
+        "Context":  "l information appears crucial for grounding model-generated answers. RETRIEVAL-AUGMENTED GENERATION A retrieval of relevant data is performed by the RAGs from the database, which can be updated and replaced in order to enhance the efficiency of purely parametric models. (Lewis et al., 2020). Retrieval-based research involving the application of RAG indicates that retri"
+    },
+    {
+        "Page":  20,
+        "Start":  26558,
+        "End":  26787,
+        "Text":  "Retrieved paragraphs are further introduced into the model in order to facilitate the process of generation of an answer and ensure that additional information can be incorporated in order to improve the accuracy of the answers. ",
+        "Context":  "s and matching or selecting similar items based on semantic similarities. (Karpukhin et al., 2020). Retrieved paragraphs are further introduced into the model in order to facilitate the process of generation of an answer and ensure that additional information can be incorporated in order to improve the accuracy of the answers. (Izacard \u0026 Grave, 2021; Lewis et al., 2020). According to studies, RAG can considerably improve rele"
+    },
+    {
+        "Page":  20,
+        "Start":  26832,
+        "End":  26978,
+        "Text":  "According to studies, RAG can considerably improve relevance and factual accuracy of responses but it depends on retrieval and context selection. ",
+        "Context":  "rated in order to improve the accuracy of the answers. (Izacard \u0026 Grave, 2021; Lewis et al., 2020). According to studies, RAG can considerably improve relevance and factual accuracy of responses but it depends on retrieval and context selection. (Gao et al., 2023). It should be noted that recent studies indicate that iterative retrieval, hybrid"
+    },
+    {
+        "Page":  20,
+        "Start":  27189,
+        "End":  27437,
+        "Text":  "The approach of intensive retrieval involves application of key terms for matching through semantic similarity and aggregation of all relevant paragraphs in order to improve the quality of responses through incorporation of additional information. ",
+        "Context":  "ordering, and query restructuring can enhance the effectiveness of RAG systems. (Gao et al., 2023). The approach of intensive retrieval involves application of key terms for matching through semantic similarity and aggregation of all relevant paragraphs in order to improve the quality of responses through incorporation of additional information. (Izacard \u0026 Grave, 2021; Karpukhin et al., 2020). However, at the same time, the relevance and reliab"
+    },
+    {
+        "Page":  21,
+        "Start":  28670,
+        "End":  28928,
+        "Text":  "Such approaches allowed for effective Q\u0026A in the case of narrow pre-defined domain, but could not be helpful in cases where questions required a broader understanding of context and ambiguity of intentions (Kuhail et al., 2023; Okonkwo \u0026 Ade-Ibijola, 2021). ",
+        "Context":  "eration of educational chatbots mostly relied on rule-based systems or keyword matching techniques. Such approaches allowed for effective Q\u0026A in the case of narrow pre-defined domain, but could not be helpful in cases where questions required a broader understanding of context and ambiguity of intentions (Kuhail et al., 2023; Okonkwo \u0026 Ade-Ibijola, 2021). In recent years, educational chatbots have included LLMs and knowledge retrieval mechanisms. Althoug"
+    },
+    {
+        "Page":  22,
+        "Start":  32645,
+        "End":  32887,
+        "Text":  "Generally speaking, research into multilingual representation learning proved that aligned sentence embeddings enable connecting queries and documents in multiple languages (Conneau et al., 2020; Feng et al., 2022; Reimers \u0026 Gurevych, 2020). ",
+        "Context":  "search for information retrieval accuracy and factuality on college campuses (Singh \u0026 Gupta, 2026). Generally speaking, research into multilingual representation learning proved that aligned sentence embeddings enable connecting queries and documents in multiple languages (Conneau et al., 2020; Feng et al., 2022; Reimers \u0026 Gurevych, 2020). The findings are important for the project as the search for evidence will have to retrieve informat"
+    },
+    {
+        "Page":  28,
+        "Start":  40430,
+        "End":  40710,
+        "Text":  "One of the major innovations in the architecture proposed is that of semantic caching and a multilingual query processing mechanism to address the latency issues and multilinguism challenges seen in other applications of RAGs on campuses (Singh and Gupta, 2026; Gao et al., 2023).",
+        "Context":  "ashScope text-embedding-v4 model and Qwen LLM, all of which are connected via the FastAPI back-end. One of the major innovations in the architecture proposed is that of semantic caching and a multilingual query processing mechanism to address the latency issues and multilinguism challenges seen in other applications of RAGs on campuses (Singh and Gupta, 2026; Gao et al., 2023). The rest of the chapter has been structured as follows: section 3.2 discusses the architecture of t"
+    },
+    {
+        "Page":  29,
+        "Start":  43284,
+        "End":  43569,
+        "Text":  "In reality, the Application Service is implemented using FastAPI, Langchain agentic framework is used as the foundation for Intelligent Processing Module (Chase, 2022), Vector Database works on Chroma technology, and LLM is Tongyi Qwen retrieved via DashScope API (Zhao et al., 2023). ",
+        "Context":  "ows all the components to function in a modular way, enabling updates of each component separately. In reality, the Application Service is implemented using FastAPI, Langchain agentic framework is used as the foundation for Intelligent Processing Module (Chase, 2022), Vector Database works on Chroma technology, and LLM is Tongyi Qwen retrieved via DashScope API (Zhao et al., 2023). Moreover, optimization mechanisms such as multilingual preprocessing of the queries and a semantic c"
+    },
+    {
+        "Page":  30,
+        "Start":  44701,
+        "End":  44915,
+        "Text":  "Then, if the hash value of the ingested file is already stored in ingestion_manifest.json, the file is ignored because hashing is a suggested best practice for de-duplication in production RAG ingestion pipelines. ",
+        "Context":  "ta object needs to be created, consisting of parameters like doc_id, hash, filename, and file_path. Then, if the hash value of the ingested file is already stored in ingestion_manifest.json, the file is ignored because hashing is a suggested best practice for de-duplication in production RAG ingestion pipelines. This is done to avoid the re-indexing of identical files, and thus to maintain consistency across in"
+    },
+    {
+        "Page":  31,
+        "Start":  47004,
+        "End":  47143,
+        "Text":  "After successful indexing, the document hash, chunk_id(s), and indexed_at field are added to ingestion_manifest.json (Alibaba Cloud, 2025).",
+        "Context":  "h their corresponding metadata as collections in a local Chroma Vector Database (Gao et al., 2023). After successful indexing, the document hash, chunk_id(s), and indexed_at field are added to ingestion_manifest.json (Alibaba Cloud, 2025). MULTILINGUAL QUERY PROCESSING One of the crucial challenges for applying an intelligent assistant f"
+    },
+    {
+        "Page":  32,
+        "Start":  47823,
+        "End":  47947,
+        "Text":  "In order to tackle this issue, the FTSM-RAG model employs a multilingual query processing pipeline, depicted in Figure 3.3. ",
+        "Context":  "n Chroma. Ultimately, this results in suboptimal performance of the system (Singh and Gupta, 2026). In order to tackle this issue, the FTSM-RAG model employs a multilingual query processing pipeline, depicted in Figure 3.3. This pipeline normalizes and enriches all incoming requests prior to executing the retrieval operati"
+    },
+    {
+        "Page":  33,
+        "Start":  49758,
+        "End":  49869,
+        "Text":  "retrieval module, and duplicates with regard to page_content are filtered out before context extraction occurs.",
+        "Context":  "et al., 2023; Neupane et al., 2024). The set of alternative queries is subsequently passed to the  retrieval module, and duplicates with regard to page_content are filtered out before context extraction occurs. Figure 3.3 Cross-Lingual Query Alignment and Expans"
+    },
+    {
+        "Page":  33,
+        "Start":  51086,
+        "End":  51280,
+        "Text":  "In particular, in case there is a need for domain knowledge, the agent decides to call the rag_summarize tool; otherwise, the agent provides the response without calling any tools (Chase, 2022).",
+        "Context":  "l. (2022). Upon receiving a query from the student, the agent conducts a ReAct-based tool decision. In particular, in case there is a need for domain knowledge, the agent decides to call the rag_summarize tool; otherwise, the agent provides the response without calling any tools (Chase, 2022). Upon invocation, the rag_summarize tool receives the aligned and expanded query variants produced b"
+    },
+    {
+        "Page":  35,
+        "Start":  54854,
+        "End":  54991,
+        "Text":  "Finally, the top-6 documents ranked by the cross-encoder are selected as the final retrieval context and assembled for answer generation.",
+        "Context":  "set produced by the upstream fusion stage rather than to the full corpus (Nogueira and Cho, 2019). Finally, the top-6 documents ranked by the cross-encoder are selected as the final retrieval context and assembled for answer generation. Both the simulated context and query are sent to the Qwen Large Language Model, which produces"
+    },
+    {
+        "Page":  37,
+        "Start":  55719,
+        "End":  56015,
+        "Text":  "One of the recurring limitations of implementing standard RAG architectures in environments with a large number of educational interactions is the additional computational costs associated with repeating embedding, retrieving, and querying operations for semantically equivalent student queries. ",
+        "Context":  "e consistency in multi-turn conversations (Zhao et al., 2023). SEMANTIC CACHE OPTIMIZATION STRATEGY One of the recurring limitations of implementing standard RAG architectures in environments with a large number of educational interactions is the additional computational costs associated with repeating embedding, retrieving, and querying operations for semantically equivalent student queries. Often, users send requests asking the same informational question but in different terms: for instan"
+    },
+    {
+        "Page":  37,
+        "Start":  56015,
+        "End":  56230,
+        "Text":  "Often, users send requests asking the same informational question but in different terms: for instance, \"What are the requirements for the Master\u0027s program?\" and \"What do I need to apply for the Master\u0027s program?\". ",
+        "Context":  "peating embedding, retrieving, and querying operations for semantically equivalent student queries. Often, users send requests asking the same informational question but in different terms: for instance, \"What are the requirements for the Master\u0027s program?\" and \"What do I need to apply for the Master\u0027s program?\". In the current implementation, RAG pipelines do not understand whether two queries are semantically"
+    },
+    {
+        "Page":  37,
+        "Start":  57085,
+        "End":  57249,
+        "Text":  "Then, the system calculates the similarity of this query vector to all cached vectors available in semantic_cache.json by performing cosine similarity measurement. ",
+        "Context":  "em first generates an embedding vector out of it with the use of DashScope text-embedding-v4 model. Then, the system calculates the similarity of this query vector to all cached vectors available in semantic_cache.json by performing cosine similarity measurement. By finding the angle between two vectors, cosine similarity produces a numeric result ranging from 0"
+    },
+    {
+        "Page":  37,
+        "Start":  57655,
+        "End":  57900,
+        "Text":  "Otherwise, cache miss occurs, the full RAG pipeline is executed as described above in section 3.5, and after generating the response, the new query vector, the answer, and the current timestamp get added to semantic_cache.json for future usage. ",
+        "Context":  "g answer and thus skips all other retrieval and generation stages (it is referred to as cache hit). Otherwise, cache miss occurs, the full RAG pipeline is executed as described above in section 3.5, and after generating the response, the new query vector, the answer, and the current timestamp get added to semantic_cache.json for future usage. The threshold of 0.92 was chosen in order to minimize chances of misclassification: values lower tha"
+    },
+    {
+        "Page":  37,
+        "Start":  57900,
+        "End":  58156,
+        "Text":  "The threshold of 0.92 was chosen in order to minimize chances of misclassification: values lower than the threshold may cause answering irrelevant queries with the help of the cache, while higher values would make hit rate significantly low (Qdrant, 2024).",
+        "Context":  "ry vector, the answer, and the current timestamp get added to semantic_cache.json for future usage. The threshold of 0.92 was chosen in order to minimize chances of misclassification: values lower than the threshold may cause answering irrelevant queries with the help of the cache, while higher values would make hit rate significantly low (Qdrant, 2024). In order to prevent unbounded cache storage growth and avoid stale answers, two constraints were im"
+    },
+    {
+        "Page":  38,
+        "Start":  58157,
+        "End":  58267,
+        "Text":  "In order to prevent unbounded cache storage growth and avoid stale answers, two constraints were implemented. ",
+        "Context":  "th the help of the cache, while higher values would make hit rate significantly low (Qdrant, 2024). In order to prevent unbounded cache storage growth and avoid stale answers, two constraints were implemented. First, every item is assigned with Time-To-Live expiration period according to the timestamp, and th"
+    },
+    {
+        "Page":  38,
+        "Start":  59083,
+        "End":  59245,
+        "Text":  "As stated previously, all these are some of the most commonly mentioned advantages of using semantic cache in RAG-based systems (Qdrant, 2024; Gao et al., 2023). ",
+        "Context":  "odel, reduced latency of repeated requests, and increased system throughput under user concurrency. As stated previously, all these are some of the most commonly mentioned advantages of using semantic cache in RAG-based systems (Qdrant, 2024; Gao et al., 2023). To enable runtime monitoring of cache performance metrics, /api/cache/stats endpoint is provided tha"
+    },
+    {
+        "Page":  38,
+        "Start":  59245,
+        "End":  59410,
+        "Text":  "To enable runtime monitoring of cache performance metrics, /api/cache/stats endpoint is provided that shows hit count, miss count, and hit rate metrics cumulatively.",
+        "Context":  "mentioned advantages of using semantic cache in RAG-based systems (Qdrant, 2024; Gao et al., 2023). To enable runtime monitoring of cache performance metrics, /api/cache/stats endpoint is provided that shows hit count, miss count, and hit rate metrics cumulatively. SYSTEM IMPLEMENTATION DETAILS The FTSM-RAG system implementation is a lightweight standalone applic"
+    },
+    {
+        "Page":  38,
+        "Start":  59441,
+        "End":  59608,
+        "Text":  "The FTSM-RAG system implementation is a lightweight standalone application that runs locally without reliance on any external infrastructure except the DashScope API. ",
+        "Context":  "that shows hit count, miss count, and hit rate metrics cumulatively. SYSTEM IMPLEMENTATION DETAILS The FTSM-RAG system implementation is a lightweight standalone application that runs locally without reliance on any external infrastructure except the DashScope API. Specifically, the FTSM-RAG implementation follows the modular design principles where the web backen"
+    },
+    {
+        "Page":  38,
+        "Start":  59837,
+        "End":  60021,
+        "Text":  "The entrance point of the application is web_app.py, which initializes the FastAPI application, adds all routes, serves the static frontend and opens up the locally hosted web service.",
+        "Context":  "eline, and data storage are encapsulated into distinct modules interfaced via clear-cut boundaries. The entrance point of the application is web_app.py, which initializes the FastAPI application, adds all routes, serves the static frontend and opens up the locally hosted web service. FastAPI was chosen as the web backend for the following reasons. First, the capability of handling"
+    },
+    {
+        "Page":  38,
+        "Start":  60355,
+        "End":  60490,
+        "Text":  "Second, the tight integration of FastAPI with the Python ecosystem allows seamless work with LangChain, Chroma, and the DashScope SDK. ",
+        "Context":  "This is crucial for chat interface implementations that feature response delays of several seconds. Second, the tight integration of FastAPI with the Python ecosystem allows seamless work with LangChain, Chroma, and the DashScope SDK. Finally, request validation provided by the framework eases implementation and maintenance efforts."
+    },
+    {
+        "Page":  39,
+        "Start":  61556,
+        "End":  61799,
+        "Text":  "The stream_chat_answer(...) method in services/chat_service.py handles the chat message: invokes semantic cache check, performs agent execution, persists the conversation, and updates the cache as a part of one single request processing flow. ",
+        "Context":  "026). This solution is suitable for RAG chat interfaces where client-server communication suffices. The stream_chat_answer(...) method in services/chat_service.py handles the chat message: invokes semantic cache check, performs agent execution, persists the conversation, and updates the cache as a part of one single request processing flow. Recent chat messages are fetched via the ConversationStore object and supplied to the agent as the s"
+    },
+    {
+        "Page":  40,
+        "Start":  63016,
+        "End":  63166,
+        "Text":  "The runtime configuration options such as models names and API keys are saved and loaded from the .env file by means of services/settings_service.py. ",
+        "Context":  "l is set to qwen3-max, but it can be set to any value through CHAT_MODEL_NAME environment variable. The runtime configuration options such as models names and API keys are saved and loaded from the .env file by means of services/settings_service.py. Thus, administrators can change system parameters via Settings Page without restarting the applicati"
+    },
+    {
+        "Page":  40,
+        "Start":  63742,
+        "End":  64007,
+        "Text":  "Semantic cache is persisted in the data/ukm_ftsm/semantic_cache.json file, where each entry contains the original question, generated answer, embedding vector, and created_at time, having a similarity threshold of 0.92, TTL of seven days, and limit of 500 entries. ",
+        "Context":  "y of messages. Each message keeps information about the role, message content, and created_at time. Semantic cache is persisted in the data/ukm_ftsm/semantic_cache.json file, where each entry contains the original question, generated answer, embedding vector, and created_at time, having a similarity threshold of 0.92, TTL of seven days, and limit of 500 entries. Ingestion metadata are logged in data/ukm_ftsm/ingestion_manifest.json. The Chroma vector store is c"
+    },
+    {
+        "Page":  41,
+        "Start":  66874,
+        "End":  67208,
+        "Text":  "As a whole, the methodological elements introduced in this chapter tackle the three key challenges stated in Chapter 2: the necessity to ensure factual correctness of information provided in a particular domain, multilingual query processing capabilities, as well as efficient performance of the system under repeated query patterns. ",
+        "Context":  "API, module structure of the project, as well as design of the local JSON and Chroma data storage. As a whole, the methodological elements introduced in this chapter tackle the three key challenges stated in Chapter 2: the necessity to ensure factual correctness of information provided in a particular domain, multilingual query processing capabilities, as well as efficient performance of the system under repeated query patterns. All technical aspects covered in this chapter provide a technical basis for evaluating the performan"
+    }
+]

@@ -4,13 +4,13 @@ FTSM-RAG is a FastAPI-based **Retrieval-Augmented Generation (RAG)** assistant f
 
 ## Key Features
 
-- **Three-stage retrieval pipeline** — Multi-query vector search (ChromaDB) + BM25 keyword search, fused with Reciprocal Rank Fusion (RRF), then re-ranked by DashScope `gte-rerank-v2`
+- **Three-stage retrieval pipeline** — Multi-query vector search (Qdrant) + BM25 keyword search, fused with Reciprocal Rank Fusion (RRF), then re-ranked by DashScope `gte-rerank-v2`
 - **Semantic cache** — Cosine-similarity cache (threshold 0.92) avoids redundant LLM calls; tracks hit/miss rate at runtime
 - **Semantic cache experiment** — Measures no-cache latency, cached latency, hit rate, and near-duplicate question reuse
 - **LangChain ReAct agent** — Tools include `rag_summarize` (retrieval + answer) and a web-search fallback
 - **Streaming responses** — SSE-based character streaming; no WebSocket complexity needed
 - **Collapsible source cards** — Each answer shows cited sources with file name, chunk index, excerpt, and source credibility label
-- **Conversation history (backend)** — Per-file JSON storage under `data/ukm_ftsm/conversations/`; unified DELETE API
+- **Conversation history (backend)** — Per-file JSON storage under `data/ukm_ftsm/conversations/`; unified DELETE API (includes 'Clear All Chat History' support)
 - **Indexing status polling** — Upload → auto-index; management page shows live running / pending / success / error
 - **Knowledge base stats** — `/api/knowledge/stats` returns doc count, chunk count, index version, source-type distribution, last indexed time, and cache size
 - **Cache stats** — `/api/cache/stats` returns hit count, miss count, hit rate; shown on management page
@@ -31,10 +31,10 @@ FTSM-RAG is a FastAPI-based **Retrieval-Augmented Generation (RAG)** assistant f
 ├── agent/                   # LangChain ReAct agent and tool definitions
 ├── rag/
 │   ├── rag_service.py       # BM25 + Vector + RRF + Reranker pipeline
-│   ├── vector_store.py      # ChromaDB wrapper, incremental indexing
+│   ├── vector_store.py      # Qdrant wrapper, incremental indexing
 │   └── ingestion.py         # Document loading, chunking, manifest
 ├── model/                   # Chat and embedding model factories
-├── config/                  # YAML config (rag.yml, chroma.yml, scheduler.yml)
+├── config/                  # YAML config (rag.yml, qdrant.yml, scheduler.yml)
 ├── prompts/                 # System and RAG prompt templates
 ├── scripts/
 │   ├── scrape_ftsm_website.py   # FTSM website crawler (dev-only, not bundled)
@@ -46,7 +46,7 @@ FTSM-RAG is a FastAPI-based **Retrieval-Augmented Generation (RAG)** assistant f
 ├── data/ukm_ftsm/
 │   ├── conversations/       # Per-file conversation JSON + index.json
 │   └── semantic_cache.json  # Persisted semantic cache
-└── chroma_db_ftsm/          # ChromaDB vector store (shipped with the release)
+└── qdrant_db_ftsm/          # Qdrant vector store (shipped with the release)
 ```
 
 ## Runtime Stack
@@ -56,10 +56,10 @@ FTSM-RAG is a FastAPI-based **Retrieval-Augmented Generation (RAG)** assistant f
 | Web backend | FastAPI + Uvicorn |
 | Frontend | Static HTML/CSS/JS (SSE streaming, no framework) |
 | Agent framework | LangChain ReAct (`create_react_agent`) |
-| Retrieval | ChromaDB (vector) + BM25 → RRF → DashScope `gte-rerank-v2` |
+| Retrieval | Qdrant (vector) + BM25 → RRF → DashScope `gte-rerank-v2` |
 | Chat model | DashScope Tongyi (default `qwen3-max`, switchable in UI) |
 | Embedding model | DashScope `text-embedding-v3` |
-| Vector store | Chroma via `langchain-chroma` |
+| Vector store | Qdrant via `langchain-qdrant` |
 | Semantic cache | Cosine similarity cache, persisted to JSON |
 | Conversation storage | Per-file JSON directory (no database required) |
 | Image text extraction | DashScope Qwen-VL + Pillow |
@@ -104,7 +104,7 @@ Copy-Item .env.example .env
 uvicorn web_app:app --host 127.0.0.1 --port 8000
 ```
 
-The management page includes an **Update from FTSM site** button. Source builds use Playwright when Chromium is installed; packaged EXE builds use a lightweight HTTP/BeautifulSoup fallback so the button can still refresh `data/ukm_ftsm/ftsm_official_website.txt` and rebuild Chroma without bundling Chromium. Scheduled crawling is disabled by default in `config/scheduler.yml` to keep desktop/demo startup responsive. Crawler seed URLs and allowed URL prefixes are configured in `config/crawler.yml`.
+The management page includes an **Update from FTSM site** button. Source builds use Playwright when Chromium is installed; packaged EXE builds use a lightweight HTTP/BeautifulSoup fallback so the button can still refresh `data/ukm_ftsm/ftsm_official_website.txt` and rebuild Qdrant without bundling Chromium. Scheduled crawling is disabled by default in `config/scheduler.yml` to keep desktop/demo startup responsive. Crawler seed URLs and allowed URL prefixes are configured in `config/crawler.yml`.
 
 Open <http://127.0.0.1:8000/>. If no API key is set, you are redirected to `/settings` automatically.
 
@@ -129,7 +129,7 @@ Metrics reported: Source Hit Rate, first-hit rank, MRR, Precision@5, Recall@5, A
 python scripts/encoding_health.py --json results/encoding_health.json --fail-on-warning
 ```
 
-This scans the knowledge base and project text files for common mojibake markers before the documents are indexed into ChromaDB. TXT loading also records the detected encoding and a mojibake score in chunk metadata.
+This scans the knowledge base and project text files for common mojibake markers before the documents are indexed into Qdrant. TXT loading also records the detected encoding and a mojibake score in chunk metadata.
 
 ## Running the Cache Experiment
 
@@ -162,7 +162,7 @@ Output: `dist/FTSM-RAG/` and `dist/FTSM-RAG-windows.zip`. Send the zip file or z
 
 **Packaged EXE differences from source:**
 - Scheduled Playwright crawler is **automatically disabled** (Playwright not bundled)
-- ChromaDB vector store and knowledge-base files are copied next to the EXE on first run
+- Qdrant vector store and knowledge-base files are copied next to the EXE on first run
 - Edge WebView2 runtime required (pre-installed on Windows 11 / recent Windows 10)
 
 If WebView2 is unavailable, the EXE falls back to the default browser. Force browser mode: set `FTSM_BROWSER_MODE=1`.

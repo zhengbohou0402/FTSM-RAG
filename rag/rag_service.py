@@ -1,34 +1,29 @@
 """
 RAG 摘要服务：检索参考文档，并将问题与上下文一并发送给模型生成最终回答。
 
-检索流程（三阶段）：
-  1. 多查询向量检索 + BM25 关键词检索（扩大召回）
-  2. RRF（Reciprocal Rank Fusion）融合排序
-  3. DashScope gte-rerank-v2 精排（可选，配置 rerank_top_n > 0 时启用）
+检索流程：
+  1. Qdrant 原生混合检索（多查询并发）
+  2. DashScope gte-rerank-v2 精排（可选，配置 rerank_top_n > 0 时启用）
 """
 
 import os
 import re
-import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 from langchain_core.documents import Document
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import PromptTemplate
-from rank_bm25 import BM25Okapi
 
 from model.factory import get_chat_model
 from rag.vector_store import VectorStoreService
 from utils.prompt_loader import load_rag_prompts
 from utils.query_preprocessor import preprocessor
+from utils.config_handler import qdrant_conf
 
 MAX_SOURCES = 5
 MAX_SOURCE_EXCERPT_CHARS = 220
 
-# 向量检索和 BM25 各自最多召回条数（RRF 前）
-_VECTOR_K = 12
-_BM25_K = 12
 # Reranker 最终保留 top-N 给 LLM（0 = 禁用 reranker）
 _RERANK_TOP_N = 6
 
@@ -88,27 +83,6 @@ STOP_WORDS = {
     "which",
     "with",
 }
-
-
-def _rrf_fuse(
-    ranked_lists: list[list[Document]],
-    k: int = 60,
-) -> list[Document]:
-    """
-    Reciprocal Rank Fusion：把多个已排序列表融合为单一排序。
-    用 page_content[:100] 作为文档唯一键去重。
-    """
-    scores: dict[str, float] = {}
-    doc_map: dict[str, Document] = {}
-
-    for ranked in ranked_lists:
-        for rank, doc in enumerate(ranked, start=1):
-            key = doc.page_content[:100]
-            scores[key] = scores.get(key, 0.0) + 1.0 / (k + rank)
-            doc_map[key] = doc
-
-    sorted_keys = sorted(scores, key=lambda k_: scores[k_], reverse=True)
-    return [doc_map[k] for k in sorted_keys]
 
 
 def _rerank(query: str, docs: list[Document], top_n: int) -> list[Document]:
@@ -343,14 +317,10 @@ def _has_retrieval_signal(query: str, docs: list[Document]) -> bool:
 class RagSummarizeService(object):
     def __init__(self):
         self.vector_store = VectorStoreService()
-        self._vector_retriever = self.vector_store.get_retriever(k=_VECTOR_K)
+        self._retriever = self.vector_store.get_retriever(k=qdrant_conf.get("hybrid_search_limit", 20))
         self.prompt_text = load_rag_prompts()
         self.prompt_template = PromptTemplate.from_template(self.prompt_text)
         self.chain = None
-        # BM25 索引在首次调用时懒加载；用锁保护并发初始化
-        self._bm25: BM25Okapi | None = None
-        self._bm25_docs: list[Document] = []
-        self._bm25_lock = threading.Lock()
 
     # ── Chain ────────────────────────────────────────────────────────────────
 
@@ -360,47 +330,12 @@ class RagSummarizeService(object):
             self.chain = self.prompt_template | model | StrOutputParser()
         return self.chain
 
-    # ── BM25 ─────────────────────────────────────────────────────────────────
-
-    def _ensure_bm25(self) -> None:
-        """懒加载 BM25 索引（从向量库拉全量文档）。线程安全。"""
-        if self._bm25 is not None:
-            return
-        with self._bm25_lock:
-            # 双重检查：加锁后再确认未被其他线程初始化
-            if self._bm25 is not None:
-                return
-            try:
-                all_docs_raw = self.vector_store.vector_store.get(include=["documents", "metadatas"])
-                texts = all_docs_raw.get("documents") or []
-                metas = all_docs_raw.get("metadatas") or []
-                self._bm25_docs = [
-                    Document(page_content=t, metadata=m)
-                    for t, m in zip(texts, metas)
-                    if t
-                ]
-                tokenized = [doc.page_content.lower().split() for doc in self._bm25_docs]
-                self._bm25 = BM25Okapi(tokenized) if tokenized else None
-            except Exception:
-                self._bm25_docs = []
-                self._bm25 = None
-
-    def _bm25_retrieve(self, query: str, top_k: int) -> list[Document]:
-        """BM25 关键词检索，返回 top_k 条。"""
-        self._ensure_bm25()
-        if self._bm25 is None or not self._bm25_docs:
-            return []
-        tokens = query.lower().split()
-        scores = self._bm25.get_scores(tokens)
-        top_indices = sorted(range(len(scores)), key=lambda i: scores[i], reverse=True)[:top_k]
-        return [self._bm25_docs[i] for i in top_indices if scores[i] > 0]
-
     # ── 主检索入口 ────────────────────────────────────────────────────────────
 
-    def _vector_retrieve_all(self, queries: list[str]) -> list[Document]:
-        """对所有扩展查询并发地执行向量检索，去重后合并。"""
+    def _hybrid_retrieve_all(self, queries: list[str]) -> list[Document]:
+        """对所有扩展查询并发地执行混合检索，去重后合并。"""
         def _single(q: str) -> list[Document]:
-            return self._vector_retriever.invoke(q)
+            return self._retriever.invoke(q)
 
         docs: list[Document] = []
         seen: set[str] = set()
@@ -419,29 +354,21 @@ class RagSummarizeService(object):
 
     def retriever_docs(self, query: str) -> list[Document]:
         """
-        三阶段并行检索：
-          1. 向量检索（多查询并发）与 BM25 检索同步并行执行
-          2. RRF 融合
-          3. Reranker 精排（_RERANK_TOP_N > 0 时）
+        两阶段检索：
+          1. Qdrant 混合检索（Dense向量 + Sparse向量并行，底层自含 RRF，支持多查询并发）
+          2. Reranker 精排（_RERANK_TOP_N > 0 时）
         """
         queries = preprocessor.process(query)
 
-        # ① 向量检索 与 BM25 检索 并行执行（ThreadPoolExecutor）
-        with ThreadPoolExecutor(max_workers=2) as pool:
-            vec_future = pool.submit(self._vector_retrieve_all, queries)
-            bm25_future = pool.submit(self._bm25_retrieve, query, _BM25_K)
-            vector_ranked = vec_future.result()
-            bm25_ranked = bm25_future.result()
+        # ① Qdrant 原生混合检索（多查询并发，并合并结果）
+        hybrid_ranked = self._hybrid_retrieve_all(queries)
 
-        # ② RRF 融合
-        fused = _rrf_fuse([vector_ranked, bm25_ranked])
-
-        # ③ Reranker 精排
-        if _RERANK_TOP_N > 0 and fused:
-            reranked = _rerank(query, fused, _RERANK_TOP_N)
+        # ② Reranker 精排
+        if _RERANK_TOP_N > 0 and hybrid_ranked:
+            reranked = _rerank(query, hybrid_ranked, _RERANK_TOP_N)
             return _apply_source_weight(_apply_query_boost(query, reranked))
 
-        return _apply_source_weight(_apply_query_boost(query, fused[:max(_RERANK_TOP_N, 6)]))
+        return _apply_source_weight(_apply_query_boost(query, hybrid_ranked[:max(_RERANK_TOP_N, 6)]))
 
     # ── 格式化 ────────────────────────────────────────────────────────────────
 

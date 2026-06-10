@@ -2,9 +2,11 @@ import hashlib
 import json
 import time
 from pathlib import Path
+import threading
 
 import urllib3
-from langchain_chroma import Chroma
+from qdrant_client import QdrantClient
+from langchain_qdrant import QdrantVectorStore, FastEmbedSparse, RetrievalMode
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
@@ -17,7 +19,7 @@ from rag.ingestion import (
     stable_file_doc_id,
     update_manifest_index_state,
 )
-from utils.config_handler import chroma_conf, rag_conf
+from utils.config_handler import qdrant_conf, rag_conf
 from utils.file_handler import (
     image_loader,
     listdir_with_allowed_type,
@@ -32,18 +34,58 @@ urllib3.util.connection.HAS_IPV6 = False
 BATCH_SIZE = 20
 
 
+_qdrant_client_instance = None
+_qdrant_client_lock = threading.Lock()
+
+def get_shared_qdrant_client() -> QdrantClient:
+    global _qdrant_client_instance
+    with _qdrant_client_lock:
+        if _qdrant_client_instance is None:
+            db_path = get_abs_path(qdrant_conf["persist_directory"])
+            _qdrant_client_instance = QdrantClient(path=db_path)
+            
+            # Auto-create collection if it doesn't exist
+            collection_name = qdrant_conf["collection_name"]
+            if not _qdrant_client_instance.collection_exists(collection_name):
+                logger.info(f"Collection {collection_name} does not exist. Creating it.")
+                from qdrant_client.http import models as qdrant_models
+                embed_model = get_embed_model()
+                try:
+                    sample_vector = embed_model.embed_query("test")
+                    vector_size = len(sample_vector)
+                except Exception:
+                    vector_size = 1024
+                _qdrant_client_instance.create_collection(
+                    collection_name=collection_name,
+                    vectors_config=qdrant_models.VectorParams(
+                        size=vector_size,
+                        distance=qdrant_models.Distance.COSINE
+                    ),
+                    sparse_vectors_config={
+                        "fast-sparse": qdrant_models.SparseVectorParams()
+                    }
+                )
+                logger.info(f"Collection {collection_name} created successfully.")
+        return _qdrant_client_instance
+
+
 class VectorStoreService:
     def __init__(self):
-        self.vector_store = Chroma(
-            collection_name=chroma_conf["collection_name"],
-            embedding_function=get_embed_model(),
-            persist_directory=get_abs_path(chroma_conf["persist_directory"]),
+        client = get_shared_qdrant_client()
+        collection_name = qdrant_conf["collection_name"]
+        self.vector_store = QdrantVectorStore(
+            client=client,
+            collection_name=collection_name,
+            embedding=get_embed_model(),
+            sparse_embedding=FastEmbedSparse(model_name=qdrant_conf["sparse_model"]),
+            retrieval_mode=RetrievalMode.HYBRID,
+            sparse_vector_name="fast-sparse",
         )
 
         self.spliter = RecursiveCharacterTextSplitter(
-            chunk_size=chroma_conf["chunk_size"],
-            chunk_overlap=chroma_conf["chunk_overlap"],
-            separators=chroma_conf["separators"],
+            chunk_size=qdrant_conf["chunk_size"],
+            chunk_overlap=qdrant_conf["chunk_overlap"],
+            separators=qdrant_conf["separators"],
             length_function=len,
         )
 
@@ -55,11 +97,12 @@ class VectorStoreService:
         return {
             "schema_version": 2,
             "embedding_model_name": rag_conf["embedding_model_name"],
-            "collection_name": chroma_conf["collection_name"],
-            "chunk_size": chroma_conf["chunk_size"],
-            "chunk_overlap": chroma_conf["chunk_overlap"],
-            "separators": chroma_conf["separators"],
-            "allowed_file_types": chroma_conf["allow_knowledge_file_type"],
+            "collection_name": qdrant_conf["collection_name"],
+            "chunk_size": qdrant_conf["chunk_size"],
+            "chunk_overlap": qdrant_conf["chunk_overlap"],
+            "separators": qdrant_conf["separators"],
+            "allowed_file_types": qdrant_conf["allow_knowledge_file_type"],
+            "sparse_model": qdrant_conf["sparse_model"],
         }
 
     @staticmethod
@@ -69,7 +112,7 @@ class VectorStoreService:
 
     def get_retriever(self, k: int | None = None):
         return self.vector_store.as_retriever(
-            search_kwargs={"k": k or chroma_conf["k"]}
+            search_kwargs={"k": k or qdrant_conf["k"]}
         )
 
     def _get_file_documents(self, read_path: str) -> list[Document]:
@@ -154,7 +197,9 @@ class VectorStoreService:
 
     @staticmethod
     def _metadata_for_chunk(source, chunk_index: int, loader_metadata: dict) -> dict:
-        chunk_id = f"{source.doc_id}:chunk:{chunk_index}:{source.hash[:12]}"
+        import uuid
+        raw_id = f"{source.doc_id}:chunk:{chunk_index}:{source.hash[:12]}"
+        chunk_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, raw_id))
         metadata = {
             "doc_id": source.doc_id,
             "chunk_id": chunk_id,
@@ -186,8 +231,8 @@ class VectorStoreService:
 
         if target_paths is None:
             allowed_files_path: list[str] = listdir_with_allowed_type(
-                get_abs_path(chroma_conf["data_path"]),
-                tuple(chroma_conf["allow_knowledge_file_type"]),
+                get_abs_path(qdrant_conf["data_path"]),
+                tuple(qdrant_conf["allow_knowledge_file_type"]),
             )
             current_doc_ids = {stable_file_doc_id(path) for path in allowed_files_path}
 
@@ -203,7 +248,7 @@ class VectorStoreService:
                 logger.info(f"[knowledge load] Removed missing source document {doc_id}.")
         else:
             allowed_extensions = tuple(
-                f".{ext.lower().lstrip('.')}" for ext in chroma_conf["allow_knowledge_file_type"]
+                f".{ext.lower().lstrip('.')}" for ext in qdrant_conf["allow_knowledge_file_type"]
             )
             allowed_files_path = [
                 str(Path(path).resolve())
@@ -246,9 +291,11 @@ class VectorStoreService:
                     )
                     continue
 
+                import uuid
                 chunk_ids: list[str] = []
                 for index, doc in enumerate(split_document):
-                    chunk_id = f"{source.doc_id}:chunk:{index}:{source.hash[:12]}"
+                    raw_id = f"{source.doc_id}:chunk:{index}:{source.hash[:12]}"
+                    chunk_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, raw_id))
                     chunk_ids.append(chunk_id)
                     doc.metadata = self._metadata_for_chunk(source, index, doc.metadata)
 

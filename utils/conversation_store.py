@@ -101,6 +101,20 @@ class ConversationStore:
                 self._save_index(new_index)
         return found
 
+    def delete_all(self) -> None:
+        """删除所有对话文件和索引"""
+        with self._lock:
+            index = self._load_index()
+            for item in index:
+                p = self._conv_path(item.get("id", ""))
+                if p and p.exists():
+                    try:
+                        p.unlink()
+                    except OSError:
+                        pass
+            self._save_index([])
+
+
     def append_turn(
         self,
         conversation_id: str,

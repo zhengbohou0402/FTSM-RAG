@@ -1,0 +1,13 @@
+collection_name: ftsm_rag_agent
+persist_directory: qdrant_db_ftsm
+k: 6
+data_path: data/ukm_ftsm
+md5_hex_store: md5_ftsm.text
+allow_knowledge_file_type: ["txt", "pdf", "png", "jpg", "jpeg", "webp", "gif"]
+
+chunk_size: 800
+chunk_overlap: 120
+separators: ["\n\n", "\n", ". ", "! ", "? ", "; ", ": ", ", ", " ", ""]
+
+sparse_model: Qdrant/bm25
+hybrid_search_limit: 20

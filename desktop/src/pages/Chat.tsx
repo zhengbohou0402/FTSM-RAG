@@ -1,13 +1,5 @@
 import { useEffect, useRef } from "react";
-import { Button, Layout } from "antd";
-import {
-  AppstoreOutlined,
-  BulbFilled,
-  BulbOutlined,
-  DashboardOutlined,
-  SettingOutlined,
-} from "@ant-design/icons";
-import { Link } from "react-router-dom";
+import { Layout } from "antd";
 import Sidebar from "../components/Sidebar";
 import ChatMessage from "../components/ChatMessage";
 import Composer from "../components/Composer";
@@ -16,12 +8,7 @@ import { useConversations } from "../hooks/useConversations";
 
 const { Sider, Content, Header } = Layout;
 
-interface Props {
-  isDark: boolean;
-  onToggleTheme: () => void;
-}
-
-export default function Chat({ isDark, onToggleTheme }: Props) {
+export default function Chat() {
   const {
     messages,
     streaming,
@@ -31,7 +18,7 @@ export default function Chat({ isDark, onToggleTheme }: Props) {
     clearMessages,
     setConversationId,
   } = useChat();
-  const { conversations, loading: convLoading, refresh, create, remove } = useConversations();
+  const { conversations, loading: convLoading, refresh, create, remove, removeAll } = useConversations();
   const chatRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -43,6 +30,22 @@ export default function Chat({ isDark, onToggleTheme }: Props) {
       chatRef.current.scrollTop = chatRef.current.scrollHeight;
     }
   }, [messages]);
+
+  useEffect(() => {
+    const handleNew = () => {
+      void handleNewChat();
+    };
+    const handleClearAll = () => {
+      removeAll();
+      clearMessages();
+    };
+    window.addEventListener("new-chat", handleNew);
+    window.addEventListener("clear-chat", handleClearAll);
+    return () => {
+      window.removeEventListener("new-chat", handleNew);
+      window.removeEventListener("clear-chat", handleClearAll);
+    };
+  }, [clearMessages, removeAll]);
 
   const handleNewChat = async () => {
     const conv = await create();
@@ -60,7 +63,7 @@ export default function Chat({ isDark, onToggleTheme }: Props) {
   };
 
   return (
-    <Layout style={{ height: "100vh" }}>
+    <Layout style={{ height: "100%" }}>
       <Sider
         width={280}
         breakpoint="lg"
@@ -77,18 +80,7 @@ export default function Chat({ isDark, onToggleTheme }: Props) {
             onNew={handleNewChat}
             onDelete={handleDeleteConv}
           />
-          <div className="sidebar-foot">
-            <Button type="text" icon={isDark ? <BulbFilled /> : <BulbOutlined />} onClick={onToggleTheme} />
-            <Link to="/settings">
-              <Button type="text" icon={<SettingOutlined />} />
-            </Link>
-            <Link to="/manage">
-              <Button type="text" icon={<AppstoreOutlined />} />
-            </Link>
-            <Link to="/dashboard">
-              <Button type="text" icon={<DashboardOutlined />} />
-            </Link>
-          </div>
+
         </div>
       </Sider>
       <Layout className="chat-main">

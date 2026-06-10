@@ -1156,3 +1156,199 @@ html, body, #root {
     max-width: 86%;
   }
 }
+
+/* ── Top Menu Bar ── */
+.top-menu-bar {
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--topbar-bg, #f3f3f3);
+  border-bottom: 1px solid var(--border-color, #e5e7eb);
+  padding: 0 12px;
+  user-select: none;
+  font-size: 13px;
+  flex-shrink: 0;
+  z-index: 1000;
+}
+
+.top-menu-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.top-menu-logo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  color: var(--text-primary, #1a1a2e);
+  font-size: 12px;
+}
+
+.top-menu-items {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.top-menu-item-btn {
+  background: transparent;
+  border: none;
+  padding: 4px 8px;
+  font-size: 12px;
+  color: var(--text-muted, #616161);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+}
+
+.top-menu-item-btn:hover,
+.top-menu-item-btn.ant-dropdown-open {
+  background: var(--topbar-hover, #e5e5e5);
+  color: var(--text-primary, #1a1a2e);
+}
+
+.top-menu-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.top-menu-shortcut {
+  margin-left: auto;
+  color: #888;
+  font-size: 11px;
+  padding-left: 16px;
+}
+
+[data-theme="dark"] {
+  --topbar-bg: #181824;
+  --topbar-hover: #2d2d3d;
+}
+
+/* ── Glassmorphism Overrides ── */
+:root {
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.5);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+  --glass-blur: blur(16px);
+  --app-bg: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+}
+
+[data-theme="dark"] {
+  --glass-bg: rgba(30, 30, 46, 0.65);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  --app-bg: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+}
+
+body, #root {
+  background: var(--app-bg) !important;
+  background-attachment: fixed !important;
+}
+
+/* Make top menu bar glass */
+.top-menu-bar {
+  background: var(--glass-bg) !important;
+  backdrop-filter: var(--glass-blur) !important;
+  -webkit-backdrop-filter: var(--glass-blur) !important;
+  border-bottom: 1px solid var(--glass-border) !important;
+}
+
+/* Unify Shell Containers */
+.admin-shell, .manage-shell, .settings-shell, .dash-shell {
+  background: transparent !important;
+}
+
+/* Glass Panels */
+.admin-panel, .manage-card, .settings-card, .dash-info-card, .pipeline, .stats-card, .manage-status-panel, .manage-cache-card, .pipeline-step, .source-type-row {
+  background: var(--glass-bg) !important;
+  backdrop-filter: var(--glass-blur) !important;
+  -webkit-backdrop-filter: var(--glass-blur) !important;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: var(--glass-shadow) !important;
+  border-radius: 16px !important;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.stats-card:hover, .manage-card:hover, .admin-panel:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08) !important;
+}
+[data-theme="dark"] .stats-card:hover, [data-theme="dark"] .manage-card:hover, [data-theme="dark"] .admin-panel:hover {
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Chat Overrides */
+.chat-sidebar {
+  background: var(--glass-bg) !important;
+  backdrop-filter: var(--glass-blur) !important;
+  -webkit-backdrop-filter: var(--glass-blur) !important;
+  border-right: 1px solid var(--glass-border) !important;
+}
+
+.chat-header {
+  background: transparent !important;
+  border-bottom: 1px solid var(--glass-border) !important;
+}
+
+.chat-content, .chat-footer, .chat-main {
+  background: transparent !important;
+}
+
+.composer {
+  background: var(--glass-bg) !important;
+  backdrop-filter: var(--glass-blur) !important;
+  -webkit-backdrop-filter: var(--glass-blur) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 26px !important;
+  box-shadow: var(--glass-shadow) !important;
+}
+
+.message-user .message-bubble {
+  background: var(--glass-bg) !important;
+  backdrop-filter: var(--glass-blur) !important;
+  -webkit-backdrop-filter: var(--glass-blur) !important;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04) !important;
+}
+[data-theme="dark"] .message-user .message-bubble {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* ── Phase 2 Enhancements ── */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+/* Blinking cursor for streaming */
+.markdown-body p:last-child::after {
+  content: '|';
+  animation: blink 1s step-end infinite;
+  color: var(--accent);
+  font-weight: bold;
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* Source cards hover */
+.source-glass-card {
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.source-glass-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.06) !important;
+}
+[data-theme="dark"] .source-glass-card:hover {
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3) !important;
+}
+

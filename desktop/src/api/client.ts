@@ -152,6 +152,7 @@ export const api = {
     create: () => request<Conversation>("/api/conversations", { method: "POST" }),
     get: (id: string) => request<Conversation>(`/api/conversations/${id}`),
     delete: (id: string) => request<{ ok: boolean }>(`/api/conversations/${id}`, { method: "DELETE" }),
+    deleteAll: () => request<{ ok: boolean }>("/api/conversations", { method: "DELETE" }),
   },
 
   // Settings

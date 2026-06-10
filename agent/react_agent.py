@@ -1,18 +1,15 @@
-from langchain.agents import create_agent
+from langgraph.prebuilt import create_react_agent
 
 from agent.tools.agent_tools import rag_summarize
-from agent.tools.middleware import log_before_model, monitor_tool
 from model.factory import create_chat_model
 from utils.prompt_loader import load_system_prompts
 
-
 class ReactAgent:
     def __init__(self):
-        self.agent = create_agent(
+        self.agent = create_react_agent(
             model=create_chat_model(streaming=True),
-            system_prompt=load_system_prompts(),
+            state_modifier=load_system_prompts(),
             tools=[rag_summarize],
-            middleware=[monitor_tool, log_before_model],
         )
 
     def execute_stream(self, query: str, history: list[dict] | None = None):

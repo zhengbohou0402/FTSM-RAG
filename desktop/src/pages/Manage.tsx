@@ -1,32 +1,22 @@
 import { useEffect, useState, useCallback } from "react";
-import { Upload, Button, List, Typography, Card, Space, message, Progress, Popconfirm, Empty, Tag, Tooltip } from "antd";
+import { Upload, Button, List, Typography, Card, Space, message, Progress, Popconfirm, Empty, Tag, Tooltip, Modal } from "antd";
 import {
-  ArrowLeftOutlined,
-  BulbFilled,
-  BulbOutlined,
   CloudUploadOutlined,
-  DashboardOutlined,
   DatabaseOutlined,
   DeleteOutlined,
   FileImageOutlined,
   FilePdfOutlined,
   FileTextOutlined,
   ReloadOutlined,
-  SettingOutlined,
+  EyeOutlined,
 } from "@ant-design/icons";
-import { Link } from "react-router-dom";
 import { api } from "../api/client";
 import type { Document, TrainingStatus, KnowledgeStats, CacheStats, SchedulerStatus } from "../api/client";
 import StatsCard from "../components/StatsCard";
 import StatusBadge from "../components/StatusBadge";
 
-const { Dragger } = Upload;
 const { Text } = Typography;
-
-interface Props {
-  isDark: boolean;
-  onToggleTheme: () => void;
-}
+const { Dragger } = Upload;
 
 function formatBytes(bytes: number): string {
   if (!bytes) return "0 KB";
@@ -60,13 +50,14 @@ function sourceLabel(doc: Document): string {
   return doc.source_trust_label || doc.source_type || "Untrained";
 }
 
-export default function Manage({ isDark, onToggleTheme }: Props) {
+export default function Manage() {
   const [docs, setDocs] = useState<Document[]>([]);
   const [training, setTraining] = useState<TrainingStatus | null>(null);
   const [kb, setKb] = useState<KnowledgeStats | null>(null);
   const [cache, setCache] = useState<CacheStats | null>(null);
   const [scheduler, setScheduler] = useState<SchedulerStatus | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [inspectDoc, setInspectDoc] = useState<string | null>(null);
   const indexedCount = docs.filter((doc) => doc.indexed && !doc.stale).length;
   const staleCount = docs.filter((doc) => doc.stale).length;
   const unindexedCount = docs.filter((doc) => (!doc.indexed || doc.stale) && !doc.covered_by).length;
@@ -179,18 +170,12 @@ export default function Manage({ isDark, onToggleTheme }: Props) {
     <div className="admin-shell manage-shell">
       <div className="admin-header manage-header">
         <div>
-          <Text type="secondary" className="page-kicker">FTSM-RAG</Text>
+          <Text type="secondary" className="page-kicker">FTSM GPT</Text>
           <h1>Document Management</h1>
           <p>Review knowledge-base health, add source files, and rebuild the vector index.</p>
         </div>
         <Space wrap>
-          <Button icon={isDark ? <BulbFilled /> : <BulbOutlined />} onClick={onToggleTheme}>
-            {isDark ? "Light" : "Dark"}
-          </Button>
           <Button icon={<ReloadOutlined />} onClick={refreshAll}>Refresh</Button>
-          <Link to="/dashboard"><Button icon={<DashboardOutlined />}>Dashboard</Button></Link>
-          <Link to="/settings"><Button icon={<SettingOutlined />}>Settings</Button></Link>
-          <Link to="/"><Button icon={<ArrowLeftOutlined />}>Back to Chat</Button></Link>
         </Space>
       </div>
 
@@ -331,12 +316,33 @@ export default function Manage({ isDark, onToggleTheme }: Props) {
                 >
                   <Button type="text" danger icon={<DeleteOutlined />} />
                 </Popconfirm>
+                <Button type="text" icon={<EyeOutlined />} onClick={() => setInspectDoc(doc.name)} />
               </List.Item>
             )}
             locale={{ emptyText: <Empty description="No documents uploaded yet" /> }}
           />
         </Card>
       </div>
+
+      <Modal
+        title={`Document Explorer: ${inspectDoc}`}
+        open={!!inspectDoc}
+        onCancel={() => setInspectDoc(null)}
+        footer={null}
+        width={720}
+      >
+        <Space direction="vertical" style={{ width: "100%" }}>
+          <Text type="secondary">This is a placeholder for the Document Chunks Explorer. Here you will be able to see the exact text segments and vector representations generated for this document.</Text>
+          <div style={{ background: "#f5f5f5", padding: "16px", borderRadius: "8px", border: "1px dashed #d9d9d9" }}>
+            <Text strong>Chunk 1</Text>
+            <p style={{ margin: "4px 0", fontSize: "12px", color: "#666" }}>[Mocked Content] The University was founded in...</p>
+          </div>
+          <div style={{ background: "#f5f5f5", padding: "16px", borderRadius: "8px", border: "1px dashed #d9d9d9" }}>
+            <Text strong>Chunk 2</Text>
+            <p style={{ margin: "4px 0", fontSize: "12px", color: "#666" }}>[Mocked Content] Students must register for courses by...</p>
+          </div>
+        </Space>
+      </Modal>
     </div>
   );
 }

@@ -53,7 +53,7 @@ from services.settings_service import (  # noqa: E402
     parse_env_file,
     write_env_file,
 )
-from utils.config_handler import chroma_conf  # noqa: E402
+from utils.config_handler import qdrant_conf  # noqa: E402
 from utils.conversation_store import ConversationStore  # noqa: E402
 from utils.indexing_lock import indexing_lock  # noqa: E402
 from utils.path_tool import get_abs_path  # noqa: E402
@@ -67,9 +67,9 @@ REACT_DIST_DIR = _BUNDLE_DIR / "desktop" / "dist"
 REACT_INDEX = REACT_DIST_DIR / "index.html"
 
 # ── 知识库 ──
-DATA_DIR = Path(get_abs_path(chroma_conf["data_path"]))
+DATA_DIR = Path(get_abs_path(qdrant_conf["data_path"]))
 ALLOWED_UPLOAD_EXTENSIONS: set[str] = set(
-    chroma_conf.get(
+    qdrant_conf.get(
         "allow_knowledge_file_type", ["txt", "pdf", "png", "jpg", "jpeg", "webp", "gif"]
     )
 )
@@ -503,6 +503,12 @@ async def create_conversation() -> JSONResponse:
 async def list_conversations() -> JSONResponse:
     items = conv_store.list_items(limit=MAX_EXPOSED_CONVERSATIONS)
     return JSONResponse({"items": items})
+
+
+@app.delete("/api/conversations")
+async def delete_all_conversations() -> JSONResponse:
+    conv_store.delete_all()
+    return JSONResponse({"ok": True})
 
 
 @app.delete("/api/conversations/{conversation_id}")

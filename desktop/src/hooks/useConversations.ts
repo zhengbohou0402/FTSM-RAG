@@ -30,5 +30,10 @@ export function useConversations() {
     [refresh]
   );
 
-  return { conversations, loading, refresh, create, remove };
+  const removeAll = useCallback(async () => {
+    await api.conversations.deleteAll();
+    await refresh();
+  }, [refresh]);
+
+  return { conversations, loading, refresh, create, remove, removeAll };
 }

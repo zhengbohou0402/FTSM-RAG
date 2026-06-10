@@ -1,30 +1,20 @@
 import { useEffect, useState, useCallback } from "react";
-import { Button, Typography, Space, Progress } from "antd";
+import { Button, Typography, Space } from "antd";
 import {
-  AppstoreOutlined,
-  ArrowLeftOutlined,
-  BulbFilled,
-  BulbOutlined,
   DatabaseOutlined,
   FileSearchOutlined,
   MessageOutlined,
   ReloadOutlined,
   RobotOutlined,
   SearchOutlined,
-  SettingOutlined,
 } from "@ant-design/icons";
-import { Link } from "react-router-dom";
+import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer, Legend } from "recharts";
 import { api } from "../api/client";
 import type { KnowledgeStats, CacheStats, TrainingStatus, SchedulerStatus } from "../api/client";
 import StatsCard from "../components/StatsCard";
 import StatusBadge from "../components/StatusBadge";
 
 const { Text } = Typography;
-
-interface Props {
-  isDark: boolean;
-  onToggleTheme: () => void;
-}
 
 function fmtPast(iso: string | null): string {
   if (!iso) return "-";
@@ -54,7 +44,9 @@ function sourceTypeLabel(sourceType: string): string {
   return labels[sourceType] || sourceType || "Unknown";
 }
 
-export default function Dashboard({ isDark, onToggleTheme }: Props) {
+const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8"];
+
+export default function Dashboard() {
   const [kb, setKb] = useState<KnowledgeStats | null>(null);
   const [cache, setCache] = useState<CacheStats | null>(null);
   const [training, setTraining] = useState<TrainingStatus | null>(null);
@@ -110,22 +102,27 @@ export default function Dashboard({ isDark, onToggleTheme }: Props) {
     { icon: <RobotOutlined />, label: "LLM Answer", sub: "Qwen response" },
   ];
 
+  // Prepare chart data
+  const sourceChartData = Object.entries(kb?.source_type_counts || {}).map(([type, count]) => ({
+    name: sourceTypeLabel(type),
+    value: count,
+  }));
+
+  const cacheChartData = [
+    { name: "Hits", value: cache?.hit_count || 0 },
+    { name: "Misses", value: cache?.miss_count || 0 },
+  ];
+
   return (
     <div className="admin-shell dash-shell">
       <div className="admin-header dash-header">
         <div>
-          <Text type="secondary" className="page-kicker">FTSM-RAG</Text>
+          <Text type="secondary" className="page-kicker">FTSM GPT</Text>
           <h1>System Dashboard</h1>
           <p>Monitor retrieval, knowledge-base indexing, cache usage, and crawler scheduling.</p>
         </div>
         <Space wrap>
-          <Button icon={isDark ? <BulbFilled /> : <BulbOutlined />} onClick={onToggleTheme}>
-            {isDark ? "Light" : "Dark"}
-          </Button>
           <Button icon={<ReloadOutlined />} onClick={loadAll}>Refresh</Button>
-          <Link to="/manage"><Button icon={<AppstoreOutlined />}>Manage</Button></Link>
-          <Link to="/settings"><Button icon={<SettingOutlined />}>Settings</Button></Link>
-          <Link to="/"><Button icon={<ArrowLeftOutlined />}>Chat</Button></Link>
         </Space>
       </div>
 
@@ -149,7 +146,7 @@ export default function Dashboard({ isDark, onToggleTheme }: Props) {
         <Text strong className="section-kicker">Knowledge Base</Text>
         <div className="stats-grid">
           <StatsCard label="Documents" value={kb?.document_count ?? "-"} sub="uploaded files" accent="blue" />
-          <StatsCard label="Vector Chunks" value={kb?.total_chunks ?? "-"} sub="indexed in Chroma" accent="purple" />
+          <StatsCard label="Vector Chunks" value={kb?.total_chunks ?? "-"} sub="indexed in Qdrant" accent="purple" />
           <StatsCard label="Index Version" value={kb?.index_version ?? "-"} sub="manifest version" accent="green" />
           <StatsCard
             label="Last Indexed"
@@ -167,17 +164,23 @@ export default function Dashboard({ isDark, onToggleTheme }: Props) {
               <Text strong>Source Type Distribution</Text>
               <Text type="secondary">{kb?.manifest_records ?? "-"} records</Text>
             </div>
-            <div className="source-type-grid">
-              {Object.entries(kb?.source_type_counts || {}).map(([type, count]) => (
-                <div className="source-type-row" key={type}>
-                  <span>{sourceTypeLabel(type)}</span>
-                  <strong>{count}</strong>
-                </div>
-              ))}
-              {Object.keys(kb?.source_type_counts || {}).length === 0 && (
-                <Text type="secondary">No source types recorded yet.</Text>
-              )}
-            </div>
+            {sourceChartData.length > 0 ? (
+              <div style={{ width: "100%", height: 200, marginTop: "16px" }}>
+                <ResponsiveContainer>
+                  <PieChart>
+                    <Pie data={sourceChartData} innerRadius={50} outerRadius={80} paddingAngle={5} dataKey="value">
+                      {sourceChartData.map((_, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <RechartsTooltip />
+                    <Legend verticalAlign="middle" align="right" layout="vertical" wrapperStyle={{ fontSize: "12px" }} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <Text type="secondary">No source types recorded yet.</Text>
+            )}
           </div>
 
           <div className="admin-panel">
@@ -204,10 +207,21 @@ export default function Dashboard({ isDark, onToggleTheme }: Props) {
         <div className="dash-two-column">
           <div className="admin-panel">
             <div className="panel-title-row">
-              <Text strong>Semantic Cache</Text>
+              <Text strong>Semantic Cache Hit Rate</Text>
               <Text type="secondary">{cache?.size ?? "-"} entries</Text>
             </div>
-            <Progress percent={Math.round((cache?.hit_rate || 0) * 100)} />
+            <div style={{ width: "100%", height: 200 }}>
+              <ResponsiveContainer>
+                <PieChart>
+                  <Pie data={cacheChartData} innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
+                    <Cell fill="#52c41a" />
+                    <Cell fill="#faad14" />
+                  </Pie>
+                  <RechartsTooltip />
+                  <Legend verticalAlign="middle" align="right" layout="vertical" wrapperStyle={{ fontSize: "12px" }} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
             <div className="stats-grid compact-stats-grid">
               <StatsCard label="Hits" value={cache?.hit_count ?? "-"} accent="green" />
               <StatsCard label="Misses" value={cache?.miss_count ?? "-"} accent="amber" />
