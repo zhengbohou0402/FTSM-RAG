@@ -41,11 +41,12 @@ export interface Message {
   content: string;
   sources?: Source[];
   thinking?: string[];
+  streaming?: boolean;
 }
 
 export interface Source {
   file: string;
-  chunk_index: number;
+  chunk_index?: number;
   excerpt: string;
   source_type?: string;
 }

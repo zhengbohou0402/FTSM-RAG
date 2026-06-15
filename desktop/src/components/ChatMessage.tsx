@@ -1,12 +1,20 @@
 import { useState } from "react";
-import { Card, Typography, Tag, Button } from "antd";
-import { DatabaseOutlined, FileTextOutlined, SearchOutlined, CopyOutlined, CheckOutlined } from "@ant-design/icons";
+import type { ComponentPropsWithoutRef } from "react";
+import { Typography, Button } from "antd";
+import {
+  CheckOutlined,
+  CopyOutlined,
+  DatabaseOutlined,
+  FileTextOutlined,
+  SafetyCertificateOutlined,
+  SearchOutlined,
+} from "@ant-design/icons";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
-import type { Message } from "../api/client";
+import type { Message, Source } from "../api/client";
 
-const { Text, Paragraph } = Typography;
+const { Text } = Typography;
 
 interface Props {
   message: Message;
@@ -26,7 +34,9 @@ function processLabel(text: string): string {
   return text.replace(/\.+$/, "");
 }
 
-function CodeBlock({ inline, className, children, ...props }: any) {
+type CodeBlockProps = ComponentPropsWithoutRef<"code"> & { inline?: boolean };
+
+function CodeBlock({ inline, className, children, ...props }: CodeBlockProps) {
   const match = /language-(\w+)/.exec(className || "");
   const [copied, setCopied] = useState(false);
 
@@ -70,6 +80,78 @@ function CodeBlock({ inline, className, children, ...props }: any) {
   );
 }
 
+function sourceTone(sourceType?: string): string {
+  const normalized = sourceType?.toLowerCase() ?? "";
+  if (normalized.includes("official")) return "official";
+  if (normalized.includes("student")) return "guide";
+  if (normalized.includes("generated")) return "generated";
+  return "default";
+}
+
+function sourceTitle(file: string): string {
+  return file.replace(/\.[^/.]+$/, "").replace(/[_-]+/g, " ");
+}
+
+function SourcesPanel({ sources }: { sources: Source[] }) {
+  const documentCount = new Set(sources.map((source) => source.file.toLowerCase())).size;
+
+  return (
+    <section className="sources-panel" aria-label="Answer sources">
+      <div className="sources-panel-header">
+        <div className="sources-panel-title">
+          <span className="sources-panel-icon"><FileTextOutlined /></span>
+          <span>Sources</span>
+          <span className="sources-panel-count">{sources.length}</span>
+        </div>
+        <span className="sources-panel-summary">
+          {documentCount} {documentCount === 1 ? "document" : "documents"}
+        </span>
+      </div>
+
+      <div className="source-card-grid">
+        {sources.map((source, index) => {
+          const tone = sourceTone(source.source_type);
+          const hasDetails = Boolean(source.excerpt || source.source_type || source.chunk_index !== undefined);
+          return (
+            <article
+              className={`source-card source-card-${tone}`}
+              key={`${source.file}-${source.chunk_index ?? "file"}-${index}`}
+              style={{ animationDelay: `${Math.min(index, 5) * 55}ms` }}
+              tabIndex={0}
+            >
+              <div className="source-card-trigger">
+                <span className="source-card-number">{index + 1}</span>
+                <span className="source-card-main">
+                  <span className="source-card-name" title={source.file}>
+                    {sourceTitle(source.file)}
+                  </span>
+                  <span className="source-card-meta">
+                    {source.source_type && (
+                      <span><SafetyCertificateOutlined /> {source.source_type}</span>
+                    )}
+                    {source.chunk_index !== undefined && <span>Chunk {source.chunk_index}</span>}
+                    {!hasDetails && <span>Referenced document</span>}
+                  </span>
+                </span>
+              </div>
+
+              <div className="source-card-details">
+                <div className="source-card-details-inner">
+                  <div className="source-card-file">{source.file}</div>
+                  <p>
+                    {source.excerpt ||
+                      "This cached answer did not store a source excerpt. Open a new answer to retrieve richer citation details."}
+                  </p>
+                </div>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 export default function ChatMessage({ message }: Props) {
   const isUser = message.role === "user";
   const hasThinking = message.thinking && message.thinking.length > 0;
@@ -77,7 +159,7 @@ export default function ChatMessage({ message }: Props) {
   const showThinkingPlaceholder = hasThinking && !hasContent;
 
   return (
-    <div className={`message-row ${isUser ? "message-user" : "message-assistant"}`}>
+    <div className={`message-row ${isUser ? "message-user" : "message-assistant"}${message.streaming ? " message-streaming" : ""}`}>
       <div className="message-bubble">
         {(hasThinking || showThinkingPlaceholder) && (
           <div className="process-capsules" style={{ marginBottom: hasContent ? "12px" : "0" }}>
@@ -106,39 +188,7 @@ export default function ChatMessage({ message }: Props) {
           </div>
         ) : null}
 
-        {message.sources && message.sources.length > 0 && (
-          <div className="sources-horizontal-container" style={{ marginTop: "16px" }}>
-            <div style={{ marginBottom: "8px", fontSize: "12px", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "6px" }}>
-              <FileTextOutlined /> <span>{message.sources.length} sources found</span>
-            </div>
-            <div style={{ display: "flex", gap: "12px", overflowX: "auto", paddingBottom: "8px" }} className="hide-scrollbar">
-              {message.sources.map((s, i) => (
-                <Card 
-                  key={i} 
-                  size="small" 
-                  className="source-glass-card"
-                  style={{ 
-                    minWidth: "220px", 
-                    maxWidth: "260px", 
-                    flexShrink: 0, 
-                    borderRadius: "12px", 
-                    background: "var(--glass-bg)", 
-                    border: "1px solid var(--glass-border)",
-                    boxShadow: "0 4px 12px rgba(0,0,0,0.02)"
-                  }}
-                >
-                  <div style={{ display: "flex", gap: "6px", marginBottom: "8px", flexWrap: "wrap" }}>
-                    <Tag color="blue" bordered={false} style={{ maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis" }}>{s.file}</Tag>
-                    {s.source_type && <Tag color="green" bordered={false}>{s.source_type}</Tag>}
-                  </div>
-                  <Paragraph ellipsis={{ rows: 3 }} style={{ fontSize: "12px", color: "var(--text-muted)", margin: 0, lineHeight: 1.5 }}>
-                    {s.excerpt}
-                  </Paragraph>
-                </Card>
-              ))}
-            </div>
-          </div>
-        )}
+        {message.sources && message.sources.length > 0 && <SourcesPanel sources={message.sources} />}
       </div>
     </div>
   );

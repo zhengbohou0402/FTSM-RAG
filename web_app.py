@@ -686,3 +686,7 @@ async def spa_fallback(full_path: str) -> FileResponse:
     if full_path.startswith("api/") or "." in Path(full_path).name or not _react_web_available():
         raise HTTPException(status_code=404, detail="Not found")
     return _react_web_response()
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("web_app:app", host="127.0.0.1", port=8001, reload=True)

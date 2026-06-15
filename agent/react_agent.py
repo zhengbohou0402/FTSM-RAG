@@ -8,7 +8,7 @@ class ReactAgent:
     def __init__(self):
         self.agent = create_react_agent(
             model=create_chat_model(streaming=True),
-            state_modifier=load_system_prompts(),
+            prompt=load_system_prompts(),
             tools=[rag_summarize],
         )
 
@@ -34,7 +34,7 @@ class ReactAgent:
             if node == "tools":
                 continue
 
-            if node == "model":
+            if node == "agent":
                 content = getattr(message_chunk, "content", "") or ""
                 tool_calls = getattr(message_chunk, "tool_calls", None)
                 tool_call_chunks = getattr(message_chunk, "tool_call_chunks", None)

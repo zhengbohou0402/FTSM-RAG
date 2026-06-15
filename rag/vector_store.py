@@ -53,8 +53,9 @@ def get_shared_qdrant_client() -> QdrantClient:
                 try:
                     sample_vector = embed_model.embed_query("test")
                     vector_size = len(sample_vector)
-                except Exception:
-                    vector_size = 1024
+                except Exception as e:
+                    logger.error(f"Failed to determine embedding dimension. Qdrant collection cannot be initialized: {e}")
+                    raise RuntimeError("Failed to determine embedding dimension. Please check embedding model configuration or API keys.") from e
                 _qdrant_client_instance.create_collection(
                     collection_name=collection_name,
                     vectors_config=qdrant_models.VectorParams(
@@ -126,6 +127,7 @@ class VectorStoreService:
             for ext in [".png", ".jpg", ".jpeg", ".webp", ".gif"]
         ):
             return image_loader(read_path)
+        logger.warning(f"[knowledge load] Unsupported file type for {read_path}")
         return []
 
     def _delete_chunk_ids(self, chunk_ids: list[str], doc_id: str) -> bool:
@@ -198,7 +200,7 @@ class VectorStoreService:
     @staticmethod
     def _metadata_for_chunk(source, chunk_index: int, loader_metadata: dict) -> dict:
         import uuid
-        raw_id = f"{source.doc_id}:chunk:{chunk_index}:{source.hash[:12]}"
+        raw_id = f"{source.doc_id}:chunk:{chunk_index}"
         chunk_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, raw_id))
         metadata = {
             "doc_id": source.doc_id,
@@ -294,7 +296,7 @@ class VectorStoreService:
                 import uuid
                 chunk_ids: list[str] = []
                 for index, doc in enumerate(split_document):
-                    raw_id = f"{source.doc_id}:chunk:{index}:{source.hash[:12]}"
+                    raw_id = f"{source.doc_id}:chunk:{index}"
                     chunk_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, raw_id))
                     chunk_ids.append(chunk_id)
                     doc.metadata = self._metadata_for_chunk(source, index, doc.metadata)

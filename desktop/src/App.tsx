@@ -56,7 +56,7 @@ function AppRoutes({ isDark, onToggleTheme }: { isDark: boolean; onToggleTheme: 
       />
       <div style={{ display: "flex", flexDirection: "column", height: "100vh", overflow: "hidden" }}>
         <TopMenuBar isDark={isDark} onToggleTheme={onToggleTheme} />
-        <div style={{ flex: 1, overflow: "hidden" }}>
+        <div style={{ flex: 1, overflow: location.pathname === "/" ? "hidden" : "auto" }}>
           <Routes>
             <Route path="/" element={<Chat />} />
             <Route path="/settings" element={<Settings />} />

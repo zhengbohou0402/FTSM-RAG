@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
+import type { PointerEvent as ReactPointerEvent, WheelEvent as ReactWheelEvent } from "react";
 import { Button, Input } from "antd";
 import { SendOutlined } from "@ant-design/icons";
 
@@ -26,6 +27,9 @@ const SUGGESTIONS = [
 
 export default function Composer({ onSend, disabled }: Props) {
   const [text, setText] = useState("");
+  const [draggingSuggestions, setDraggingSuggestions] = useState(false);
+  const suggestionsRef = useRef<HTMLDivElement>(null);
+  const dragState = useRef({ pointerId: -1, startX: 0, scrollLeft: 0, moved: false });
 
   const handleSend = () => {
     const trimmed = text.trim();
@@ -34,16 +38,73 @@ export default function Composer({ onSend, disabled }: Props) {
     setText("");
   };
 
+  const handleSuggestionsWheel = (event: ReactWheelEvent<HTMLDivElement>) => {
+    const row = suggestionsRef.current;
+    if (!row || row.scrollWidth <= row.clientWidth) return;
+    const delta = Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY;
+    if (!delta) return;
+    event.preventDefault();
+    row.scrollLeft += delta;
+  };
+
+  const handlePointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+    const row = suggestionsRef.current;
+    if (!row) return;
+    dragState.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      scrollLeft: row.scrollLeft,
+      moved: false,
+    };
+    setDraggingSuggestions(true);
+  };
+
+  const handlePointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const row = suggestionsRef.current;
+    const drag = dragState.current;
+    if (!row || drag.pointerId !== event.pointerId) return;
+    const distance = event.clientX - drag.startX;
+    if (Math.abs(distance) > 4) {
+      if (!drag.moved) {
+        row.setPointerCapture(event.pointerId);
+        drag.moved = true;
+      }
+      row.scrollLeft = drag.scrollLeft - distance;
+    }
+  };
+
+  const stopDragging = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (dragState.current.pointerId !== event.pointerId) return;
+    const row = suggestionsRef.current;
+    if (row && row.hasPointerCapture(event.pointerId)) {
+      row.releasePointerCapture(event.pointerId);
+    }
+    dragState.current.pointerId = -1;
+    setDraggingSuggestions(false);
+  };
+
   return (
     <div className="composer-wrap">
-      <div className="suggestions-row">
+      <div
+        ref={suggestionsRef}
+        className={`suggestions-row${draggingSuggestions ? " is-dragging" : ""}`}
+        onWheel={handleSuggestionsWheel}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={stopDragging}
+        onPointerCancel={stopDragging}
+      >
         {SUGGESTIONS.map((s) => (
           <Button
             key={s.title}
             size="small"
             className="suggestion-chip"
             disabled={disabled}
-            onClick={() => onSend(s.prompt)}
+            onClick={() => {
+              if (!dragState.current.moved) onSend(s.prompt);
+              dragState.current.moved = false;
+            }}
           >
             {s.title}
           </Button>
