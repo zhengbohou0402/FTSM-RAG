@@ -160,11 +160,17 @@ def _apply_source_weight(docs: list[Document]) -> list[Document]:
     def adjusted_rank(item: tuple[int, Document]) -> float:
         rank, doc = item
         priority = _source_priority(doc)
-        if priority == 1:
-            return rank - 0.25
-        if priority >= 3:
-            return rank + 0.15
-        return float(rank)
+        if priority == 1:       # Official
+            weight = 0.25
+        elif priority == 2:     # Scraped
+            weight = 0.10
+        elif priority == 3:     # Community
+            weight = -0.15
+        elif priority == 4:     # Generated
+            weight = -0.25
+        else:
+            weight = 0.0
+        return rank * 0.1 - weight
 
     weighted = sorted(
         enumerate(docs),
@@ -176,7 +182,7 @@ def _apply_source_weight(docs: list[Document]) -> list[Document]:
 def _query_identifiers(query: str) -> dict[str, set[str]]:
     lowered = query.lower()
     return {
-        "course_codes": {m.group(0).upper() for m in re.finditer(r"\b[A-Z]{2}\d{4}\b", query.upper())},
+        "course_codes": {m.group(0).upper() for m in re.finditer(r"\b[A-Z]{2,4}\d{3}[A-Z\d]\b", query.upper())},
         "rooms": {m.group(0).upper().replace(" ", "") for m in re.finditer(r"\bBK\s*\d+\b", query.upper())},
         "blocks": {m.group(0).upper() for m in re.finditer(r"\bBLOCK\s+[A-H]\b", query.upper())},
         "years": {m.group(0) for m in re.finditer(r"\b20\d{2}(?:\s*/\s*20\d{2})?\b", query)},

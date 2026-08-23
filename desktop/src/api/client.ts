@@ -126,13 +126,14 @@ export interface ModelsResponse {
 
 export async function streamChat(
   message: string,
-  conversationId: string | null
+  conversationId: string | null,
+  language?: string
 ): Promise<{ reader: ReadableStreamDefaultReader<Uint8Array>; conversationId: string }> {
   const base = await getBaseUrl();
   const res = await fetch(`${base}/api/chat`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message, conversation_id: conversationId }),
+    body: JSON.stringify({ message, conversation_id: conversationId, language }),
   });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
@@ -146,6 +147,12 @@ export const api = {
   health: () => request<{ status: string }>("/api/health"),
   configStatus: () => request<{ dashscope_configured: boolean }>("/api/config/status"),
   chat: streamChat,
+  // ── TRILINGUAL DEMO FEATURE ──
+  translate: (query: string) => request<{ zh: string; en: string; ms: string }>("/api/translate", {
+    method: "POST",
+    body: JSON.stringify({ query }),
+  }),
+  // ── END TRILINGUAL DEMO FEATURE ──
 
   // Conversations
   conversations: {

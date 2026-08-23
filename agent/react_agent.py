@@ -47,7 +47,17 @@ class ReactAgent:
                     continue
 
                 if content and not tool_calls:
-                    yield content
+                    if isinstance(content, list):
+                        # Some models (like Gemini) return content as a list of dicts: [{'type': 'text', 'text': '...'}]
+                        text_parts = []
+                        for part in content:
+                            if isinstance(part, dict) and 'text' in part:
+                                text_parts.append(part['text'])
+                            elif isinstance(part, str):
+                                text_parts.append(part)
+                        yield "".join(text_parts)
+                    else:
+                        yield content
 
 
 if __name__ == "__main__":

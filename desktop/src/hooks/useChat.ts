@@ -15,7 +15,7 @@ export function useChat() {
       setStreaming(true);
 
       let rawContent = "";
-      const assistantMsg: Message = { role: "assistant", content: "", thinking: [] };
+      const assistantMsg: Message = { role: "assistant", content: "", thinking: [], streaming: true };
       setMessages((prev) => [...prev, assistantMsg]);
 
       try {

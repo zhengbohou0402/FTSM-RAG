@@ -156,7 +156,7 @@ export default function ChatMessage({ message }: Props) {
   const isUser = message.role === "user";
   const hasThinking = message.thinking && message.thinking.length > 0;
   const hasContent = message.content && message.content.length > 0;
-  const showThinkingPlaceholder = hasThinking && !hasContent;
+  const showThinkingPlaceholder = (hasThinking || message.streaming) && !hasContent;
 
   return (
     <div className={`message-row ${isUser ? "message-user" : "message-assistant"}${message.streaming ? " message-streaming" : ""}`}>

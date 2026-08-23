@@ -1,8 +1,8 @@
 """
-DashScope chat / embedding 模型工厂。
+DashScope / Google Vertex AI chat / embedding 模型工厂。
 
 - 懒加载：模块 import 时不创建客户端，避免无 API key 时启动崩溃。
-- 通过 DASHSCOPE_BASE_URL 环境变量切换国内/国际 endpoint。
+- 支持 LLM_PROVIDER="dashscope" 或 "vertexai" 切换。
 - 通过 reset_models() 在用户更新 .env 后重建客户端。
 """
 
@@ -49,10 +49,29 @@ class BaseModelFactory(ABC):
         pass
 
 
-def resolve_chat_model_name() -> str:
+def resolve_chat_model_name(provider: str = "dashscope") -> str:
     """优先读 .env 的 CHAT_MODEL_NAME；无则回退到 rag.yml 的默认值。"""
     override = os.getenv("CHAT_MODEL_NAME", "").strip()
-    return override or rag_conf.get("chat_model_name", "qwen3-max")
+    
+    if provider == "vertexai":
+        # Vertex AI 支持的模型列表（截至 2026-06）
+        _VERTEX_MODELS = {
+            "gemini-3.5-flash",
+            "gemini-3.5-pro",
+            "gemini-2.5-pro",
+            "gemini-2.5-flash",
+            "gemini-2.0-flash",
+            "gemini-1.5-pro",
+            "gemini-1.5-flash",
+        }
+        if override.lower() in _VERTEX_MODELS:
+            return override
+        return os.getenv("VERTEX_MODEL_NAME", "gemini-3.5-flash")
+    else:
+        # dashscope fallback
+        if override and override.lower().startswith("gemini"):
+            return "qwen-turbo"
+        return override or rag_conf.get("chat_model_name", "qwen3-max")
 
 
 class ChatModelFactory(BaseModelFactory):
@@ -60,12 +79,40 @@ class ChatModelFactory(BaseModelFactory):
         self.streaming = streaming
 
     def generator(self) -> Optional[Embeddings | BaseChatModel]:
+        provider = os.getenv("LLM_PROVIDER", "dashscope").strip().lower()
+        if provider == "vertexai":
+            from langchain_google_vertexai import ChatVertexAI
+            return ChatVertexAI(
+                model_name=resolve_chat_model_name(provider),
+                project=os.getenv("VERTEX_PROJECT_ID", "rag-fist"),
+                location=os.getenv("VERTEX_LOCATION", "global"),
+                streaming=self.streaming,
+            )
+            
         _apply_endpoint()
-        return ChatTongyi(model=resolve_chat_model_name(), streaming=self.streaming)
+        return ChatTongyi(model=resolve_chat_model_name(provider), streaming=self.streaming)
 
 
 class EmbeddingsFactory(BaseModelFactory):
     def generator(self) -> Optional[Embeddings | BaseChatModel]:
+        provider = os.getenv("LLM_PROVIDER", "dashscope").strip().lower()
+        if provider == "vertexai":
+            from langchain_google_vertexai import VertexAIEmbeddings
+            embed_model = os.getenv("VERTEX_EMBEDDING_MODEL", "gemini-embedding-001")
+            # gemini-embedding-001 支持 Matryoshka 可变维度（256 / 768 / 1536 / 3072）
+            # 3072 维精度最高；若需节省存储可改为 768
+            if embed_model == "gemini-embedding-001":
+                return VertexAIEmbeddings(
+                    model_name=embed_model,
+                    project=os.getenv("VERTEX_PROJECT_ID", "rag-fist"),
+                    location=os.getenv("VERTEX_LOCATION", "global"),
+                )
+            return VertexAIEmbeddings(
+                model_name=embed_model,
+                project=os.getenv("VERTEX_PROJECT_ID", "rag-fist"),
+                location=os.getenv("VERTEX_LOCATION", "global"),
+            )
+            
         _apply_endpoint()
         return DashScopeEmbeddings(model=rag_conf["embedding_model_name"])
 

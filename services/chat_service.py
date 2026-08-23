@@ -36,11 +36,23 @@ def stream_chat_answer(
         for chunk in get_agent().execute_stream(message, history=recent_history):
             if not chunk:
                 continue
-            if chunk.startswith("__THINK__"):
-                yield chunk
+            if isinstance(chunk, list):
+                text_parts = []
+                for part in chunk:
+                    if isinstance(part, dict) and 'text' in part:
+                        text_parts.append(part['text'])
+                    elif isinstance(part, str):
+                        text_parts.append(part)
+                chunk_str = "".join(text_parts)
+            else:
+                chunk_str = str(chunk) if not isinstance(chunk, str) else chunk
+
+            if chunk_str.startswith("__THINK__"):
+                yield chunk_str
                 continue
-            result_chunks.append(chunk)
-            yield chunk
+
+            result_chunks.append(chunk_str)
+            yield chunk_str
     except Exception as exc:
         had_error = True
         err_msg = f"\n\n[Error] {exc}"

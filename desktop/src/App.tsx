@@ -6,13 +6,16 @@ import Settings from "./pages/Settings";
 import Manage from "./pages/Manage";
 import Dashboard from "./pages/Dashboard";
 import Prompts from "./pages/Prompts";
+// ── TRILINGUAL DEMO FEATURE ──
+import TrilingualCompare from "./pages/TrilingualCompare";
+// ── END TRILINGUAL DEMO FEATURE ──
 import ApiKeySetupModal from "./components/ApiKeySetupModal";
-import TopMenuBar from "./components/TopMenuBar";
+import GlobalSidebar from "./components/GlobalSidebar";
 import { api } from "./api/client";
 
 const THEME_KEY = "ftsm_theme";
 
-function AppRoutes({ isDark, onToggleTheme }: { isDark: boolean; onToggleTheme: () => void }) {
+function AppRoutes({ onToggleTheme }: { onToggleTheme: () => void }) {
   const location = useLocation();
   const [dashscopeConfigured, setDashscopeConfigured] = useState<boolean | null>(null);
 
@@ -54,15 +57,18 @@ function AppRoutes({ isDark, onToggleTheme }: { isDark: boolean; onToggleTheme: 
         open={showApiKeyModal}
         onSuccess={() => setDashscopeConfigured(true)}
       />
-      <div style={{ display: "flex", flexDirection: "column", height: "100vh", overflow: "hidden" }}>
-        <TopMenuBar isDark={isDark} onToggleTheme={onToggleTheme} />
-        <div style={{ flex: 1, overflow: location.pathname === "/" ? "hidden" : "auto" }}>
+      <div style={{ display: "flex", flexDirection: "row", height: "100vh", overflow: "hidden" }}>
+        <GlobalSidebar onToggleTheme={onToggleTheme} />
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: location.pathname === "/" ? "hidden" : "auto" }}>
           <Routes>
             <Route path="/" element={<Chat />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/manage" element={<Manage />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/prompts" element={<Prompts />} />
+            {/* ── TRILINGUAL DEMO FEATURE ── */}
+            <Route path="/compare" element={<TrilingualCompare />} />
+            {/* ── END TRILINGUAL DEMO FEATURE ── */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>
@@ -96,7 +102,7 @@ function App() {
     >
       <AntApp>
         <BrowserRouter>
-          <AppRoutes isDark={isDark} onToggleTheme={() => setIsDark(!isDark)} />
+          <AppRoutes onToggleTheme={() => setIsDark(!isDark)} />
         </BrowserRouter>
       </AntApp>
     </ConfigProvider>

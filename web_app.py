@@ -23,6 +23,9 @@ else:
     BASE_DIR = Path(__file__).resolve().parent
     _BUNDLE_DIR = BASE_DIR
 
+if str(BASE_DIR) not in sys.path:
+    sys.path.insert(0, str(BASE_DIR))
+
 # Tauri `cargo run` 调试时启动的是 dist 下的 PyInstaller exe，默认同级 .env 在 dist/FTSM-RAG/；
 # 通过 FTSM_PROJECT_ROOT 让后端改用仓库根目录的 .env，与源码开发一致。
 _env_override = os.environ.get("FTSM_PROJECT_ROOT", "").strip()
@@ -235,6 +238,9 @@ def _react_web_response() -> FileResponse:
 class ChatRequest(BaseModel):
     message: str
     conversation_id: str | None = Field(default=None)
+    # ── TRILINGUAL DEMO FEATURE ──
+    language: str | None = Field(default=None)
+    # ── END TRILINGUAL DEMO FEATURE ──
 
 
 # ── 生命周期 ──
@@ -648,6 +654,68 @@ async def update_knowledge_from_website(
     return JSONResponse(result)
 
 
+# ── TRILINGUAL DEMO FEATURE ──
+def stream_compare_answer(
+    message: str,
+    language: str,
+) -> Any:
+    from typing import Iterator
+    from agent.tools.agent_tools import get_rag_service
+    from model.factory import get_chat_model
+    from langchain_core.output_parsers import StrOutputParser
+    from rag.rag_service import _has_retrieval_signal, NO_ANSWER_MESSAGE
+    import time
+
+    def generator() -> Iterator[str]:
+        rag = get_rag_service()
+
+        # 1. Yield searching status
+        yield "__THINK__Searching knowledge base...__ENDTHINK__"
+        time.sleep(0.5)
+
+        context_docs = rag.retriever_docs(message)
+        if not context_docs:
+            yield NO_ANSWER_MESSAGE
+            return
+
+        context = rag._build_context(context_docs)
+
+        # Dynamically inject language instruction to the RAG LLM chain
+        lang_instruction = ""
+        if language == "zh":
+            lang_instruction = "\n\n[System Instruction: You must output the entire response (excluding sources) in Simplified Chinese (简体中文)]"
+        elif language == "ms":
+            lang_instruction = "\n\n[System Instruction: You must output the entire response (excluding sources) in Malay (Bahasa Melayu)]"
+        elif language == "en":
+            lang_instruction = "\n\n[System Instruction: You must output the entire response (excluding sources) in English]"
+
+        query_with_lang = message + lang_instruction
+
+        # Build RAG chain and stream
+        model = get_chat_model()
+        chain = rag.prompt_template | model | StrOutputParser()
+
+        result_chunks = []
+        try:
+            for chunk in chain.stream({"input": query_with_lang, "context": context}):
+                if chunk:
+                    result_chunks.append(chunk)
+                    yield chunk
+        except Exception as e:
+            err_msg = f"\n\n[Error] {e}"
+            yield err_msg
+
+        # Append sources at the end
+        reliability = rag.format_source_reliability(context_docs)
+        sources = rag.format_sources(context_docs)
+        if sources:
+            reliability_block = f"\n\n{reliability}" if reliability else ""
+            yield f"{reliability_block}\n\nSources:\n{sources}"
+
+    return generator()
+# ── END TRILINGUAL DEMO FEATURE ──
+
+
 @app.post("/api/chat")
 async def chat(payload: ChatRequest) -> StreamingResponse:
     if not _dashscope_configured():
@@ -659,6 +727,19 @@ async def chat(payload: ChatRequest) -> StreamingResponse:
     message = payload.message.strip()
     if not message:
         raise HTTPException(status_code=400, detail="Message is required.")
+
+    # ── TRILINGUAL DEMO FEATURE ──
+    if payload.language:
+        return StreamingResponse(
+            stream_compare_answer(message=message, language=payload.language),
+            media_type="text/plain; charset=utf-8",
+            headers={
+                "Cache-Control": "no-cache",
+                "X-Accel-Buffering": "no",
+                "X-Conversation-Id": payload.conversation_id or str(uuid4()),
+            },
+        )
+    # ── END TRILINGUAL DEMO FEATURE ──
 
     conversation_id = payload.conversation_id or str(uuid4())
 
@@ -679,6 +760,62 @@ async def chat(payload: ChatRequest) -> StreamingResponse:
             "X-Conversation-Id": conversation_id,
         },
     )
+
+
+# ── TRILINGUAL DEMO FEATURE ──
+class TranslatePayload(BaseModel):
+    query: str
+
+
+@app.post("/api/translate")
+async def translate_query(payload: TranslatePayload) -> JSONResponse:
+    query = payload.query.strip()
+    if not query:
+        return JSONResponse({"zh": "", "en": "", "ms": ""})
+
+    if not _dashscope_configured():
+        raise HTTPException(
+            status_code=400,
+            detail="DASHSCOPE_API_KEY is not configured. Please set it in /settings.",
+        )
+
+    try:
+        from model.factory import get_chat_model
+        import json
+        import re
+
+        model = get_chat_model()
+        prompt = (
+            "You are a professional translator. Translate the following query into English, "
+            "Simplified Chinese (简体中文), and Malay (Bahasa Melayu). "
+            "Return the translations in a JSON format matching:\n"
+            "{\"en\": \"...\", \"zh\": \"...\", \"ms\": \"...\"}\n"
+            "Provide only the raw JSON string. Do not wrap in markdown code blocks or add any explanations.\n\n"
+            f"Query: {query}"
+        )
+        res = model.invoke(prompt)
+        content = res.content.strip()
+
+        # Remove markdown fences if present
+        if content.startswith("```"):
+            content = re.sub(r"^```[a-zA-Z0-9]*\n", "", content)
+            content = re.sub(r"\n```$", "", content)
+            content = content.strip()
+
+        data = json.loads(content)
+        return JSONResponse({
+            "en": data.get("en", "").strip(),
+            "zh": data.get("zh", "").strip(),
+            "ms": data.get("ms", "").strip(),
+        })
+    except Exception as exc:
+        return JSONResponse({
+            "en": query,
+            "zh": query,
+            "ms": query,
+            "error": str(exc)
+        })
+# ── END TRILINGUAL DEMO FEATURE ──
 
 
 @app.get("/{full_path:path}", response_class=HTMLResponse)

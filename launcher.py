@@ -61,7 +61,7 @@ def _log(msg: str) -> None:
     except Exception:
         pass
 
-WINDOW_TITLE = "FTSM-RAG Assistant"
+WINDOW_TITLE = "Assistant"
 WINDOW_WIDTH = 1280
 WINDOW_HEIGHT = 820
 WINDOW_MIN_WIDTH = 900
