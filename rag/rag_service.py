@@ -10,6 +10,7 @@ RAG 摘要服务：检索参考文档，并将问题与上下文一并发送给�
 import os
 import re
 import threading
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
@@ -19,6 +20,7 @@ from langchain_core.prompts import PromptTemplate
 from rank_bm25 import BM25Okapi
 
 from model.factory import get_chat_model
+from rag.gates import should_reject
 from rag.vector_store import VectorStoreService
 from utils.prompt_loader import load_rag_prompts
 from utils.query_preprocessor import preprocessor
@@ -340,6 +342,28 @@ def _has_retrieval_signal(query: str, docs: list[Document]) -> bool:
     return len(terms) <= 2 and _source_priority(docs[0]) <= 2
 
 
+def _publish_retrieval_log(question: str, docs: list[Document], started: float) -> None:
+    """retrieval.logged 事件（fire-and-forget）：hit/命中数/来源/延迟 → ftsm-knowledge 落库。"""
+    try:
+        from rag.mq_events import publish_soon
+
+        sources = sorted({RagSummarizeService._source_name(doc) for doc in docs})
+        publish_soon(
+            "retrieval.logged",
+            {
+                "question": (question or "")[:200],
+                "hit": bool(docs),
+                "hitCount": len(docs),
+                "topScore": 0.0,
+                "sources": "、".join(sources)[:900],
+                "latencyMs": round((time.perf_counter() - started) * 1000),
+            },
+        )
+    except Exception:
+        # 日志属于旁路，任何异常都不影响检索主链路
+        pass
+
+
 class RagSummarizeService(object):
     def __init__(self):
         self.vector_store = VectorStoreService()
@@ -419,11 +443,13 @@ class RagSummarizeService(object):
 
     def retriever_docs(self, query: str) -> list[Document]:
         """
-        三阶段并行检索：
+        三阶段并行检索 + 双门限准入 + 查询日志（MQ fire-and-forget）：
           1. 向量检索（多查询并发）与 BM25 检索同步并行执行
-          2. RRF 融合
-          3. Reranker 精排（_RERANK_TOP_N > 0 时）
+          2. 双门限准入：稠密语义信号与 BM25 覆盖率都不过线 → 拒答（返回空结果）
+          3. RRF 融合
+          4. Reranker 精排（_RERANK_TOP_N > 0 时）
         """
+        started = time.perf_counter()
         queries = preprocessor.process(query)
 
         # ① 向量检索 与 BM25 检索 并行执行（ThreadPoolExecutor）
@@ -433,15 +459,23 @@ class RagSummarizeService(object):
             vector_ranked = vec_future.result()
             bm25_ranked = bm25_future.result()
 
-        # ② RRF 融合
+        # ② 双门限准入（拒答）
+        if should_reject(query, vector_ranked, bm25_ranked):
+            _publish_retrieval_log(query, [], started)
+            return []
+
+        # ③ RRF 融合
         fused = _rrf_fuse([vector_ranked, bm25_ranked])
 
-        # ③ Reranker 精排
+        # ④ Reranker 精排
         if _RERANK_TOP_N > 0 and fused:
-            reranked = _rerank(query, fused, _RERANK_TOP_N)
-            return _apply_source_weight(_apply_query_boost(query, reranked))
-
-        return _apply_source_weight(_apply_query_boost(query, fused[:max(_RERANK_TOP_N, 6)]))
+            final = _apply_source_weight(
+                _apply_query_boost(query, _rerank(query, fused, _RERANK_TOP_N))
+            )
+        else:
+            final = _apply_source_weight(_apply_query_boost(query, fused[: max(_RERANK_TOP_N, 6)]))
+        _publish_retrieval_log(query, final, started)
+        return final
 
     # ── 格式化 ────────────────────────────────────────────────────────────────
 

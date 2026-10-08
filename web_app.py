@@ -1,3 +1,4 @@
+import asyncio
 import os
 import shutil
 import sys
@@ -239,10 +240,26 @@ class ChatRequest(BaseModel):
 
 # ── 生命周期 ──
 
+async def _run_index_consumer() -> None:
+    """常驻 MQ 索引消费者；RabbitMQ 不可用时降级为日志并保留本地训练回退。"""
+    import logging
+
+    logging.getLogger("ftsm.web").info("[mq] starting index consumer…")
+    try:
+        from rag.index_consumer import start_consumer
+        await start_consumer()
+    except Exception as exc:
+        logging.getLogger("ftsm.web").warning(
+            f"[mq] index consumer unavailable (degraded to local training): {exc}"
+        )
+
+
 @app.on_event("startup")
 async def _startup() -> None:
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     start_scheduler(on_index_updated=_reset_agent)
+    if os.getenv("FTSM_MQ_ENABLED", "1").strip() != "0":
+        asyncio.create_task(_run_index_consumer())
 
 
 @app.on_event("shutdown")
@@ -543,8 +560,46 @@ async def upload_documents(files: list[UploadFile] = File(...)) -> JSONResponse:
     )
     if saved:
         semantic_cache.clear()
-    training_started = _start_training() if saved else False
+    # 微服务路径：注册到 ftsm-knowledge（建 INDEXING 记录并发 doc.index.requested）；
+    # MQ/knowledge 不可用时回退到本进程训练线程（本地单体模式仍可用）。
+    registered = await _register_with_knowledge(saved) if saved else False
+    training_started = _start_training() if (saved and not registered) else False
     return JSONResponse({"saved": saved, "errors": errors, "training_started": training_started})
+
+
+async def _register_with_knowledge(saved: list[str]) -> bool:
+    """把上传文件注册到 ftsm-knowledge；返回 False 表示回退到本地训练。"""
+    import httpx
+
+    from rag.ingestion import file_sha256, stable_file_doc_id
+
+    base = os.getenv("FTSM_KNOWLEDGE_URL", "http://127.0.0.1:8103").rstrip("/")
+    registrations = []
+    for name in saved:
+        path = DATA_DIR / name
+        if not path.exists():
+            continue
+        registrations.append({
+            "docId": stable_file_doc_id(path),
+            "name": name,
+            "title": name,
+            "sourceType": "file",
+            "size": path.stat().st_size,
+            "fileHash": file_sha256(path),
+        })
+    if not registrations:
+        return False
+    try:
+        async with httpx.AsyncClient(timeout=5) as client:
+            resp = await client.post(f"{base}/internal/docs", json={"docs": registrations})
+        return resp.status_code == 200
+    except Exception as exc:
+        import logging
+
+        logging.getLogger("ftsm.web").warning(
+            f"[knowledge] registration failed, falling back to local training: {exc}"
+        )
+        return False
 
 
 @app.get("/api/documents")
@@ -563,6 +618,12 @@ async def delete_document(filename: str) -> JSONResponse:
     except RuntimeError as exc:
         raise HTTPException(status_code=409, detail=str(exc))
     semantic_cache.clear()
+    # 状态变更走事件：ftsm-knowledge 消费 doc.deleted 后删除权威记录
+    doc_id = (result or {}).get("doc_id")
+    if doc_id:
+        from rag.mq_events import KEY_DOC_DELETED, publish_soon
+
+        publish_soon(KEY_DOC_DELETED, {"kind": "deleted", "docId": doc_id})
     return JSONResponse(result)
 
 
