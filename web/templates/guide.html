@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>FTSM Student Life Guide · FTSM-RAG</title>
+        <link rel="icon" type="image/x-icon" href="/static/assets/favicon.ico" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+            rel="stylesheet"
+        />
+        <link rel="stylesheet" href="/static/guide.css" />
+    </head>
+    <body class="guide-page">
+        <nav class="guide-nav">
+            <a class="guide-brand" href="/guide">
+                <img src="/static/assets/ftsm-logo.png" alt="FTSM logo" />
+                <span>FTSM-RAG</span>
+            </a>
+            <div class="guide-nav-links">
+                <a href="/">Ask the Assistant</a>
+                <a href="/legacy">System Status</a>
+            </div>
+        </nav>
+
+        <header class="guide-hero">
+            <div class="guide-hero-text">
+                <p class="guide-kicker">UKM FTSM · Student Life Guide</p>
+                <h1>New in Malaysia? Start here.</h1>
+                <p class="guide-sub">
+                    Quick answers about visas, transport, food, housing, health and classes —
+                    grounded in the official FTSM knowledge base. Tap any question below,
+                    then ask the assistant.
+                </p>
+                <div class="guide-hero-actions">
+                    <a class="guide-btn guide-btn-primary" href="/">Ask the Assistant</a>
+                    <a class="guide-btn" href="#topics">Browse Topics</a>
+                </div>
+            </div>
+            <img
+                class="guide-hero-img"
+                src="/static/assets/guides/hero-kuala-lumpur.png"
+                alt="Illustration of Kuala Lumpur with the university campus"
+            />
+        </header>
+
+        <main class="guide-main">
+            <section id="topics">
+                <h2>Quick topics</h2>
+                <p class="section-sub">Click a question to copy it, then paste it into the assistant.</p>
+                <div class="guide-grid" id="guide-cards"></div>
+            </section>
+
+            <section id="buses">
+                <h2>Campus &amp; city bus routes</h2>
+                <p class="section-sub">
+                    Route maps for the UKM–KTM shuttle zones. Click a map to enlarge.
+                </p>
+                <div class="bus-grid">
+                    <figure class="bus-card">
+                        <img src="/static/assets/bus_routes/ZON1.png" alt="Bus route map, Zone 1" data-zoomable loading="lazy" />
+                        <figcaption>Zone 1</figcaption>
+                    </figure>
+                    <figure class="bus-card">
+                        <img src="/static/assets/bus_routes/ZON2.png" alt="Bus route map, Zone 2" data-zoomable loading="lazy" />
+                        <figcaption>Zone 2</figcaption>
+                    </figure>
+                    <figure class="bus-card">
+                        <img src="/static/assets/bus_routes/ZON3.png" alt="Bus route map, Zone 3" data-zoomable loading="lazy" />
+                        <figcaption>Zone 3</figcaption>
+                    </figure>
+                    <figure class="bus-card">
+                        <img src="/static/assets/bus_routes/ZON4.png" alt="Bus route map, Zone 4" data-zoomable loading="lazy" />
+                        <figcaption>Zone 4</figcaption>
+                    </figure>
+                    <figure class="bus-card">
+                        <img src="/static/assets/bus_routes/ZON5.png" alt="Bus route map, Zone 5" data-zoomable loading="lazy" />
+                        <figcaption>Zone 5</figcaption>
+                    </figure>
+                    <figure class="bus-card">
+                        <img src="/static/assets/bus_routes/ZON6.png" alt="Bus route map, Zone 6" data-zoomable loading="lazy" />
+                        <figcaption>Zone 6</figcaption>
+                    </figure>
+                    <figure class="bus-card">
+                        <img src="/static/assets/bus_routes/ZON7.png" alt="Bus route map, Zone 7" data-zoomable loading="lazy" />
+                        <figcaption>Zone 7</figcaption>
+                    </figure>
+                    <figure class="bus-card">
+                        <img src="/static/assets/bus_routes/ZON8.png" alt="Bus route map, Zone 8" data-zoomable loading="lazy" />
+                        <figcaption>Zone 8</figcaption>
+                    </figure>
+                </div>
+            </section>
+        </main>
+
+        <footer class="guide-footer">
+            <p>
+                Answers come from the FTSM-RAG knowledge base (official pages, timetables and
+                curated student guides). Always verify critical details — visas, fees, deadlines —
+                through official UKM / EMGS channels.
+            </p>
+        </footer>
+
+        <div class="guide-lightbox" id="guide-lightbox" hidden>
+            <img id="guide-lightbox-img" src="" alt="Enlarged route map" />
+        </div>
+
+        <script src="/static/guide.js" defer></script>
+    </body>
+</html>

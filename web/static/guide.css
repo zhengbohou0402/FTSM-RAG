@@ -1,0 +1,364 @@
+/* FTSM Student Life Guide — light theme, teal/amber palette to match the assistant UI */
+
+:root {
+    --guide-teal: #0f766e;
+    --guide-teal-soft: #ccfbf1;
+    --guide-teal-bg: #f0fdfa;
+    --guide-amber: #b45309;
+    --guide-amber-soft: #fef3c7;
+    --guide-ink: #134e4a;
+    --guide-muted: #5f6b6a;
+    --guide-line: #d8e4e2;
+    --guide-card-bg: #ffffff;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body.guide-page {
+    margin: 0;
+    font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+    color: var(--guide-ink);
+    background: linear-gradient(180deg, var(--guide-teal-bg) 0%, #ffffff 320px);
+}
+
+/* ── Nav ─────────────────────────────────────────────── */
+
+.guide-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 28px;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(6px);
+    border-bottom: 1px solid var(--guide-line);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.guide-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    font-size: 17px;
+    color: var(--guide-teal);
+    text-decoration: none;
+}
+
+.guide-brand img {
+    height: 30px;
+    width: auto;
+}
+
+.guide-nav-links {
+    display: flex;
+    gap: 22px;
+}
+
+.guide-nav-links a {
+    color: var(--guide-ink);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 6px 4px;
+    border-bottom: 2px solid transparent;
+}
+
+.guide-nav-links a:hover {
+    color: var(--guide-teal);
+    border-bottom-color: var(--guide-teal);
+}
+
+/* ── Hero ────────────────────────────────────────────── */
+
+.guide-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    gap: 28px;
+    align-items: center;
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 40px 28px 24px;
+}
+
+.guide-kicker {
+    margin: 0 0 6px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--guide-amber);
+}
+
+.guide-hero h1 {
+    margin: 0 0 12px;
+    font-size: 34px;
+    line-height: 1.2;
+}
+
+.guide-sub {
+    margin: 0 0 20px;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--guide-muted);
+    max-width: 44ch;
+}
+
+.guide-hero-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.guide-btn {
+    display: inline-block;
+    padding: 10px 18px;
+    border-radius: 10px;
+    border: 1px solid var(--guide-teal);
+    color: var(--guide-teal);
+    background: #ffffff;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.guide-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(15, 118, 110, 0.15);
+}
+
+.guide-btn-primary {
+    background: var(--guide-teal);
+    color: #ffffff;
+}
+
+.guide-hero-img {
+    width: 100%;
+    height: auto;
+    border-radius: 16px;
+    border: 1px solid var(--guide-line);
+    box-shadow: 0 12px 30px rgba(19, 78, 74, 0.12);
+}
+
+/* ── Sections ────────────────────────────────────────── */
+
+.guide-main {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 16px 28px 48px;
+}
+
+.guide-main h2 {
+    font-size: 22px;
+    margin: 28px 0 4px;
+}
+
+.section-sub {
+    margin: 0 0 18px;
+    font-size: 13.5px;
+    color: var(--guide-muted);
+}
+
+/* ── Topic cards ─────────────────────────────────────── */
+
+.guide-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+}
+
+@media (max-width: 900px) {
+    .guide-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .guide-hero {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+    .guide-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.topic-card {
+    background: var(--guide-card-bg);
+    border: 1px solid var(--guide-line);
+    border-radius: 14px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.topic-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 24px rgba(19, 78, 74, 0.12);
+}
+
+.topic-card img {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+    display: block;
+    background: var(--guide-teal-bg);
+}
+
+.topic-body {
+    padding: 14px 16px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+}
+
+.topic-body h3 {
+    margin: 0;
+    font-size: 16px;
+}
+
+.topic-body p {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--guide-muted);
+}
+
+.topic-chips {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: auto;
+}
+
+.topic-chip {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    text-align: left;
+    font-family: inherit;
+    font-size: 12.5px;
+    line-height: 1.4;
+    color: var(--guide-ink);
+    background: var(--guide-teal-bg);
+    border: 1px solid var(--guide-teal-soft);
+    border-radius: 9px;
+    padding: 8px 10px;
+    cursor: pointer;
+    transition: border-color 0.1s ease, background 0.1s ease;
+}
+
+.topic-chip:hover {
+    border-color: var(--guide-teal);
+    background: var(--guide-teal-soft);
+}
+
+.topic-chip .chip-copied {
+    color: var(--guide-teal);
+    font-weight: 600;
+    white-space: nowrap;
+    visibility: hidden;
+}
+
+.topic-chip.copied .chip-copied {
+    visibility: visible;
+}
+
+/* ── Bus routes ──────────────────────────────────────── */
+
+.bus-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 18px;
+}
+
+@media (max-width: 900px) {
+    .bus-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 600px) {
+    .bus-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.bus-card {
+    margin: 0;
+    background: var(--guide-card-bg);
+    border: 1px solid var(--guide-line);
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.bus-card img {
+    width: 100%;
+    height: 240px;
+    object-fit: cover;
+    display: block;
+    cursor: zoom-in;
+    transition: opacity 0.1s ease;
+}
+
+.bus-card img:hover {
+    opacity: 0.92;
+}
+
+.bus-card figcaption {
+    padding: 10px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--guide-teal);
+    background: var(--guide-teal-bg);
+    border-top: 1px solid var(--guide-line);
+}
+
+/* ── Lightbox ────────────────────────────────────────── */
+
+.guide-lightbox {
+    position: fixed;
+    inset: 0;
+    background: rgba(9, 34, 32, 0.82);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    z-index: 50;
+    cursor: zoom-out;
+}
+
+.guide-lightbox[hidden] {
+    display: none;
+}
+
+.guide-lightbox img {
+    max-width: min(1100px, 94vw);
+    max-height: 92vh;
+    border-radius: 10px;
+    background: #ffffff;
+    padding: 8px;
+}
+
+/* ── Footer ──────────────────────────────────────────── */
+
+.guide-footer {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 20px 28px 40px;
+    border-top: 1px solid var(--guide-line);
+}
+
+.guide-footer p {
+    margin: 0;
+    font-size: 12.5px;
+    line-height: 1.6;
+    color: var(--guide-muted);
+}

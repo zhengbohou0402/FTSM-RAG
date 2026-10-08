@@ -301,6 +301,12 @@ async def manage(request: Request) -> HTMLResponse:
     return templates.TemplateResponse(request, "legacy.html", {})
 
 
+@app.get("/guide", response_class=HTMLResponse)
+async def guide_page(request: Request) -> HTMLResponse:
+    """Student life guide portal (English): quick topics with sample questions + bus maps."""
+    return templates.TemplateResponse(request, "guide.html", {})
+
+
 @app.get("/dashboard", response_class=HTMLResponse)
 async def dashboard(request: Request) -> HTMLResponse:
     if _react_web_available():
