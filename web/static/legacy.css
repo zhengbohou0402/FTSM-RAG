@@ -1,0 +1,253 @@
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family:
+        "Inter",
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+    color: #111827;
+}
+
+.legacy-page {
+    min-height: 100vh;
+    background: #f7f7f8;
+}
+
+.legacy-shell {
+    width: min(1040px, calc(100% - 32px));
+    margin: 0 auto;
+    padding: 40px 0 56px;
+}
+
+.legacy-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.legacy-kicker {
+    color: #10a37f;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px;
+}
+
+.legacy-header h1 {
+    color: #111827;
+    font-size: 30px;
+    line-height: 1.15;
+    margin: 0 0 8px;
+}
+
+.legacy-header p {
+    max-width: 680px;
+    color: #6b7280;
+    font-size: 14px;
+    line-height: 1.65;
+    margin: 0;
+}
+
+.legacy-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.legacy-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    padding: 0 16px;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    background: #ffffff;
+    color: #111827;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.legacy-btn:hover:not(:disabled) {
+    border-color: #10a37f;
+    color: #0f8f70;
+}
+
+.legacy-btn:disabled {
+    opacity: 0.55;
+    cursor: default;
+}
+
+.legacy-btn-primary {
+    border-color: #10a37f;
+    background: #10a37f;
+    color: #ffffff;
+}
+
+.legacy-btn-primary:hover {
+    color: #ffffff;
+    background: #0f8f70;
+}
+
+.legacy-banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 13px 16px;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    background: #ffffff;
+    color: #374151;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 16px;
+}
+
+.legacy-banner-ok {
+    border-color: #bbf7d0;
+    background: #f0fdf4;
+    color: #166534;
+}
+
+.legacy-banner-error {
+    border-color: #fecaca;
+    background: #fef2f2;
+    color: #991b1b;
+}
+
+.legacy-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #9ca3af;
+}
+
+.legacy-dot-loading {
+    animation: pulse-dot 1s infinite;
+}
+
+.legacy-dot-ok {
+    background: #22c55e;
+}
+
+.legacy-dot-error {
+    background: #ef4444;
+}
+
+@keyframes pulse-dot {
+    0%,
+    100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.35;
+    }
+}
+
+.legacy-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.legacy-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 18px;
+}
+
+.legacy-card-wide {
+    grid-column: 1 / -1;
+}
+
+.legacy-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 14px;
+}
+
+.legacy-card-head span {
+    color: #111827;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.legacy-card-head strong {
+    padding: 4px 9px;
+    border-radius: 999px;
+    background: #f3f4f6;
+    color: #4b5563;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.legacy-card-head strong.legacy-ok {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.legacy-card-head strong.legacy-error {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.legacy-card dl {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+}
+
+.legacy-dl-wide {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.legacy-card dl div {
+    min-width: 0;
+}
+
+.legacy-card dt {
+    color: #6b7280;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.legacy-card dd {
+    color: #111827;
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 760px) {
+    .legacy-header {
+        flex-direction: column;
+    }
+
+    .legacy-actions {
+        justify-content: flex-start;
+    }
+
+    .legacy-grid,
+    .legacy-dl-wide {
+        grid-template-columns: 1fr;
+    }
+}

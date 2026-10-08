@@ -23,6 +23,62 @@ try:
 except Exception:
     _OPENCC_AVAILABLE = False
 
+NAVIGATION_PATTERNS = (
+    r"\bwhere\s+can\s+i\s+(find|view|check|see|get|look\s+for)\b",
+    r"\bwhere\s+to\s+(find|view|check|see|get|look\s+for)\b",
+    r"\bhow\s+can\s+i\s+(find|view|check|see|get|look\s+for)\b",
+    r"\bhow\s+do\s+i\s+(find|view|check|see|get|look\s+for)\b",
+    r"\bcan\s+you\s+(tell|show|give)\s+me\b",
+    r"\bgive\s+me\s+(the\s+)?(information|details|summary)\s+(about|on|for)\b",
+)
+
+TOPIC_REWRITE_RULES: tuple[tuple[tuple[str, ...], str], ...] = (
+    (
+        ("academic calendar", "calendar", "semester date", "校历", "学年"),
+        "academic calendar semester dates registration lecture break examination holiday",
+    ),
+    (
+        ("timetable", "course schedule", "class schedule", "课程表", "课表", "选课"),
+        "course timetable class schedule course mode room coordinator",
+    ),
+    (
+        ("visa", "student pass", "emgs", "renewal", "续签", "签证"),
+        "student visa renewal student pass EMGS passport required documents PKP",
+    ),
+    (
+        ("admission", "apply", "requirement", "programme", "program", "申请", "入学"),
+        "FTSM postgraduate admission programme requirements application intake",
+    ),
+    (
+        ("bus", "route", "campus bus", "bas kampus", "巴士", "公交"),
+        "UKM campus bus route schedule stop route information",
+    ),
+    (
+        ("staff", "lecturer", "supervisor", "advisor", "expertise", "导师", "老师"),
+        "FTSM academic staff lecturer supervisor advisor expertise email",
+    ),
+    (
+        ("industrial training", "internship", "latihan industri", "实习"),
+        "FTSM industrial training internship coordinator contact requirement",
+    ),
+    (
+        ("facility", "facilities", "service", "lab", "library", "设施"),
+        "FTSM facilities services laboratory library student facilities",
+    ),
+    (
+        ("exam", "final exam", "examination", "考试"),
+        "final examination schedule exam date venue course",
+    ),
+    (
+        ("registration", "register", "enrolment", "renewal", "注册"),
+        "student registration renewal course registration required documents",
+    ),
+    (
+        ("system", "portal", "smpweb", "folio", "系统"),
+        "UKM student system portal SMPWEB FOLIO academic system",
+    ),
+)
+
 # ---------------------------------------------------------------------------
 # 三语同义词扩展词典
 # key   = 用户可能输入的词（中文简体 / 英文 / 马来语 均可作 key）
@@ -169,7 +225,7 @@ SYNONYM_MAP: dict[str, list[str]] = {
 class QueryPreprocessor:
     """三语查询预处理器：繁转简 + 中/英/马来语同义词扩展"""
 
-    def __init__(self, max_expansions: int = 2):
+    def __init__(self, max_expansions: int = 3):
         """
         Args:
             max_expansions: 最多额外生成几条扩展查询（避免检索太分散）
@@ -187,6 +243,26 @@ class QueryPreprocessor:
         text = unicodedata.normalize("NFKC", text)
         text = re.sub(r"\s+", " ", text).strip()
         return text
+
+    def rewrite_student_query(self, text: str) -> list[str]:
+        """把口语化/导航式问题改写成更适合检索的关键词查询。"""
+        rewrites: list[str] = []
+        cleaned = text
+        for pattern in NAVIGATION_PATTERNS:
+            cleaned = re.sub(pattern, " ", cleaned, flags=re.IGNORECASE)
+        cleaned = re.sub(r"[?？。!！]+", " ", cleaned)
+        cleaned = re.sub(r"\s+", " ", cleaned).strip(" ,.;:")
+
+        if cleaned and cleaned.lower() != text.lower() and cleaned not in rewrites:
+            rewrites.append(cleaned)
+
+        text_lower = text.lower()
+        for keywords, rewrite in TOPIC_REWRITE_RULES:
+            if any(keyword.lower() in text_lower for keyword in keywords):
+                if rewrite not in rewrites:
+                    rewrites.append(rewrite)
+                break
+        return rewrites
 
     def expand_synonyms(self, text: str) -> list[str]:
         """
@@ -219,8 +295,17 @@ class QueryPreprocessor:
         """
         simplified = self.traditional_to_simplified(query)
         normalized = self.normalize(simplified)
+        rewrites = self.rewrite_student_query(normalized)
         expansions = self.expand_synonyms(normalized)
-        return [normalized] + expansions[:self.max_expansions]
+
+        queries: list[str] = []
+        for candidate in [normalized] + rewrites + expansions:
+            candidate = self.normalize(candidate)
+            if candidate and candidate not in queries:
+                queries.append(candidate)
+            if len(queries) >= 1 + self.max_expansions:
+                break
+        return queries
 
 
 # 全局单例

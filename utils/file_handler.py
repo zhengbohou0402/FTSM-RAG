@@ -2,11 +2,12 @@ import base64
 import hashlib
 import os
 
-from langchain_community.document_loaders import PyPDFLoader, TextLoader
+from langchain_community.document_loaders import PyPDFLoader
 from langchain_core.documents import Document
 
 from utils.config_handler import rag_conf
 from utils.logger_handler import logger
+from utils.text_encoding import read_text_safely
 
 
 def get_file_md5_hex(filepath: str):
@@ -37,7 +38,7 @@ def listdir_with_allowed_type(path: str, allowed_types: tuple[str]):
 
     if not os.path.isdir(path):
         logger.error(f"[listdir_with_allowed_type] Not a directory: {path}")
-        return allowed_types
+        return []
 
     for f in os.listdir(path):
         if f.endswith(allowed_types):
@@ -47,11 +48,39 @@ def listdir_with_allowed_type(path: str, allowed_types: tuple[str]):
 
 
 def pdf_loader(filepath: str, passwd=None) -> list[Document]:
-    return PyPDFLoader(filepath, passwd).load()
+    docs = PyPDFLoader(filepath, passwd).load()
+    text_chars = sum(len((doc.page_content or "").strip()) for doc in docs)
+    if text_chars < 80:
+        logger.warning(
+            "[pdf_loader] %s appears to be image-only or scanned (%s text chars). "
+            "Create a text transcript before indexing.",
+            filepath,
+            text_chars,
+        )
+        return []
+    return docs
 
 
 def txt_loader(filepath: str) -> list[Document]:
-    return TextLoader(filepath, encoding="utf-8").load()
+    decoded = read_text_safely(filepath)
+    if decoded.mojibake_score:
+        logger.warning(
+            "[txt_loader] Possible mojibake in %s after decoding as %s (score=%s).",
+            filepath,
+            decoded.encoding,
+            decoded.mojibake_score,
+        )
+    return [
+        Document(
+            page_content=decoded.text,
+            metadata={
+                "source": filepath,
+                "filename": os.path.basename(filepath),
+                "encoding": decoded.encoding,
+                "mojibake_score": decoded.mojibake_score,
+            },
+        )
+    ]
 
 
 def image_loader(filepath: str) -> list[Document]:

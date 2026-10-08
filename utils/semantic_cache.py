@@ -27,10 +27,11 @@ from threading import Lock
 # 强制 IPv4，与 vector_store.py 保持一致
 urllib3.util.connection.HAS_IPV6 = False
 
-from model.factory import embed_model
+from model.factory import get_embed_model
 from utils.logger_handler import logger
+from utils.path_tool import get_abs_path
 
-CACHE_FILE = Path(__file__).resolve().parents[1] / "data" / "ukm_ftsm" / "semantic_cache.json"
+CACHE_FILE = Path(get_abs_path("data/ukm_ftsm")) / "semantic_cache.json"
 MAX_CACHE_ENTRIES = 500       # 最多缓存条目数
 DEFAULT_THRESHOLD = 0.92      # 余弦相似度阈值，越高越严格
 CACHE_TTL_SECONDS = 7 * 24 * 3600  # 缓存有效期：7 天
@@ -56,13 +57,15 @@ class SemanticCache:
         self._lock = Lock()
         # entries: list of {"question": str, "answer": str, "vector": list[float], "created_at": int}
         self._entries: list[dict] = []
+        self._hit_count: int = 0
+        self._miss_count: int = 0
         self._load()
 
     # ------------------------------------------------------------------ #
     #  公开接口                                                             #
     # ------------------------------------------------------------------ #
 
-    def get(self, question: str) -> tuple[bool, str | None]:
+    def get(self, question: str, *, namespace: str = "") -> tuple[bool, str | None]:
         """
         查询缓存。
         Returns:
@@ -80,6 +83,8 @@ class SemanticCache:
             best_score = 0.0
             best_answer = None
             for entry in self._entries:
+                if str(entry.get("namespace") or "") != namespace:
+                    continue
                 # 跳过过期条目
                 if now - entry.get("created_at", 0) > CACHE_TTL_SECONDS:
                     continue
@@ -90,12 +95,16 @@ class SemanticCache:
 
         if best_score >= self.threshold and best_answer:
             logger.info(f"[SemanticCache] HIT  similarity={best_score:.4f}  q={question[:60]}")
+            with self._lock:
+                self._hit_count += 1
             return True, best_answer
 
         logger.info(f"[SemanticCache] MISS similarity={best_score:.4f}  q={question[:60]}")
+        with self._lock:
+            self._miss_count += 1
         return False, None
 
-    def set(self, question: str, answer: str) -> None:
+    def set(self, question: str, answer: str, *, namespace: str = "") -> None:
         """将问答对写入缓存"""
         try:
             q_vec = self._embed(question)
@@ -104,6 +113,7 @@ class SemanticCache:
             return
 
         entry = {
+            "namespace": namespace,
             "question": question,
             "answer": answer,
             "vector": q_vec,
@@ -128,7 +138,32 @@ class SemanticCache:
                 1 for e in self._entries
                 if now - e.get("created_at", 0) <= CACHE_TTL_SECONDS
             )
-        return {"total": total, "valid": valid, "threshold": self.threshold}
+            namespaces: dict[str, int] = {}
+            for entry in self._entries:
+                name = str(entry.get("namespace") or "legacy")
+                namespaces[name] = namespaces.get(name, 0) + 1
+            hit = self._hit_count
+            miss = self._miss_count
+        total_queries = hit + miss
+        hit_rate = round(hit / total_queries, 4) if total_queries else 0.0
+        return {
+            "size": total,
+            "valid": valid,
+            "threshold": self.threshold,
+            "hit_count": hit,
+            "miss_count": miss,
+            "hit_rate": hit_rate,
+            "namespaces": namespaces,
+        }
+
+    def clear(self) -> None:
+        """Clear cached answers after knowledge-base or model changes."""
+        with self._lock:
+            self._entries = []
+            self._hit_count = 0
+            self._miss_count = 0
+            self._save()
+        logger.info("[SemanticCache] CLEARED")
 
     # ------------------------------------------------------------------ #
     #  内部方法                                                             #
@@ -136,7 +171,7 @@ class SemanticCache:
 
     def _embed(self, text: str) -> list[float]:
         """将文本向量化（调用 DashScope embedding）"""
-        return embed_model.embed_query(text)
+        return get_embed_model().embed_query(text)
 
     def _load(self) -> None:
         """从本地文件加载缓存"""
