@@ -1,0 +1,7 @@
+/Users/houzhengbo/Desktop/PHILIPS资料/学习工作/RAG项目/FTSM-RAG/ftsm-java/ftsm-conversation/src/main/java/com/ftsm/conversation/ConversationApplication.java
+/Users/houzhengbo/Desktop/PHILIPS资料/学习工作/RAG项目/FTSM-RAG/ftsm-java/ftsm-conversation/src/main/java/com/ftsm/conversation/entity/Conversation.java
+/Users/houzhengbo/Desktop/PHILIPS资料/学习工作/RAG项目/FTSM-RAG/ftsm-java/ftsm-conversation/src/main/java/com/ftsm/conversation/entity/ConversationMessage.java
+/Users/houzhengbo/Desktop/PHILIPS资料/学习工作/RAG项目/FTSM-RAG/ftsm-java/ftsm-conversation/src/main/java/com/ftsm/conversation/mapper/ConversationMapper.java
+/Users/houzhengbo/Desktop/PHILIPS资料/学习工作/RAG项目/FTSM-RAG/ftsm-java/ftsm-conversation/src/main/java/com/ftsm/conversation/mapper/ConversationMessageMapper.java
+/Users/houzhengbo/Desktop/PHILIPS资料/学习工作/RAG项目/FTSM-RAG/ftsm-java/ftsm-conversation/src/main/java/com/ftsm/conversation/web/ConversationController.java
+/Users/houzhengbo/Desktop/PHILIPS资料/学习工作/RAG项目/FTSM-RAG/ftsm-java/ftsm-conversation/src/main/java/com/ftsm/conversation/web/InternalConversationController.java

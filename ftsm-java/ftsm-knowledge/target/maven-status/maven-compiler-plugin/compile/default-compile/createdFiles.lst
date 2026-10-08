@@ -1,0 +1,12 @@
+com/ftsm/knowledge/web/InternalDocController$DocRegistrationRequest.class
+com/ftsm/knowledge/entity/Doc.class
+com/ftsm/knowledge/mq/DocEventPublisher.class
+com/ftsm/knowledge/entity/QueryLog.class
+com/ftsm/knowledge/mapper/QueryLogMapper.class
+com/ftsm/knowledge/mapper/DocMapper.class
+com/ftsm/knowledge/mq/RabbitTopology.class
+com/ftsm/knowledge/web/KnowledgeController.class
+com/ftsm/knowledge/KnowledgeApplication.class
+com/ftsm/knowledge/mq/KnowledgeEventListeners.class
+com/ftsm/knowledge/web/InternalDocController.class
+com/ftsm/knowledge/web/InternalDocController$DocRegistration.class

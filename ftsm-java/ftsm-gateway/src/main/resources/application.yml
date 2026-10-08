@@ -1,0 +1,48 @@
+server:
+  port: ${FTSM_GATEWAY_PORT:8080}
+
+spring:
+  application:
+    name: ftsm-gateway
+  cloud:
+    gateway:
+      default-filters: []
+      routes:
+        # Auth (public)
+        - id: user-auth
+          uri: ${FTSM_USER_URI:http://127.0.0.1:8101}
+          predicates: [ "Path=/api/auth/**" ]
+        # Student conversations
+        - id: conversation
+          uri: ${FTSM_CONVERSATION_URI:http://127.0.0.1:8102}
+          predicates: [ "Path=/api/conversations/**" ]
+        # Admin-key-protected knowledge update lives in ftsm-rag (crawler + reindex)
+        - id: rag-knowledge-update
+          uri: ${FTSM_RAG_URI:http://127.0.0.1:8104}
+          predicates: [ "Path=/api/knowledge/update" ]
+        # Document metadata + stats + training status + retrieval quality (ftsm-knowledge)
+        - id: knowledge
+          uri: ${FTSM_KNOWLEDGE_URI:http://127.0.0.1:8103}
+          predicates: [ "Path=/api/documents/**,/api/knowledge/**,/api/training/**,/api/retrieval/**" ]
+        # AI service (chat SSE, upload, cache, settings, models, scheduler, health)
+        - id: rag
+          uri: ${FTSM_RAG_URI:http://127.0.0.1:8104}
+          predicates: [ "Path=/api/upload,/api/chat,/api/cache/**,/api/settings/**,/api/models,/api/config/**,/api/scheduler/**,/api/health" ]
+        # Static frontend stays served by ftsm-rag
+        - id: rag-web
+          uri: ${FTSM_RAG_URI:http://127.0.0.1:8104}
+          predicates: [ "Path=/**" ]
+
+      # SSE passthrough: never buffer the chat stream
+      httpclient:
+        response-timeout: 120s
+
+ftsm:
+  session:
+    secret: ${FTSM_SESSION_SECRET:dev-only-secret-change-me}
+  admin:
+    api-key: ${ADMIN_API_KEY:}
+
+logging:
+  level:
+    com.ftsm.gateway: INFO
