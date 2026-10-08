@@ -1,8 +1,0 @@
-com/ftsm/conversation/entity/Conversation.class
-com/ftsm/conversation/web/InternalConversationController.class
-com/ftsm/conversation/mapper/ConversationMessageMapper.class
-com/ftsm/conversation/web/InternalConversationController$TurnRequest.class
-com/ftsm/conversation/ConversationApplication.class
-com/ftsm/conversation/entity/ConversationMessage.class
-com/ftsm/conversation/web/ConversationController.class
-com/ftsm/conversation/mapper/ConversationMapper.class

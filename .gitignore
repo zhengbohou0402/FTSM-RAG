@@ -38,3 +38,7 @@ desktop/dist/
 desktop/python-backend/
 desktop/src-tauri/python-backend/
 desktop/src-tauri/target/
+
+# Java build output
+ftsm-java/*/target/
+ftsm-java/target/

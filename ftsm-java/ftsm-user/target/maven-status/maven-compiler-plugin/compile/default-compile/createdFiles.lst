@@ -1,8 +1,0 @@
-com/ftsm/user/auth/SessionCookieWriter.class
-com/ftsm/user/web/AuthController.class
-com/ftsm/user/web/ApiExceptionHandler.class
-com/ftsm/user/UserApplication.class
-com/ftsm/user/mapper/StudentMapper.class
-com/ftsm/user/auth/PasswordHasher.class
-com/ftsm/user/web/AuthRequest.class
-com/ftsm/user/entity/Student.class
