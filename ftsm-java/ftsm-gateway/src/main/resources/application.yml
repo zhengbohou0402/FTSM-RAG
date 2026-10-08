@@ -16,10 +16,13 @@ spring:
         - id: conversation
           uri: ${FTSM_CONVERSATION_URI:http://127.0.0.1:8102}
           predicates: [ "Path=/api/conversations/**" ]
-        # Admin-key-protected knowledge update lives in ftsm-rag (crawler + reindex)
+        # Admin-key-protected operations live in ftsm-rag (crawler + reindex + manual training)
         - id: rag-knowledge-update
           uri: ${FTSM_RAG_URI:http://127.0.0.1:8104}
           predicates: [ "Path=/api/knowledge/update" ]
+        - id: rag-training-start
+          uri: ${FTSM_RAG_URI:http://127.0.0.1:8104}
+          predicates: [ "Path=/api/training/start" ]
         # Document metadata + stats + training status + retrieval quality (ftsm-knowledge)
         - id: knowledge
           uri: ${FTSM_KNOWLEDGE_URI:http://127.0.0.1:8103}
