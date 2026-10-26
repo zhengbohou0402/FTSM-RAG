@@ -15,7 +15,10 @@ langchain-core==1.2.25
 langchain-chroma==1.1.0
 langchain-text-splitters==1.1.1
 langgraph==1.1.4
+langchain-google-vertexai==3.2.2
+google-auth==2.56.3
 chromadb==1.5.5
+numpy==2.5.2
 
 rank-bm25>=0.2.2
 

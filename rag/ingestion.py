@@ -247,10 +247,12 @@ def save_manifest(manifest: dict[str, Any]) -> None:
     MANIFEST_PATH.parent.mkdir(parents=True, exist_ok=True)
     manifest.setdefault("documents", {})
     manifest.setdefault("index", compute_index_state(manifest))
-    MANIFEST_PATH.write_text(
+    tmp_path = MANIFEST_PATH.with_suffix(".tmp")
+    tmp_path.write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2),
         encoding="utf-8",
     )
+    tmp_path.replace(MANIFEST_PATH)
 
 
 def source_to_manifest_record(

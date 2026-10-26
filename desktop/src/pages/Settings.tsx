@@ -28,6 +28,9 @@ export default function Settings({ isDark, onToggleTheme }: Props) {
 
   const [apiKey, setApiKey] = useState("");
   const [showKey, setShowKey] = useState(false);
+  const [adminKey, setAdminKey] = useState(() =>
+    typeof localStorage !== "undefined" ? localStorage.getItem("ftsm_admin_key") || "" : ""
+  );
   const [region, setRegion] = useState<"china" | "intl">("china");
   const [baseUrl, setBaseUrl] = useState("");
   const [selectedModel, setSelectedModel] = useState("");
@@ -125,6 +128,14 @@ export default function Settings({ isDark, onToggleTheme }: Props) {
     if (!modelToSave) {
       message.error("Please select or enter a model.");
       return;
+    }
+
+    // 管理员密钥先落 localStorage（client.ts 的 adminHeaders() 从这里读取），
+    // 必须在 save() 发请求之前写好
+    if (typeof localStorage !== "undefined") {
+      const trimmed = adminKey.trim();
+      if (trimmed) localStorage.setItem("ftsm_admin_key", trimmed);
+      else localStorage.removeItem("ftsm_admin_key");
     }
 
     const success = await save({
@@ -251,6 +262,22 @@ export default function Settings({ isDark, onToggleTheme }: Props) {
               {keyStatus.valid === false && (
                 <Text type="danger" className="field-help">{keyStatus.error || "Invalid API key."}</Text>
               )}
+            </section>
+
+            <section>
+              <div className="panel-title-row">
+                <Text strong>Admin API Key</Text>
+                <Tag color="orange">For settings &amp; knowledge update</Tag>
+              </div>
+              <Text type="secondary" className="field-help">
+                Required to save settings or trigger a knowledge update (X-Admin-Api-Key).
+                Stored locally in this browser profile only.
+              </Text>
+              <Input.Password
+                value={adminKey}
+                onChange={(e) => setAdminKey(e.target.value)}
+                placeholder="ADMIN_API_KEY from the backend .env"
+              />
             </section>
 
             <Button type="primary" onClick={handleSave} loading={saving} block>

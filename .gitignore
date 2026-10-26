@@ -42,3 +42,11 @@ desktop/src-tauri/target/
 # Java build output
 ftsm-java/*/target/
 ftsm-java/target/
+
+# P0-1 安全修复：凭据/运行时产物/备份一律不入库
+.gcp/
+.runtime/
+*.bak-*
+_backup-*/
+.DS_Store
+archive/

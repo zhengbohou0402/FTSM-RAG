@@ -24,6 +24,8 @@ import time
 from pathlib import Path
 from typing import Any
 
+from utils.logger_handler import logger
+
 # 索引最多保留条数；超出自动按 updated_at 淘汰
 MAX_CONVERSATIONS = 200
 # 单个对话保留的消息数（用户+助手 各一条算 2 条）
@@ -46,6 +48,7 @@ class ConversationStore:
         self.index_file = self.dir / "index.json"
         self._lock = threading.RLock()
         self._migrate_legacy(base_dir)
+        self._rebuild_index()
 
     # ── 公共 API ──────────────────────────────────────────
 
@@ -83,6 +86,7 @@ class ConversationStore:
         }
         with self._lock:
             self._save_conv(conv)
+            self._upsert_index(conv["id"], conv["title"], conv["updated_at"])
         return conv
 
     def delete(self, conversation_id: str) -> bool:
@@ -124,6 +128,7 @@ class ConversationStore:
             conv["title"] = title or conv.get("title") or "New chat"
             conv["updated_at"] = now
             self._save_conv(conv)
+            self._upsert_index(conv["id"], conv["title"], conv["updated_at"])
 
     # ── 内部实现 ──────────────────────────────────────────
 
@@ -132,6 +137,56 @@ class ConversationStore:
         if not safe:
             return None
         return self.dir / f"{safe}.json"
+
+    def _rebuild_index(self) -> None:
+        """把磁盘上存在但不在 index.json 里的对话补回索引（一次性自愈）。
+
+        历史 bug：append_turn 只写对话文件不更新索引，导致列表接口看不到
+        已存在的对话。启动时全量扫描一次目录即可找回。
+        """
+        known = {i.get("id") for i in self._load_index()}
+        found: list[dict[str, Any]] = []
+        for path in self.dir.glob("*.json"):
+            if path.name == self.index_file.name:
+                continue
+            try:
+                conv = json.loads(path.read_text(encoding="utf-8"))
+            except Exception:
+                continue
+            conv_id = str(conv.get("id") or path.stem)
+            if conv_id in known:
+                continue
+            found.append({
+                "id": conv_id,
+                "title": conv.get("title") or "New chat",
+                "updated_at": int(conv.get("updated_at") or 0),
+            })
+        if not found:
+            return
+        index = self._load_index()
+        index.extend(found)
+        index.sort(key=lambda x: x.get("updated_at", 0), reverse=True)
+        if len(index) > MAX_CONVERSATIONS:
+            index = index[:MAX_CONVERSATIONS]
+        self._save_index(index)
+        logger.warning(
+            "[conversation_store] Rebuilt index: recovered %d orphaned conversation(s)",
+            len(found),
+        )
+
+    def _upsert_index(self, conversation_id: str, title: str, updated_at: int) -> None:
+        """把对话 upsert 进 index.json（append_turn/create 之后调用）。
+
+        必须与 _save_conv 在同一把锁内调用；超出 MAX_CONVERSATIONS 时按
+        updated_at 淘汰最旧条目。
+        """
+        index = self._load_index()
+        new_index = [i for i in index if i.get("id") != conversation_id]
+        new_index.append({"id": conversation_id, "title": title, "updated_at": updated_at})
+        new_index.sort(key=lambda x: x.get("updated_at", 0), reverse=True)
+        if len(new_index) > MAX_CONVERSATIONS:
+            new_index = new_index[:MAX_CONVERSATIONS]
+        self._save_index(new_index)
 
     def _load_index(self) -> list[dict[str, Any]]:
         if not self.index_file.exists():

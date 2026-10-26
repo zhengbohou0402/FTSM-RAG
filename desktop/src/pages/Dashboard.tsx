@@ -69,13 +69,13 @@ export default function Dashboard({ isDark, onToggleTheme }: Props) {
         api.cache.stats(),
         api.training.status(),
         api.scheduler.status(),
-        api.conversations.list(),
+        api.conversations.list().catch(() => ({ items: [] })),
       ]);
       setKb(kbData);
       setCache(cacheData);
       setTraining(trainData);
       setScheduler(schedData);
-      setConvCount(convs.items.length);
+      setConvCount(convs?.items?.length || 0);
     } catch {
       // keep previous values visible
     }

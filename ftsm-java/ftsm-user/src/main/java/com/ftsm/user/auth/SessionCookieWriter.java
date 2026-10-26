@@ -10,8 +10,8 @@ import org.springframework.stereotype.Component;
 /**
  * Issues the ftsm_student_session cookie (httponly, samesite=lax) exactly like the
  * legacy monolith. The cookie value is a stateless signed token (see SessionTokens);
- * logout clears the cookie and, to support server-side revocation, also records the
- * token suffix in the revoked_token table via SessionRevokes.
+ * logout clears the cookie client-side only — there is NO server-side revocation
+ * (no revoked_token table exists; see schema.sql). Token expiry is the only bound.
  */
 @Component
 public class SessionCookieWriter {

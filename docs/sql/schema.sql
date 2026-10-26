@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS doc (
     source_url  VARCHAR(500)  NOT NULL DEFAULT '',
     size        BIGINT        NOT NULL DEFAULT 0,
     file_hash   VARCHAR(64)   NOT NULL DEFAULT '',
-    chunk_ids   MEDIUMTEXT    NOT NULL DEFAULT '[]',
+    chunk_ids   MEDIUMTEXT    NULL,
     chunk_count INT           NOT NULL DEFAULT 0,
     status      VARCHAR(16)   NOT NULL DEFAULT 'INDEXING',
     error       VARCHAR(1000) NOT NULL DEFAULT '',
@@ -66,5 +66,6 @@ CREATE TABLE IF NOT EXISTS query_log (
     top_score  DOUBLE        NOT NULL DEFAULT 0,
     sources    VARCHAR(1000) NOT NULL DEFAULT '',
     latency_ms INT           NOT NULL DEFAULT 0,
-    created_at BIGINT        NOT NULL
+    created_at BIGINT        NOT NULL,
+    KEY idx_created (created_at)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;

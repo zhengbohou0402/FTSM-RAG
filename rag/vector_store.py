@@ -52,9 +52,11 @@ class VectorStoreService:
 
     @staticmethod
     def _build_index_config() -> dict:
+        from model.factory import resolve_embedding_model_name
+
         return {
             "schema_version": 2,
-            "embedding_model_name": rag_conf["embedding_model_name"],
+            "embedding_model_name": resolve_embedding_model_name(),
             "collection_name": chroma_conf["collection_name"],
             "chunk_size": chroma_conf["chunk_size"],
             "chunk_overlap": chroma_conf["chunk_overlap"],

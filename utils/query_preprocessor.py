@@ -252,8 +252,10 @@ class QueryPreprocessor:
             cleaned = re.sub(pattern, " ", cleaned, flags=re.IGNORECASE)
         cleaned = re.sub(r"[?？。!！]+", " ", cleaned)
         cleaned = re.sub(r"\s+", " ", cleaned).strip(" ,.;:")
+        base_stripped = re.sub(r"[?？。!！]+", " ", text)
+        base_stripped = re.sub(r"\s+", " ", base_stripped).strip(" ,.;:")
 
-        if cleaned and cleaned.lower() != text.lower() and cleaned not in rewrites:
+        if cleaned and cleaned.lower() != base_stripped.lower() and cleaned not in rewrites:
             rewrites.append(cleaned)
 
         text_lower = text.lower()

@@ -1,5 +1,54 @@
-# Chat 模型名由 .env 中的 CHAT_MODEL_NAME 覆盖；此处为兜底默认值。
-# 可选：qwen3-max / qwen-plus / qwen-turbo / qwen3.6-plus（国际版）
+# 模型名兜底默认值（仅 dashscope 后端读取；vertex 后端用 .env 的
+# VERTEX_MODEL_NAME / VERTEX_EMBEDDING_MODEL，默认 gemini-3.6-flash / gemini-embedding-001）
 chat_model_name: qwen-turbo
 embedding_model_name: text-embedding-v3
 image_model_name: qwen-vl-plus
+
+# ── 检索参数 ───────────────────────────────────────────────────────────────
+# 此前硬编码在 rag/rag_service.py 的模块常量里，集中到这里便于调参。
+retrieval:
+  vector_k: 12            # 向量召回条数（RRF 融合前）
+  bm25_k: 12              # BM25 召回条数（RRF 融合前）
+  rrf_k: 60               # RRF 平滑常数（越大越平缓）
+  max_context_docs: 6     # 最终交给 LLM 的片段数上限
+  rrf_dedupe_chars: 100   # RRF 去重所用的正文前缀长度
+
+# ── 交叉编码器重排（reranking）────────────────────────────────────────────
+# provider 取值：
+#   none      关闭重排，直接用 RRF 融合序（零外部依赖）
+#   dashscope gte-rerank-v2，需要 DASHSCOPE_API_KEY（账号须无欠费）
+#   vertex    用 Vertex Gemini 做 LLM listwise 重排（复用对话模型，无需额外开通）
+#   local     sentence-transformers CrossEncoder，需要先执行
+#             `pip install sentence-transformers` 并在下面填 model
+#   auto      跟随当前对话后端（LLM_BACKEND）：
+#               dashscope 后端 → 有 DASHSCOPE_API_KEY 则 dashscope，否则 none
+#               vertex   后端 → none（见下）
+# 注意：provider=local 首次调用会从 HuggingFace 下载模型权重。
+#
+# 为什么 auto 在 vertex 后端下是 none：
+#   Vertex 的 Ranking API（Discovery Engine）属独立付费产品，本项目 rag-fist
+#   实测 403 not enabled；LLM listwise（provider=vertex）可用但实测约 3s+/次，
+#   对演示的问答延迟影响明显。故 auto 不替用户做这个取舍。
+#   若演示时希望"确实有重排"，显式设 provider: vertex 即可（本机已验证可用）。
+rerank:
+  provider: auto
+  model: ""               # provider=local 时必填，如 BAAI/bge-reranker-v2-m3
+  top_n: 6
+  max_candidates: 12      # 喂给重排器的候选上限（按 RRF 序截断）；0 = 不限制
+                          # 全量喂入既贵又慢：vertex listwise 实测 6 条≈3.2s、24 条≈10.5s
+
+# ── 证据门限（grounding gate）──────────────────────────────────────────────
+# 三路任一过线即放行（OR 关系）：稠密余弦 / 词面重叠 / BM25 覆盖率。
+dense_cosine_min: 0.66    # 查询向量与 top-3 片段的最大余弦相似度下限；0 = 关闭该路
+bm25_coverage_min: 0.30   # BM25 top-3 的查询词覆盖率下限
+bm25_min_matches: 2       # BM25 路的最小命中有效词数（防短问句靠一个虚词刷比例）
+# dense_cosine_min 的标定依据（22 条样本：12 域内 + 10 域外，
+# 复现命令：.venv/bin/python scripts/calibrate_dense_threshold.py --sweep）：
+#   域内最低 0.6847 / 域外最高 0.6531 / 间距 +0.0316
+#   → 0.66：域内召回 100%，域外误放行 0%（12/12 域内均由稠密路放行）
+# 说明：0.66 = 最小的、能把全部观测域外样本挡在稠密路之外的值，同时给域内留下
+#   +0.0247 余量；样本量仅 22 条且偏向英中双语常见问法，属小样本标定（推断）。
+# 可复现性前提：候选片段顺序必须确定。曾因 _vector_retrieve_all 用
+#   as_completed 合并而随线程完成顺序抖动，同一问题余弦在 0.64~0.71 间跳动
+#   （噪声 > 间距），现已改为保序轮转交错，上述数值可稳定复现。
+# 演示时若遇到合法问题被拒答，把该值下调到 0.60；想要更严格则上调到 0.68。

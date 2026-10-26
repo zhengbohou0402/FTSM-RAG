@@ -113,10 +113,12 @@ export default function Manage({ isDark, onToggleTheme }: Props) {
         [Symbol.iterator]: function* () { yield file; },
       } as unknown as FileList;
       const result = await api.documents.upload(fileList);
-      if (result.errors.length > 0) {
-        message.error(result.errors.map((err) => String(err)).join(", "));
+      if (result?.errors && result.errors.length > 0) {
+        message.error(
+          result.errors.map((err) => `${err.name ?? "file"}: ${err.error ?? "failed"}`).join(", ")
+        );
       }
-      if (result.saved.length > 0) {
+      if (result?.saved && result.saved.length > 0) {
         message.success(`Uploaded: ${result.saved.join(", ")}`);
       }
       void refreshAll();
@@ -322,15 +324,17 @@ export default function Manage({ isDark, onToggleTheme }: Props) {
                     </div>
                   }
                 />
-                <Popconfirm
-                  title="Delete document?"
-                  description={doc.name}
-                  okText="Delete"
-                  okButtonProps={{ danger: true }}
-                  onConfirm={() => handleDelete(doc.name)}
-                >
-                  <Button type="text" danger icon={<DeleteOutlined />} />
-                </Popconfirm>
+                {doc.source === "upload" && (
+                  <Popconfirm
+                    title="Delete document?"
+                    description={doc.name}
+                    okText="Delete"
+                    okButtonProps={{ danger: true }}
+                    onConfirm={() => handleDelete(doc.name)}
+                  >
+                    <Button type="text" danger icon={<DeleteOutlined />} />
+                  </Popconfirm>
+                )}
               </List.Item>
             )}
             locale={{ emptyText: <Empty description="No documents uploaded yet" /> }}

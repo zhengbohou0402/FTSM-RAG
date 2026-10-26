@@ -7,13 +7,13 @@
 
 html, body, #root {
   height: 100%;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Helvetica Neue', 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', sans-serif;
 }
 
 /* ── Sidebar ── */
 .chat-sidebar {
-  background: var(--sidebar-bg, #f7f7f8) !important;
-  border-right: 1px solid var(--border-color, #e5e7eb);
+  background: var(--sidebar-bg, #f2f2f7) !important;
+  border-right: 1px solid var(--border-color, #e5e5ea);
 }
 
 .sidebar-wrapper {
@@ -52,11 +52,11 @@ html, body, #root {
 }
 
 .sidebar-item:hover {
-  background: var(--sidebar-hover, #ececf1);
+  background: var(--sidebar-hover, rgba(0, 0, 0, 0.05));
 }
 
 .sidebar-item.active {
-  background: var(--sidebar-active, #e3e3e8);
+  background: var(--sidebar-active, rgba(0, 0, 0, 0.09));
 }
 
 .sidebar-foot {
@@ -64,14 +64,14 @@ html, body, #root {
   align-items: center;
   justify-content: space-between;
   padding: 12px 16px;
-  border-top: 1px solid var(--border-color, #e5e7eb);
+  border-top: 1px solid var(--border-color, #e5e5ea);
   flex-shrink: 0;
 }
 
 /* ── Chat ── */
 .chat-header {
   background: var(--bg, #fff) !important;
-  border-bottom: 1px solid var(--border-color, #e5e7eb);
+  border-bottom: 1px solid var(--border-color, #e5e5ea);
   display: flex;
   align-items: center;
   padding: 0 20px !important;
@@ -81,7 +81,7 @@ html, body, #root {
 .chat-header-title {
   font-size: 15px;
   font-weight: 600;
-  color: var(--text-primary, #1a1a2e);
+  color: var(--text-primary, #1d1d1f);
 }
 
 .chat-content {
@@ -113,12 +113,12 @@ html, body, #root {
 .welcome h1 {
   font-size: 28px;
   font-weight: 600;
-  color: var(--text-primary, #1a1a2e);
+  color: var(--text-primary, #1d1d1f);
   margin-bottom: 8px;
 }
 
 .welcome p {
-  color: var(--text-muted, #6b7280);
+  color: var(--text-muted, #6e6e73);
   font-size: 14px;
 }
 
@@ -135,8 +135,8 @@ html, body, #root {
 }
 
 .message-user .message-bubble {
-  background: var(--msg-user-bg, #f4f4f4);
-  color: var(--text-primary, #1a1a2e);
+  background: var(--msg-user-bg, #f2f2f7);
+  color: var(--text-primary, #1d1d1f);
   border-radius: 18px;
   max-width: min(72%, 620px);
   padding: 10px 16px;
@@ -173,15 +173,15 @@ html, body, #root {
 }
 
 .markdown-body code {
-  background: var(--code-bg, #f0f0f0);
+  background: var(--code-bg, #f5f5f7);
   padding: 2px 6px;
   border-radius: 4px;
   font-size: 13px;
 }
 
 .markdown-body pre {
-  background: var(--code-bg, #1e1e2e);
-  color: #e0e0e0;
+  background: var(--code-bg, #1d1d1f);
+  color: #ebebf0;
   padding: 12px 16px;
   border-radius: 8px;
   overflow-x: auto;
@@ -201,14 +201,14 @@ html, body, #root {
 }
 
 .markdown-body th, .markdown-body td {
-  border: 1px solid var(--border-color, #e5e7eb);
+  border: 1px solid var(--border-color, #e5e5ea);
   padding: 8px 12px;
   text-align: left;
   font-size: 13px;
 }
 
 .markdown-body th {
-  background: var(--table-header-bg, #f5f6fa);
+  background: var(--table-header-bg, #f2f2f7);
   font-weight: 600;
 }
 
@@ -227,7 +227,7 @@ html, body, #root {
   gap: 10px;
   align-items: flex-end;
   padding: 10px 10px 10px 18px;
-  border: 1px solid var(--border-color, #d9d9e3);
+  border: 1px solid var(--border-color, #e5e5ea);
   border-radius: 26px;
   background: var(--composer-bg, #fff);
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
@@ -235,8 +235,8 @@ html, body, #root {
 }
 
 .composer:focus-within {
-  border-color: var(--accent, #10a37f);
-  box-shadow: 0 2px 18px rgba(16, 163, 127, 0.16);
+  border-color: var(--accent, #0071e3);
+  box-shadow: 0 2px 18px rgba(0, 113, 227, 0.18);
 }
 
 .composer textarea {
@@ -254,7 +254,7 @@ html, body, #root {
   height: 36px;
   border-radius: 50%;
   flex-shrink: 0;
-  background: var(--accent, #10a37f);
+  background: var(--accent, #0071e3);
   box-shadow: none;
 }
 
@@ -280,14 +280,14 @@ html, body, #root {
 .disclaimer {
   text-align: center;
   font-size: 11px;
-  color: var(--text-muted, #8e8ea0);
+  color: var(--text-muted, #8e8e93);
   margin: 0;
 }
 
 /* ── Settings ── */
 .settings-shell {
   min-height: 100vh;
-  background: #f5f6fa;
+  background: #f2f2f7;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -303,13 +303,13 @@ html, body, #root {
 .settings-header h1 {
   font-size: 26px;
   font-weight: 700;
-  color: #1a1a2e;
+  color: #1d1d1f;
   margin-bottom: 4px;
 }
 
 .settings-header p {
   font-size: 13px;
-  color: #666;
+  color: #6e6e73;
 }
 
 .settings-back {
@@ -319,17 +319,17 @@ html, body, #root {
   margin-top: 14px;
   padding: 8px 16px;
   background: #fff;
-  border: 1.5px solid #2e6da4;
+  border: 1.5px solid #0071e3;
   border-radius: 8px;
   font-size: 13px;
   font-weight: 600;
-  color: #2e6da4;
+  color: #0071e3;
   text-decoration: none;
   transition: background 0.15s, color 0.15s;
 }
 
 .settings-back:hover {
-  background: #2e6da4;
+  background: #0071e3;
   color: #fff;
 }
 
@@ -357,13 +357,13 @@ html, body, #root {
 .manage-header h1 {
   font-size: 28px;
   font-weight: 700;
-  color: #1a1a2e;
+  color: #1d1d1f;
   margin: 2px 0 6px;
 }
 
 .manage-header p {
   margin: 0;
-  color: #6b7280;
+  color: #6e6e73;
   font-size: 14px;
 }
 
@@ -383,7 +383,7 @@ html, body, #root {
   padding: 16px 18px;
   margin-bottom: 18px;
   background: #fff;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #e5e5ea;
   border-radius: 8px;
 }
 
@@ -426,7 +426,7 @@ html, body, #root {
 
 .manage-card {
   border-radius: 8px;
-  border-color: #e5e7eb;
+  border-color: #e5e5ea;
 }
 
 .manage-card .ant-card-head {
@@ -435,24 +435,24 @@ html, body, #root {
 
 .manage-upload.ant-upload-wrapper .ant-upload-drag {
   border-radius: 8px;
-  border-color: #d1d5db;
-  background: #fafafa;
+  border-color: #d5d5da;
+  background: #f7f7f9;
 }
 
 .manage-upload.ant-upload-wrapper .ant-upload-drag:hover {
-  border-color: #10a37f;
+  border-color: #0071e3;
 }
 
 .manage-upload-title {
   margin: 0;
-  color: #111827;
+  color: #1d1d1f;
   font-weight: 700;
 }
 
 .manage-upload-hint {
   max-width: 360px;
   margin: 6px auto 0;
-  color: #6b7280;
+  color: #6e6e73;
   font-size: 13px;
   line-height: 1.5;
 }
@@ -464,14 +464,14 @@ html, body, #root {
   gap: 16px;
   margin-top: 16px;
   padding: 14px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #e5e5ea;
   border-radius: 8px;
-  background: #fbfbfc;
+  background: #f5f5f7;
 }
 
 .manage-cache-card p {
   margin: 4px 0 0;
-  color: #6b7280;
+  color: #6e6e73;
   font-size: 13px;
 }
 
@@ -495,8 +495,8 @@ html, body, #root {
   align-items: center;
   justify-content: center;
   border-radius: 8px;
-  background: #f3f4f6;
-  color: #374151;
+  background: #f2f2f7;
+  color: #3a3a3c;
   font-size: 18px;
 }
 
@@ -528,7 +528,7 @@ html, body, #root {
 }
 
 .manage-doc-item .ant-list-item-meta-description {
-  color: #6b7280;
+  color: #6e6e73;
   font-size: 12px;
 }
 
@@ -561,8 +561,8 @@ html, body, #root {
   gap: 8px;
   padding: 10px 16px;
   border-radius: 8px;
-  background: #f0f4ff;
-  border: 1px solid #d0d9f5;
+  background: #eaf3ff;
+  border: 1px solid #c9dcf6;
   margin-bottom: 14px;
 }
 
@@ -576,8 +576,8 @@ html, body, #root {
 
 .stats-card {
   background: #fff;
-  border: 1px solid #e5e7eb;
-  border-left: 3px solid #e5e7eb;
+  border: 1px solid #e5e5ea;
+  border-left: 3px solid #e5e5ea;
   border-radius: 10px;
   padding: 14px 16px;
   display: flex;
@@ -593,14 +593,14 @@ html, body, #root {
 .stats-card-value {
   font-size: 22px;
   font-weight: 700;
-  color: #1a1a2e;
+  color: #1d1d1f;
   line-height: 1;
 }
 
 .stats-card-label {
   font-size: 11px;
   font-weight: 600;
-  color: #888;
+  color: #86868b;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -649,7 +649,7 @@ html, body, #root {
 
 .dash-info-card {
   background: #fff;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #e5e5ea;
   border-radius: 12px;
   padding: 18px 20px;
   display: flex;
@@ -665,7 +665,7 @@ html, body, #root {
   flex-wrap: wrap;
   gap: 4px 0;
   background: #fff;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #e5e5ea;
   border-radius: 12px;
   padding: 18px 20px;
   overflow-x: auto;
@@ -683,8 +683,8 @@ html, body, #root {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: #f0f4ff;
-  border: 1.5px solid #d0d9f5;
+  background: #eaf3ff;
+  border: 1.5px solid #c9dcf6;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -694,19 +694,19 @@ html, body, #root {
 .pipeline-step-label {
   font-size: 12px;
   font-weight: 700;
-  color: #2b3440;
+  color: #1d1d1f;
   text-align: center;
 }
 
 .pipeline-step-sub {
   font-size: 11px;
   font-weight: 500;
-  color: #6b7280;
+  color: #6e6e73;
   text-align: center;
 }
 
 .pipeline-arrow {
-  color: #8aa0c8;
+  color: #a1a1a6;
   font-size: 22px;
   font-weight: 700;
   padding: 0 4px;
@@ -726,10 +726,10 @@ html, body, #root {
   gap: 8px;
   min-height: 30px;
   padding: 5px 11px;
-  border: 1px solid var(--process-border, #d9ece5);
+  border: 1px solid var(--process-border, #cfe3fb);
   border-radius: 999px;
-  background: var(--process-bg, #f4fbf8);
-  color: var(--process-text, #0f6b53);
+  background: var(--process-bg, #eaf3ff);
+  color: var(--process-text, #0066cc);
   font-size: 12px;
   font-weight: 600;
 }
@@ -750,7 +750,7 @@ html, body, #root {
 }
 
 .process-divider {
-  color: var(--text-muted, #8e8ea0);
+  color: var(--text-muted, #8e8e93);
   margin-left: 2px;
 }
 
@@ -805,7 +805,7 @@ html, body, #root {
 
 .admin-header h1 {
   margin: 2px 0 6px;
-  color: #111827;
+  color: #1d1d1f;
   font-size: 30px;
   font-weight: 700;
   line-height: 1.15;
@@ -814,7 +814,7 @@ html, body, #root {
 .admin-header p {
   max-width: 720px;
   margin: 0;
-  color: #6b7280;
+  color: #6e6e73;
   font-size: 14px;
   line-height: 1.55;
 }
@@ -825,7 +825,7 @@ html, body, #root {
 
 .admin-panel {
   background: #fff;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #e5e5ea;
   border-radius: 8px;
   padding: 16px 18px;
 }
@@ -851,7 +851,7 @@ html, body, #root {
 .info-grid strong {
   display: block;
   margin-top: 3px;
-  color: #111827;
+  color: #1d1d1f;
   overflow-wrap: anywhere;
 }
 
@@ -908,9 +908,9 @@ html, body, #root {
   flex: 1;
   min-width: 0;
   padding: 12px 8px;
-  border: 1px solid #eef0f3;
+  border: 1px solid #e5e5ea;
   border-radius: 8px;
-  background: #fbfbfc;
+  background: #f5f5f7;
 }
 
 .pipeline-step-icon {
@@ -921,7 +921,7 @@ html, body, #root {
 .pipeline-arrow {
   flex: 0 0 auto;
   padding: 0 2px 0 8px;
-  color: #9ca3af;
+  color: #86868b;
 }
 
 .source-type-grid {
@@ -936,9 +936,9 @@ html, body, #root {
   gap: 14px;
   min-height: 36px;
   padding: 8px 10px;
-  border: 1px solid #eef0f3;
+  border: 1px solid #e5e5ea;
   border-radius: 8px;
-  background: #fbfbfc;
+  background: #f5f5f7;
 }
 
 .source-type-row span,
@@ -970,7 +970,7 @@ html, body, #root {
 
 .settings-stack > section {
   padding-bottom: 22px;
-  border-bottom: 1px solid #eef0f3;
+  border-bottom: 1px solid #e5e5ea;
 }
 
 .settings-stack > section:last-of-type {
@@ -1054,29 +1054,29 @@ html, body, #root {
 }
 
 [data-theme="dark"] {
-  --sidebar-bg: #202123;
-  --border-color: #3f4047;
-  --bg: #343541;
-  --text-primary: #e0e0e0;
-  --text-muted: #acacbe;
-  --msg-user-bg: #444654;
-  --sidebar-hover: #2a2b32;
-  --sidebar-active: #343541;
-  --composer-bg: #40414f;
-  --accent: #10a37f;
-  --process-bg: rgba(16, 163, 127, 0.14);
-  --process-border: rgba(16, 163, 127, 0.28);
-  --process-text: #8ee6c6;
-  --code-bg: #2a2a3e;
-  --table-header-bg: #252540;
+  --sidebar-bg: #1c1c1e;
+  --border-color: #38383a;
+  --bg: #1c1c1e;
+  --text-primary: #f5f5f7;
+  --text-muted: #a1a1a6;
+  --msg-user-bg: #2c2c2e;
+  --sidebar-hover: #2c2c2e;
+  --sidebar-active: #1c1c1e;
+  --composer-bg: #2c2c2e;
+  --accent: #0a84ff;
+  --process-bg: rgba(10, 132, 255, 0.16);
+  --process-border: rgba(10, 132, 255, 0.30);
+  --process-text: #8ec7ff;
+  --code-bg: #2c2c2e;
+  --table-header-bg: #2c2c2e;
 }
 
 [data-theme="dark"] body {
-  background: #111827;
+  background: #000000;
 }
 
 [data-theme="dark"] .admin-shell {
-  color: #e5e7eb;
+  color: #ebebf0;
 }
 
 [data-theme="dark"] .admin-header h1,
@@ -1087,7 +1087,7 @@ html, body, #root {
 [data-theme="dark"] .manage-upload-title,
 [data-theme="dark"] .pipeline-step-label,
 [data-theme="dark"] .manage-doc-title {
-  color: #f9fafb;
+  color: #f5f5f7;
 }
 
 [data-theme="dark"] .admin-header p,
@@ -1099,7 +1099,7 @@ html, body, #root {
 [data-theme="dark"] .manage-doc-item .ant-list-item-meta-description,
 [data-theme="dark"] .manage-doc-meta,
 [data-theme="dark"] .field-help {
-  color: #9ca3af;
+  color: #8e8e93;
 }
 
 [data-theme="dark"] .admin-panel,
@@ -1107,31 +1107,31 @@ html, body, #root {
 [data-theme="dark"] .stats-card,
 [data-theme="dark"] .pipeline,
 [data-theme="dark"] .dash-info-card {
-  background: #1f2937;
-  border-color: #374151;
+  background: #2c2c2e;
+  border-color: #38383a;
 }
 
 [data-theme="dark"] .stats-card {
-  border-left-color: #4b5563;
+  border-left-color: #48484a;
 }
 
 [data-theme="dark"] .pipeline-step,
 [data-theme="dark"] .source-type-row,
 [data-theme="dark"] .manage-cache-card,
 [data-theme="dark"] .manage-upload.ant-upload-wrapper .ant-upload-drag {
-  background: #111827;
-  border-color: #374151;
+  background: #000000;
+  border-color: #38383a;
 }
 
 [data-theme="dark"] .pipeline-step-icon,
 [data-theme="dark"] .manage-doc-icon {
-  background: #273449;
-  border-color: #3f4f68;
-  color: #bfdbfe;
+  background: #1f2f45;
+  border-color: #2f4460;
+  color: #9fc8ff;
 }
 
 [data-theme="dark"] .settings-stack > section {
-  border-bottom-color: #374151;
+  border-bottom-color: #38383a;
 }
 
 [data-theme="dark"] .stats-card:hover {
@@ -1154,5 +1154,309 @@ html, body, #root {
 
   .message-user .message-bubble {
     max-width: 86%;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Apple Liquid Glass —— 与网页端 /guide 同一套设计语言（2026-10-16）
+   ─────────────────────────────────────────────────────────────────────
+   原样式是 ChatGPT 绿 #10a37f + Ant Design 藏青 #2e6da4 的混搭，
+   与网页端的 teal 体系互不相干 ——「四不像」的三个来源之一。现在统一：
+
+     · 强调色 = Apple 系统蓝（浅色 #0071e3 / 深色 #0a84ff）
+     · 字体   = SF Pro（-apple-system），不再外链 Inter
+     · 中性色 = label / secondaryLabel / separator 三级
+     · 材质   = 玻璃只用于功能层（侧栏 / 顶栏 / 输入区 / 弹层），
+                内容层（消息区 / 管理页卡片）保持 standard material
+
+   注：Tauri 窗口本身不透明（tauri.conf.json 无 transparent），所以玻璃
+   折射的是本应用自己的环境光背景 —— 与网页端同一手法，不依赖窗口合成。
+   ═══════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --accent: #0071e3;
+  --accent-strong: #006edc;
+  --accent-text: #0066cc;
+  --accent-tint: rgba(0, 113, 227, 0.12);
+
+  --label: #1d1d1f;
+  --label-2: #6e6e73;
+  --label-3: #86868b;
+  --separator: #e5e5ea;
+  --surface: #ffffff;
+  --grouped: #f2f2f7;
+
+  /* 玻璃三变量：各功能面只改这三个值就能拉开档位 */
+  --g-blur: 30px;
+  --g-sat: 170%;
+  --g-fill: rgba(255, 255, 255, 0.62);
+  --g-line: rgba(60, 60, 67, 0.12);
+
+  --hairline: 1px;
+  --ease-out: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-std: cubic-bezier(0.4, 0, 0.2, 1);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.04), 0 6px 20px rgba(0, 0, 0, 0.05);
+}
+
+@media (-webkit-min-device-pixel-ratio: 1.5), (min-resolution: 144dpi) {
+  :root { --hairline: 0.5px; }
+}
+
+[data-theme="dark"] {
+  --accent: #0a84ff;
+  --accent-strong: #409cff;
+  --accent-text: #409cff;
+  --accent-tint: rgba(10, 132, 255, 0.18);
+
+  --label: #f5f5f7;
+  --label-2: #a1a1a6;
+  --label-3: #8e8e93;
+  --separator: #38383a;
+  --surface: #1c1c1e;
+  --grouped: #000000;
+
+  --g-fill: rgba(44, 44, 46, 0.66);
+  --g-line: rgba(255, 255, 255, 0.12);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.42), 0 8px 24px rgba(0, 0, 0, 0.34);
+}
+
+/* ── 环境光：玻璃要有东西可折射才不像磨砂塑料（与 /guide 同一条光） ── */
+html, body, #root { height: 100%; }
+
+body {
+  background-color: #eef2f7;
+  background-image:
+    radial-gradient(1100px 760px at 10% -8%, rgba(186, 222, 255, 0.56) 0%, rgba(186, 222, 255, 0) 62%),
+    radial-gradient(1000px 680px at 96% 12%, rgba(212, 200, 255, 0.46) 0%, rgba(212, 200, 255, 0) 58%),
+    radial-gradient(920px 720px at 46% 108%, rgba(176, 236, 219, 0.44) 0%, rgba(176, 236, 219, 0) 60%),
+    linear-gradient(180deg, #f7f9fc 0%, #eaeef5 56%, #f1f4f9 100%);
+  background-attachment: fixed;
+  color: var(--label);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  accent-color: var(--accent);
+  -webkit-tap-highlight-color: transparent;
+}
+
+[data-theme="dark"] body {
+  background-color: #000000;
+  background-image:
+    radial-gradient(1100px 760px at 10% -8%, rgba(38, 68, 118, 0.55) 0%, rgba(38, 68, 118, 0) 62%),
+    radial-gradient(1000px 680px at 96% 12%, rgba(72, 56, 112, 0.45) 0%, rgba(72, 56, 112, 0) 58%),
+    linear-gradient(180deg, #151519 0%, #0d0d10 60%, #141418 100%);
+}
+
+::selection { background: rgba(0, 113, 227, 0.2); color: var(--label); }
+
+/* antd Layout 全部让位给环境光 */
+.ant-layout,
+.ant-layout-header,
+.ant-layout-content,
+.ant-layout-sider { background: transparent !important; }
+
+/* ───────── 玻璃基元：功能层 ───────────────────────────────────────── */
+/* 侧栏与顶栏同一填充值 → 左上角拼成一块连续的 L 形材质（Apple 的
+   sidebar + toolbar 本来就是一体）。 */
+.chat-sidebar,
+.chat-header,
+.chat-footer {
+  position: relative;
+  isolation: isolate;
+  background-color: var(--g-fill) !important;
+  background-image: none !important;
+  -webkit-backdrop-filter: blur(var(--g-blur)) saturate(var(--g-sat)) brightness(1.04);
+          backdrop-filter: blur(var(--g-blur)) saturate(var(--g-sat)) brightness(1.04);
+  transition: background-color 0.3s var(--ease-std);
+}
+
+/* L 形连续：不画两段分隔线，只在侧栏右侧与顶栏下方各留一条 hairline，
+   交界处（顶栏左端 y=0..52）由同一材质自然拼合，无接缝。 */
+.chat-sidebar {
+  border-right: var(--hairline) solid var(--g-line) !important;
+  border-top: none !important;
+  border-bottom: none !important;
+}
+.chat-header {
+  border-bottom: var(--hairline) solid var(--g-line) !important;
+  border-right: none !important;
+}
+
+/* 顶栏：Apple 工具栏 52pt + 标题 13px/600 */
+.chat-header { min-height: 52px; height: 52px !important; }
+.chat-header-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: -0.012em;
+  color: var(--label);
+}
+
+/* 侧栏：Apple 的中性选中态（蓝留给分段控件与主按钮） */
+.sidebar-item { border-radius: 8px; transition: background-color 0.12s var(--ease-std); }
+.sidebar-item.active .ant-typography { font-weight: 600; }
+.sidebar-list { padding: 0 10px; }
+
+/* 输入区：Apple 的输入框是「字段填充」，不是玻璃胶囊 ——
+   .chat-footer 已经是 Backdrop Root，里面的 backdrop-filter 只会采样父级背景，
+   属于无效嵌套，所以这里用填充色而不是再套一层玻璃。 */
+.composer {
+  background: rgba(120, 120, 128, 0.12);
+  border: var(--hairline) solid transparent;
+  border-radius: 20px;
+  box-shadow: none;
+  transition: background-color 0.2s var(--ease-std), box-shadow 0.2s var(--ease-std);
+}
+.composer:focus-within {
+  background: var(--surface);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3.5px rgba(0, 113, 227, 0.26);
+}
+[data-theme="dark"] .composer:focus-within {
+  box-shadow: 0 0 0 3.5px rgba(10, 132, 255, 0.34);
+}
+.composer .ant-btn-primary {
+  background: var(--accent);
+  border-radius: 50%;
+  transition: background-color 0.18s var(--ease-std), transform 0.1s var(--ease-out);
+}
+.composer .ant-btn-primary:hover:not(:disabled) { background: var(--accent-strong); }
+.composer .ant-btn-primary:active:not(:disabled) { transform: scale(0.94); }
+
+.suggestion-chip {
+  border-radius: 999px !important;
+  border-color: var(--separator) !important;
+  background: rgba(255, 255, 255, 0.7) !important;
+  transition: background-color 0.18s var(--ease-std), border-color 0.18s var(--ease-std);
+}
+.suggestion-chip:hover:not(:disabled) {
+  background: #ffffff !important;
+  border-color: var(--accent) !important;
+  color: var(--accent-text) !important;
+}
+[data-theme="dark"] .suggestion-chip { background: rgba(44, 44, 46, 0.7) !important; }
+[data-theme="dark"] .suggestion-chip:hover:not(:disabled) { background: #2c2c2e !important; }
+
+.disclaimer { color: var(--label-3); }
+
+/* ───────── 浮层：Apple 里最该用玻璃的地方 ─────────────────────────── */
+/* antd v6 的 Modal 内层类名是 .ant-modal-container（不是 v5 的 -content） */
+.ant-modal-container,
+.ant-drawer-content,
+.ant-popover-inner,
+.ant-dropdown-menu,
+.ant-message-notice-content,
+.ant-tooltip-inner,
+.ant-select-dropdown {
+  background-color: var(--g-fill) !important;
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+          backdrop-filter: blur(40px) saturate(180%);
+  border: var(--hairline) solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.16), 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+}
+[data-theme="dark"] .ant-modal-container,
+[data-theme="dark"] .ant-drawer-content,
+[data-theme="dark"] .ant-popover-inner,
+[data-theme="dark"] .ant-dropdown-menu,
+[data-theme="dark"] .ant-message-notice-content,
+[data-theme="dark"] .ant-tooltip-inner,
+[data-theme="dark"] .ant-select-dropdown {
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+}
+/* Apple 的 sheet 会把背景压暗并轻微模糊（antd v6 已有 mask-blur 类，接上令牌） */
+.ant-modal-mask,
+.ant-drawer-mask {
+  background: rgba(0, 0, 0, 0.28) !important;
+  -webkit-backdrop-filter: blur(3px);
+          backdrop-filter: blur(3px);
+}
+
+/* ───────── 内容层：standard material（HIG：玻璃不进内容层） ───────── */
+.chat-content,
+.admin-panel,
+.settings-card,
+.manage-status-panel,
+.manage-cache-card,
+.stats-card,
+.pipeline,
+.pipeline-step,
+.source-type-row,
+.dash-info-card,
+.index-status-bar,
+.ant-card,
+.ant-upload-wrapper .ant-upload-drag {
+  background-color: var(--surface) !important;
+  background-image: none;
+  border: var(--hairline) solid var(--g-line) !important;
+  border-radius: 14px;
+  box-shadow: var(--shadow-card);
+  -webkit-backdrop-filter: none;
+          backdrop-filter: none;
+}
+/* 内容区本身是整页底，不要卡片化 */
+.chat-content {
+  background-color: transparent !important;
+  border: none !important;
+  border-radius: 0;
+  box-shadow: none;
+}
+/* 胶囊/标签/徽标这类小件保留零边框观感 */
+.stats-card { border-left-width: 3px; }
+.index-status-bar { background-color: var(--accent-tint) !important; border-color: transparent !important; }
+
+/* 次级控件：控件层用 Apple 的填充色，不做投影 */
+.section-kicker,
+.page-kicker { color: var(--label-2); letter-spacing: 0.06em; }
+
+/* ───────── Apple 式覆盖滚动条 ─────────────────────────────────────── */
+.chat-content::-webkit-scrollbar,
+.sidebar-list::-webkit-scrollbar,
+.manage-doc-list::-webkit-scrollbar,
+.ant-drawer-body::-webkit-scrollbar { width: 11px; height: 11px; }
+.chat-content::-webkit-scrollbar-track,
+.sidebar-list::-webkit-scrollbar-track,
+.manage-doc-list::-webkit-scrollbar-track,
+.ant-drawer-body::-webkit-scrollbar-track { background: transparent; }
+.chat-content::-webkit-scrollbar-thumb,
+.sidebar-list::-webkit-scrollbar-thumb,
+.manage-doc-list::-webkit-scrollbar-thumb,
+.ant-drawer-body::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border: 3px solid transparent;
+  background-clip: content-box;
+  border-radius: 999px;
+}
+[data-theme="dark"] .chat-content::-webkit-scrollbar-thumb,
+[data-theme="dark"] .sidebar-list::-webkit-scrollbar-thumb,
+[data-theme="dark"] .manage-doc-list::-webkit-scrollbar-thumb,
+[data-theme="dark"] .ant-drawer-body::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.24);
+}
+
+/* ───────── 无障碍：降级与动效 ─────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .chat-sidebar, .chat-header, .chat-footer,
+  .ant-modal-container, .ant-drawer-content, .ant-popover-inner,
+  .ant-dropdown-menu, .ant-select-dropdown {
+    background-color: var(--surface) !important;
+    -webkit-backdrop-filter: none;
+            backdrop-filter: none;
+  }
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .chat-sidebar, .chat-header, .chat-footer,
+  .ant-modal-container, .ant-drawer-content, .ant-popover-inner,
+  .ant-dropdown-menu, .ant-select-dropdown {
+    background-color: var(--surface) !important;
+    border-color: var(--separator);
   }
 }

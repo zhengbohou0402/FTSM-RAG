@@ -4,7 +4,7 @@
 
 首次运行：
 - 自动在 exe 同级目录创建 chroma_db_ftsm / data / config / .env 等资源
-- 若 DASHSCOPE_API_KEY 未配置，窗口会自动进入 /settings 引导用户填入千问 API Key
+- 若 LLM 后端（Vertex ADC / DashScope Key）未配置，窗口会自动进入 /settings 引导用户配置
 
 可通过环境变量 FTSM_BROWSER_MODE=1 强制走浏览器模式（跳过 pywebview）。
 """

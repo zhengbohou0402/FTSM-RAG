@@ -87,7 +87,7 @@ async function loadStatus() {
     setText("legacy-scheduler-error", scheduler.last_error || "-");
 
     const missingKey = !config.dashscope_configured;
-    setOverall(!missingKey, missingKey ? "Backend is reachable, but DashScope API key is missing." : "Backend is reachable.");
+    setOverall(!missingKey, missingKey ? "Backend is reachable, but the LLM backend is not configured." : "Backend is reachable.");
   } catch (err) {
     setStatus("legacy-api-status", false);
     setOverall(false, err.message || "Backend check failed.");

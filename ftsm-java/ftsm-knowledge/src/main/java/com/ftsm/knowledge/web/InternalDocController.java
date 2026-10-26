@@ -42,6 +42,14 @@ public class InternalDocController {
     public record DocRegistrationRequest(List<DocRegistration> docs) {
     }
 
+    /** One locally-indexed document reported by ftsm-rag: docId + chunkCount + optional metadata for cold-start upsert. */
+    public record DocReady(String docId, Integer chunkCount, String name, String title,
+                           String sourceType, Long size, String fileHash) {
+    }
+
+    public record DocReadyRequest(List<DocReady> docs) {
+    }
+
     @PostMapping
     public ResponseEntity<Map<String, Object>> register(@RequestBody DocRegistrationRequest request) {
         List<String> requested = new ArrayList<>();
@@ -101,6 +109,76 @@ public class InternalDocController {
                 .map(Doc::getDocId)
                 .toList();
         return ResponseEntity.ok(Map.of("readyIds", ready));
+    }
+
+    /**
+     * Marks locally-indexed documents READY.
+     *
+     * <p>Why this exists: the MQ event {@code doc.index.succeeded} is the only other way a row
+     * leaves INDEXING. When RabbitMQ is unreachable ftsm-rag falls back to its in-process
+     * training thread, which cannot publish that event — so the rows would stick at INDEXING
+     * forever and {@code /api/knowledge/stats} would report a growing indexing_count that never
+     * resolves. ftsm-rag closes that loop by POSTing the authoritative manifest state here
+     * (see services/knowledge_client.py).
+     *
+     * <p>The transition is guarded by {@code WHERE status = 'INDEXING'}, so a concurrent MQ
+     * delivery, a retry, or a document that is already READY are all harmless no-ops — exactly
+     * the idempotency approach used by KnowledgeEventListeners.migrate.
+     */
+    @PostMapping("/ready")
+    public ResponseEntity<Map<String, Object>> markReady(@RequestBody DocReadyRequest request) {
+        List<String> updated = new ArrayList<>();
+        List<String> skipped = new ArrayList<>();
+        long now = Instant.now().getEpochSecond();
+        if (request.docs() != null) {
+            for (DocReady item : request.docs()) {
+                if (item.docId() == null || item.docId().isBlank()) {
+                    continue;
+                }
+                int chunkCount = item.chunkCount() == null ? 0 : Math.max(0, item.chunkCount());
+                Doc existing = docMapper.selectOne(new LambdaQueryWrapper<Doc>()
+                        .eq(Doc::getDocId, item.docId()));
+                if (existing == null) {
+                    // Cold-start / initial sync: document exists in manifest but not yet in MySQL
+                    Doc doc = new Doc();
+                    doc.setDocId(item.docId());
+                    String name = orDefault(item.name(), item.docId());
+                    doc.setName(name);
+                    doc.setTitle(orDefault(item.title(), name));
+                    doc.setSourceType(orDefault(item.sourceType(), "official"));
+                    doc.setSourceUrl("");
+                    doc.setSize(item.size() == null ? 0L : item.size());
+                    doc.setFileHash(orDefault(item.fileHash(), ""));
+                    doc.setChunkIds("[]");
+                    doc.setChunkCount(chunkCount);
+                    doc.setStatus("READY");
+                    doc.setError("");
+                    doc.setIndexedAt(now);
+                    doc.setCreatedAt(now);
+                    doc.setUpdatedAt(now);
+                    docMapper.insert(doc);
+                    updated.add(item.docId());
+                } else {
+                    int rows = docMapper.update(null, new LambdaUpdateWrapper<Doc>()
+                            .eq(Doc::getId, existing.getId())
+                            // P2-8：允许 FAILED 恢复 —— 本地重训（sync_training_result）直接报 READY，
+                            // 不经过 INDEXING；只认 INDEXING 会让失败的文档永远卡在 FAILED。
+                            .in(Doc::getStatus, List.of("INDEXING", "FAILED"))
+                            .set(Doc::getStatus, "READY")
+                            .set(Doc::getError, "")
+                            .set(Doc::getChunkCount, chunkCount)
+                            .set(Doc::getIndexedAt, now)
+                            .set(Doc::getUpdatedAt, now));
+                    if (rows > 0) {
+                        updated.add(item.docId());
+                    } else {
+                        // Already READY (duplicate delivery)
+                        skipped.add(item.docId());
+                    }
+                }
+            }
+        }
+        return ResponseEntity.ok(Map.of("updated", updated, "skipped", skipped));
     }
 
     private static String orDefault(String value, String fallback) {

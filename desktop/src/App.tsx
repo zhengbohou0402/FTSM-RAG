@@ -10,6 +10,69 @@ import { api } from "./api/client";
 
 const THEME_KEY = "ftsm_theme";
 
+/**
+ * Apple HIG 主题令牌 —— 与网页端 guide.css §11、状态页 legacy.css 同一套。
+ *
+ * 原配置是 antd 藏青 #2e6da4，而 styles.css 里又是 ChatGPT 绿 #10a37f，
+ * 两者和网页端的 teal 体系互不相干 ——「四不像」的三个来源。现在统一：
+ *   强调色 = Apple 系统蓝（浅色 #0071e3 / 深色 #0a84ff，同 apple.com）
+ *   字体   = SF Pro（-apple-system），不再外链 Inter
+ *   中性色 = label / secondaryLabel / separator 三级
+ *   圆角   = 10 / 14 / 8 的同心刻度
+ */
+const appleFont =
+  "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Helvetica Neue', 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', sans-serif";
+
+const sharedTokens = {
+  fontFamily: appleFont,
+  fontSize: 14,
+  borderRadius: 10,
+  borderRadiusLG: 14,
+  borderRadiusSM: 8,
+  controlHeight: 36,
+  wireframe: false,
+};
+
+const lightTokens = {
+  ...sharedTokens,
+  colorPrimary: "#0071e3",
+  colorInfo: "#0071e3",
+  colorLink: "#0066cc",
+  colorSuccess: "#248a3d",
+  colorWarning: "#b25000",
+  colorError: "#d70015",
+  colorText: "#1d1d1f",
+  colorTextSecondary: "#6e6e73",
+  colorTextTertiary: "#86868b",
+  colorBorder: "#e5e5ea",
+  colorBorderSecondary: "#e5e5ea",
+  colorBgContainer: "#ffffff",
+  colorBgElevated: "#ffffff",
+  colorBgLayout: "#f2f2f7",
+  colorFillSecondary: "rgba(120, 120, 128, 0.12)",
+  boxShadowSecondary: "0 12px 40px rgba(0, 0, 0, 0.16), 0 2px 8px rgba(0, 0, 0, 0.06)",
+};
+
+const darkTokens = {
+  ...sharedTokens,
+  colorPrimary: "#0a84ff",
+  colorInfo: "#0a84ff",
+  colorLink: "#409cff",
+  colorSuccess: "#30d158",
+  colorWarning: "#ff9f0a",
+  colorError: "#ff453a",
+  colorText: "#f5f5f7",
+  colorTextSecondary: "#a1a1a6",
+  colorTextTertiary: "#8e8e93",
+  colorBorder: "#38383a",
+  colorBorderSecondary: "#38383a",
+  colorBgContainer: "#1c1c1e",
+  colorBgElevated: "#2c2c2e",
+  colorBgLayout: "#000000",
+  colorFillSecondary: "rgba(120, 120, 128, 0.24)",
+  boxShadowSecondary: "0 12px 40px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3)",
+};
+
 function AppRoutes({ isDark, onToggleTheme }: { isDark: boolean; onToggleTheme: () => void }) {
   const location = useLocation();
   const [dashscopeConfigured, setDashscopeConfigured] = useState<boolean | null>(null);
@@ -78,12 +141,7 @@ function App() {
     <ConfigProvider
       theme={{
         algorithm: isDark ? theme.darkAlgorithm : theme.defaultAlgorithm,
-        token: {
-          fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-          colorPrimary: "#2e6da4",
-          borderRadius: 8,
-          colorBgContainer: isDark ? "#1a1a2e" : "#ffffff",
-        },
+        token: isDark ? darkTokens : lightTokens,
       }}
     >
       <AntApp>

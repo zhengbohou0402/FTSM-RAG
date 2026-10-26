@@ -27,14 +27,31 @@ public class KnowledgeController {
         this.queryLogMapper = queryLogMapper;
     }
 
+    /**
+     * Document list. Legacy behaviour (no params) returns every row so existing
+     * consumers (desktop client.ts) keep working; when page/size are supplied the
+     * query is LIMIT/OFFSET-bounded and total is included for the pager.
+     */
     @GetMapping("/api/documents")
-    public Map<String, Object> listDocuments() {
-        List<Map<String, Object>> documents = docMapper.selectList(new LambdaQueryWrapper<Doc>()
-                        .orderByDesc(Doc::getUpdatedAt))
+    public Map<String, Object> listDocuments(
+            @org.springframework.web.bind.annotation.RequestParam(required = false) Integer page,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) Integer size) {
+        boolean paginated = page != null || size != null;
+        int p = page == null ? 1 : Math.max(1, page);
+        int s = size == null ? 100 : Math.min(Math.max(1, size), 200);
+
+        LambdaQueryWrapper<Doc> wrapper = new LambdaQueryWrapper<Doc>()
+                .orderByDesc(Doc::getUpdatedAt);
+        if (paginated) {
+            wrapper.last("LIMIT " + s + " OFFSET " + (long) (p - 1) * s);
+        }
+        List<Map<String, Object>> documents = docMapper.selectList(wrapper)
                 .stream()
                 .map(doc -> {
                     Map<String, Object> row = new LinkedHashMap<>();
                     row.put("name", doc.getName());
+                    // 与 Python 侧契约对齐：uploads/ 前缀 = 用户上传，其余 = 官方语料
+                    row.put("source", doc.getName() != null && doc.getName().startsWith("uploads/") ? "upload" : "official");
                     row.put("size", doc.getSize());
                     row.put("modified", doc.getUpdatedAt());
                     row.put("doc_id", doc.getDocId());
@@ -50,7 +67,14 @@ public class KnowledgeController {
                     return row;
                 })
                 .toList();
-        return Map.of("documents", documents);
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("documents", documents);
+        if (paginated) {
+            result.put("page", p);
+            result.put("size", s);
+            result.put("total", docMapper.selectCount(null));
+        }
+        return result;
     }
 
     @GetMapping("/api/knowledge/stats")
@@ -62,7 +86,7 @@ public class KnowledgeController {
                 .map(Doc::getIndexedAt)
                 .filter(java.util.Objects::nonNull)
                 .max(Long::compare)
-                .map(String::valueOf)
+                .map(sec -> java.time.Instant.ofEpochSecond(sec).toString())
                 .orElse(null);
         String lastError = all.stream()
                 .filter(d -> "FAILED".equals(d.getStatus()))
@@ -98,11 +122,44 @@ public class KnowledgeController {
                 .last("LIMIT 1"));
         Object lastResult = latest != null && "READY".equals(latest.getStatus()) ? "success" : null;
         Object lastError = latest != null && "FAILED".equals(latest.getStatus()) ? latest.getError() : null;
-        return Map.of(
-                "running", indexing > 0,
-                "pending", false,
-                "last_result", lastResult,
-                "last_error", lastError);
+        // Map.of rejects null values — an empty doc table yields nulls, so use a LinkedHashMap.
+        Map<String, Object> status = new LinkedHashMap<>();
+        status.put("running", indexing > 0);
+        status.put("pending", false);
+        status.put("last_result", lastResult);
+        status.put("last_error", lastError);
+        return status;
+    }
+
+    /**
+     * Trending questions: most-asked queries over the last 7 days, aggregated in SQL
+     * (see QueryLogMapper.selectPopular) from the query_log rows produced by the
+     * retrieval.logged consumer. Feeds the "Trending questions" section on the guide
+     * page (click a chip to ask).
+     */
+    @GetMapping("/api/knowledge/popular")
+    public Map<String, Object> popular() {
+        long since = java.time.Instant.now().getEpochSecond() - 7L * 24 * 3600;
+        long total = queryLogMapper.selectCount(
+                new LambdaQueryWrapper<com.ftsm.knowledge.entity.QueryLog>()
+                        .ge(com.ftsm.knowledge.entity.QueryLog::getCreatedAt, since));
+
+        List<Map<String, Object>> items = queryLogMapper.selectPopular(since).stream()
+                .map(row -> {
+                    Map<String, Object> r = new LinkedHashMap<>();
+                    r.put("question", row.get("question"));
+                    r.put("count", row.get("cnt"));
+                    Object hit = row.get("latest_hit");
+                    r.put("hit", hit != null && ((Number) hit).longValue() != 0);
+                    return r;
+                })
+                .toList();
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("window_days", 7);
+        result.put("total_queries", total);
+        result.put("items", items);
+        return result;
     }
 
     @GetMapping("/api/retrieval/quality")

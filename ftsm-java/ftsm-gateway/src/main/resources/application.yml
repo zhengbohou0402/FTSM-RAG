@@ -20,9 +20,23 @@ spring:
         - id: rag-knowledge-update
           uri: ${FTSM_RAG_URI:http://127.0.0.1:8104}
           predicates: [ "Path=/api/knowledge/update" ]
+        # Student-triggered re-index of uploaded materials (session-protected, not admin-key)
         - id: rag-training-start
           uri: ${FTSM_RAG_URI:http://127.0.0.1:8104}
           predicates: [ "Path=/api/training/start" ]
+        # Training progress + the real on-disk document list also come from ftsm-rag:
+        # it owns DATA_DIR and the vector index, so these must precede the knowledge
+        # catch-all below (which only knows about registry records).
+        - id: rag-training-status
+          uri: ${FTSM_RAG_URI:http://127.0.0.1:8104}
+          predicates: [ "Path=/api/training/status" ]
+        - id: rag-documents
+          uri: ${FTSM_RAG_URI:http://127.0.0.1:8104}
+          predicates: [ "Path=/api/documents,/api/documents/**" ]
+        # RAG index stats (manifest-backed, served by ftsm-rag) — must precede the knowledge catch-all
+        - id: rag-kb-stats
+          uri: ${FTSM_RAG_URI:http://127.0.0.1:8104}
+          predicates: [ "Path=/api/kb/stats" ]
         # Document metadata + stats + training status + retrieval quality (ftsm-knowledge)
         - id: knowledge
           uri: ${FTSM_KNOWLEDGE_URI:http://127.0.0.1:8103}
@@ -30,7 +44,7 @@ spring:
         # AI service (chat SSE, upload, cache, settings, models, scheduler, health)
         - id: rag
           uri: ${FTSM_RAG_URI:http://127.0.0.1:8104}
-          predicates: [ "Path=/api/upload,/api/chat,/api/cache/**,/api/settings/**,/api/models,/api/config/**,/api/scheduler/**,/api/health" ]
+          predicates: [ "Path=/api/upload,/api/chat,/api/cache/**,/api/settings/**,/api/models,/api/config/**,/api/scheduler/**,/api/voice/**,/api/health" ]
         # Static frontend stays served by ftsm-rag
         - id: rag-web
           uri: ${FTSM_RAG_URI:http://127.0.0.1:8104}

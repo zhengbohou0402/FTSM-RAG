@@ -39,7 +39,8 @@ public class KnowledgeEventListeners {
     }
 
     @RabbitListener(queues = DocEvents.QUEUE_INDEX_RESULT)
-    public void onIndexResult(JsonNode payload) {
+    public void onIndexResult(String json) {
+        JsonNode payload = parse(json);
         String kind = payload.path("kind").asText("");
         String docId = payload.path("docId").asText("");
         if (docId.isBlank()) {
@@ -76,7 +77,8 @@ public class KnowledgeEventListeners {
     }
 
     @RabbitListener(queues = DocEvents.QUEUE_RETRIEVAL_LOG)
-    public void onRetrievalLogged(JsonNode payload) {
+    public void onRetrievalLogged(String json) {
+        JsonNode payload = parse(json);
         QueryLog row = new QueryLog();
         row.setQuestion(truncate(payload.path("question").asText("")));
         row.setHit(payload.path("hit").asBoolean(false));
@@ -86,6 +88,15 @@ public class KnowledgeEventListeners {
         row.setLatencyMs(payload.path("latencyMs").asInt(0));
         row.setCreatedAt(Instant.now().getEpochSecond());
         queryLogMapper.insert(row);
+    }
+
+    private JsonNode parse(String json) {
+        try {
+            return objectMapper.readTree(json == null ? "{}" : json);
+        } catch (Exception e) {
+            log.warn("[mq] unparseable event payload: {}", json);
+            return objectMapper.createObjectNode();
+        }
     }
 
     private String toJson(List<String> chunkIds) {

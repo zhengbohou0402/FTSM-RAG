@@ -40,6 +40,7 @@ public class InternalConversationController {
     }
 
     @PostMapping("/{conversationId}/turn")
+    @org.springframework.transaction.annotation.Transactional
     public ResponseEntity<Map<String, Object>> appendTurn(@PathVariable String conversationId,
                                                           @RequestBody TurnRequest payload) {
         if (payload.studentId() == null || payload.studentId().isBlank()) {
@@ -100,7 +101,9 @@ public class InternalConversationController {
 
     /** Keeps at most the latest MAX_MESSAGES_PER_CONVERSATION rows (user+assistant pairs). */
     private void trimToCap(String conversationId) {
+        // P2-9：只 select id 列——原实现把整表行（含 MEDIUMTEXT content）全量载入内存只为取主键
         List<Long> ids = messages.selectList(new LambdaQueryWrapper<ConversationMessage>()
+                        .select(ConversationMessage::getId)
                         .eq(ConversationMessage::getConversationId, conversationId)
                         .orderByDesc(ConversationMessage::getId))
                 .stream()

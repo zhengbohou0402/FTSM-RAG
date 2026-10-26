@@ -164,6 +164,13 @@ def _run_crawl_and_update(
             if _on_index_updated is not None:
                 _on_index_updated()
 
+            try:
+                from services.knowledge_client import sync_training_result
+
+                sync_training_result()
+            except Exception as sync_exc:
+                logger.warning(f"[Scheduler] Failed to sync crawl result to knowledge service: {sync_exc}")
+
         _mark_success(result)
         logger.info(
             "[Scheduler] %s crawl%s completed.",

@@ -26,6 +26,9 @@ import java.util.List;
  * X-Student-Id is stripped first, so downstream services can trust that header.
  * Admin paths require X-Admin-Api-Key to equal the configured ADMIN_API_KEY, matching
  * the legacy require_admin_api_key contract (500 when the server has no key set).
+ *
+ * <p>{@code /api/training/start} used to sit in the admin list; it is now treated as a
+ * student action (re-index of files the student already uploaded) and only needs a session.
  */
 @Component
 public class SessionAuthFilter implements GlobalFilter, Ordered {
@@ -34,10 +37,18 @@ public class SessionAuthFilter implements GlobalFilter, Ordered {
             "/api/conversations");
 
     private static final List<String> STUDENT_EXACT = List.of(
-            "/api/chat", "/api/upload");
+            "/api/chat", "/api/upload", "/api/training/start",
+            // P0-3：语音接口烧的是 Cloud TTS / Gemini 配额，必须登录会话
+            "/api/voice/tts", "/api/voice/stt");
 
+    // Manual re-index of the student's own uploaded materials is a student action
+    // (it only rebuilds the vector index from files already in the shared data dir),
+    // so it needs a session instead of the admin key. Crawler/admin refresh
+    // (/api/knowledge/update) stays admin-only.
     private static final List<String> ADMIN_PATHS = List.of(
-            "/api/training/start", "/api/knowledge/update");
+            "/api/knowledge/update",
+            // P0-3：全局模型配置会写 .env（DASHSCOPE_API_KEY 等），写操作必须管理员密钥
+            "/api/settings");
 
     private final String secret;
     private final String adminApiKey;
@@ -54,9 +65,17 @@ public class SessionAuthFilter implements GlobalFilter, Ordered {
         if (request.getMethod() == HttpMethod.OPTIONS) {
             return chain.filter(exchange);
         }
-        String path = request.getPath().value();
+        String rawPath = request.getPath().pathWithinApplication().value();
+        String path = (rawPath != null) ? rawPath.replaceAll("/+", "/") : "";
 
-        if (ADMIN_PATHS.stream().anyMatch(path::startsWith)) {
+        // Block direct external access to internal microservice endpoints
+        if (path.equals("/internal") || path.startsWith("/internal/")) {
+            return reject(exchange, HttpStatus.FORBIDDEN, "Access to internal endpoints is forbidden");
+        }
+
+        // P0-3：管理员校验只针对写操作；GET 视为只读（桌面端设置页需要读回掩码配置）
+        if (request.getMethod() != HttpMethod.GET
+                && ADMIN_PATHS.stream().anyMatch(p -> path.equals(p) || path.startsWith(p + "/"))) {
             if (adminApiKey.isEmpty()) {
                 return reject(exchange, HttpStatus.INTERNAL_SERVER_ERROR,
                         "ADMIN_API_KEY is not configured on the server.");
@@ -67,8 +86,8 @@ public class SessionAuthFilter implements GlobalFilter, Ordered {
             }
         }
 
-        boolean studentRequired = STUDENT_PREFIXES.stream().anyMatch(path::startsWith)
-                || STUDENT_EXACT.stream().anyMatch(path::startsWith)
+        boolean studentRequired = STUDENT_PREFIXES.stream().anyMatch(prefix -> path.equals(prefix) || path.startsWith(prefix + "/"))
+                || STUDENT_EXACT.stream().anyMatch(exact -> path.equals(exact) || path.startsWith(exact + "/"))
                 || (path.startsWith("/api/documents/") && request.getMethod() == HttpMethod.DELETE);
 
         String studentId = null;

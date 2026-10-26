@@ -57,7 +57,13 @@ public class AuthController {
         student.setPasswordHash(PasswordHasher.hash(payload.password()));
         student.setCreatedAt(now);
         student.setUpdatedAt(now);
-        studentMapper.insert(student);
+        try {
+            studentMapper.insert(student);
+        } catch (org.springframework.dao.DuplicateKeyException e) {
+            // P2-9：并发注册同一 studentId 时唯一键冲突应返回 409，而不是 500
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(
+                    Map.of("detail", "Student account already exists."));
+        }
 
         sessions.create(response, studentId);
         return ResponseEntity.ok(Map.of(

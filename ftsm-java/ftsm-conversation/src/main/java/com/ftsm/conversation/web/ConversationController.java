@@ -109,6 +109,7 @@ public class ConversationController {
     }
 
     @DeleteMapping("/api/conversations/{conversationId}")
+    @org.springframework.transaction.annotation.Transactional
     public ResponseEntity<Map<String, Object>> delete(
             @PathVariable String conversationId,
             @RequestHeader(value = "X-Student-Id", required = false) String studentId) {
