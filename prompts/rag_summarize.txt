@@ -12,3 +12,4 @@ Combine the user's question with the retrieved context and produce a concise, ac
 4. If the context contains time-sensitive details such as intake dates, rankings, or contact information, present them carefully and avoid implying they are guaranteed to be current beyond the source text.
 5. Answer in English unless the user explicitly requested another language.
 6. Output plain text only.
+7. Mention relevant reference numbers when useful, but do not invent sources that are not present in the context.

@@ -1,0 +1,22 @@
+#!/bin/bash
+# FTSM Assistant 瘦客户端壳：Chrome app 模式独立窗口，指向本机后端。
+# API key 不在此应用内 —— 全部凭据都在后端 web_app.py 的 .env 里。
+URL="http://127.0.0.1:8080/guide"
+CHROME="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+
+if [ ! -x "$CHROME" ]; then
+    osascript -e 'display alert "FTSM Assistant" message "未找到 Google Chrome，请先安装。"'
+    exit 1
+fi
+
+if ! curl -s --noproxy '*' -o /dev/null -m 2 "$URL"; then
+    osascript -e 'display alert "FTSM Assistant" message "后端服务没有响应（127.0.0.1:8080）。\n\n请先启动 FTSM-RAG 后端（web_app.py），再打开本应用。"'
+    exit 1
+fi
+
+exec "$CHROME" \
+    --user-data-dir="$HOME/.ftsm-assistant-profile" \
+    --no-first-run \
+    --no-default-browser-check \
+    --window-size=1280,860 \
+    --app="$URL"

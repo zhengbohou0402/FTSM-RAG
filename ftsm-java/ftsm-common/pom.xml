@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.ftsm</groupId>
+        <artifactId>ftsm-java</artifactId>
+        <version>0.1.0</version>
+    </parent>
+
+    <artifactId>ftsm-common</artifactId>
+    <name>ftsm-common</name>
+    <description>Shared session-token and MQ event contract (no framework dependencies)</description>
+</project>

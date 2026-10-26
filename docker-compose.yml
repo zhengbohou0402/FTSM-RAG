@@ -1,0 +1,52 @@
+services:
+  mysql:
+    image: mysql:8.0.43
+    container_name: ftsm-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${FTSM_MYSQL_ROOT_PASSWORD:-ftsm123456}
+    ports:
+      - "127.0.0.1:3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docs/sql:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p${FTSM_MYSQL_ROOT_PASSWORD:-ftsm123456}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    container_name: ftsm-rabbitmq
+    restart: always
+    ports:
+      - "127.0.0.1:5672:5672"
+      - "127.0.0.1:15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  qdrant:
+    image: qdrant/qdrant:v1.10.0
+    container_name: ftsm-qdrant
+    restart: always
+    ports:
+      - "127.0.0.1:6333:6333"
+    volumes:
+      - qdrant_data:/qdrant/storage
+
+  # Optional service discovery (template §2: can start with gateway static routes first)
+  # nacos:
+  #   image: nacos/nacos-server:v2.4.3
+  #   container_name: ftsm-nacos
+  #   environment:
+  #     MODE: standalone
+  #   ports:
+  #     - "8848:8848"
+
+volumes:
+  mysql_data:
+  qdrant_data:

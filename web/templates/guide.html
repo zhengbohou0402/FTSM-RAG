@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>FTSM Assistant · FTSM-RAG</title>
+        <link rel="icon" type="image/x-icon" href="/static/assets/favicon.ico" />
+        <link rel="stylesheet" href="/static/guide.css?v=20261017-lg12" />
+    </head>
+    <body class="chat-page">
+        <nav class="topbar">
+            <a class="topbar-brand" href="/guide">
+                <span>FTSM Assistant</span>
+            </a>
+            <div class="topbar-tabs" role="tablist">
+                <button type="button" class="topbar-tab active" id="tab-chat" data-view="chat" data-i18n="tab.chat">Chat</button>
+                <button type="button" class="topbar-tab" id="tab-guide" data-view="guide" data-i18n="tab.guide">Guide</button>
+            </div>
+            <div class="topbar-right">
+                <div class="glass-switch" id="glass-switch">
+                    <button type="button" class="topbar-glass-btn" id="glass-toggle" aria-haspopup="dialog" aria-expanded="false" title="Change background color">
+                        <span class="topbar-swatch-dot" id="topbar-swatch-dot"></span>
+                        <span data-i18n="glass.bg.btn">Theme</span>
+                    </button>
+                    <div class="glass-popover" id="glass-popover" role="dialog" aria-label="Background Color" hidden>
+                        <div class="glass-pop-head">
+                            <span class="glass-pop-title" data-i18n="glass.bg">Background Color</span>
+                            <button type="button" class="glass-pop-reset" id="glass-reset" data-i18n="glass.reset">Reset</button>
+                        </div>
+
+                        <div class="glass-pop-section">
+                            <div class="glass-swatch-grid" id="glass-swatch-grid">
+                                <button type="button" class="glass-swatch active" data-bg="tahoe" title="Tahoe Sky">
+                                    <span class="swatch-orb swatch-tahoe"></span>
+                                    <span class="swatch-label" data-i18n="glass.bg.tahoe">Tahoe</span>
+                                </button>
+                                <button type="button" class="glass-swatch" data-bg="aurora" title="Aurora Violet">
+                                    <span class="swatch-orb swatch-aurora"></span>
+                                    <span class="swatch-label" data-i18n="glass.bg.aurora">Aurora</span>
+                                </button>
+                                <button type="button" class="glass-swatch" data-bg="glacier" title="Mint Glacier">
+                                    <span class="swatch-orb swatch-glacier"></span>
+                                    <span class="swatch-label" data-i18n="glass.bg.glacier">Glacier</span>
+                                </button>
+                                <button type="button" class="glass-swatch" data-bg="sunset" title="Sunset Peach">
+                                    <span class="swatch-orb swatch-sunset"></span>
+                                    <span class="swatch-label" data-i18n="glass.bg.sunset">Sunset</span>
+                                </button>
+                                <button type="button" class="glass-swatch" data-bg="sakura" title="Sakura Blush">
+                                    <span class="swatch-orb swatch-sakura"></span>
+                                    <span class="swatch-label" data-i18n="glass.bg.sakura">Sakura</span>
+                                </button>
+                                <button type="button" class="glass-swatch" data-bg="silver" title="Studio Silver">
+                                    <span class="swatch-orb swatch-silver"></span>
+                                    <span class="swatch-label" data-i18n="glass.bg.silver">Silver</span>
+                                </button>
+                            </div>
+                            <div class="glass-custom-color-row">
+                                <label for="glass-custom-color" class="glass-custom-label" data-i18n="glass.bg.custom">Custom Color</label>
+                                <label class="glass-color-picker-wrap" id="glass-color-picker-wrap">
+                                    <input type="color" id="glass-custom-color" value="#dceafe" aria-label="Custom background color" />
+                                    <span class="glass-color-hex" id="glass-color-hex">#DCEAFE</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="lang-switch" id="lang-switch">
+                    <button type="button" class="topbar-lang" id="lang-toggle" aria-haspopup="listbox" aria-expanded="false" title="Switch language">English</button>
+                    <div class="lang-menu" id="lang-menu" role="listbox" aria-label="Language" hidden>
+                        <button type="button" class="lang-option" data-lang="en" role="option">English</button>
+                        <button type="button" class="lang-option" data-lang="zh" role="option">中文</button>
+                        <button type="button" class="lang-option" data-lang="ms" role="option">Bahasa Melayu</button>
+                    </div>
+                </div>
+                <button type="button" class="topbar-newchat" id="assistant-new-chat" title="Start a new conversation">
+                    <svg class="topbar-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+                        <path d="M12 5v14" /><path d="M5 12h14" />
+                    </svg>
+                    <span data-i18n="newchat">New chat</span>
+                </button>
+                <a href="/legacy">Status</a>
+            </div>
+        </nav>
+
+        <!-- ── Chat view (OpenAI-style, default) ── -->
+        <section id="view-chat" class="chat-view">
+            <div class="chat-shell">
+                <aside class="chat-sidebar" id="chat-sidebar">
+                    <div class="sidebar-group">
+                        <button type="button" class="sidebar-newchat" id="sidebar-newchat">
+                            <svg class="sidebar-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+                                <path d="M12 5v14" /><path d="M5 12h14" />
+                            </svg>
+                            <span data-i18n="newchat">New chat</span>
+                        </button>
+                        <button type="button" class="sidebar-action" id="sidebar-training" title="Upload your own materials and retrain the knowledge base">
+                            <svg class="sidebar-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M12 16V4" /><polyline points="7,9 12,4 17,9" /><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
+                            </svg>
+                            <span data-i18n="kb.button">Training materials</span>
+                        </button>
+                    </div>
+                    <div class="sidebar-label" data-i18n="sidebar.recent">Recent</div>
+                    <div class="sidebar-list" id="sidebar-list"></div>
+                </aside>
+                <button type="button" class="sidebar-toggle" id="sidebar-toggle" title="Conversation history" aria-label="Conversation history">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                        <line x1="4" y1="7" x2="20" y2="7" /><line x1="4" y1="12" x2="20" y2="12" /><line x1="4" y1="17" x2="14" y2="17" />
+                    </svg>
+                </button>
+                <div class="chat-area">
+                    <div class="chat-scroll" id="chat-scroll">
+                        <div class="chat-empty" id="chat-empty">
+                            <h1 data-i18n="chat.h1">How can I help you today?</h1>
+                            <p class="chat-empty-sub" data-i18n="chat.sub">
+                                Ask about visas, buses, food, housing, health or classes at UKM FTSM —
+                                answers come from the official knowledge base.
+                            </p>
+                            <div class="chat-suggestions" id="chat-suggestions"></div>
+                        </div>
+                        <div class="chat-thread" id="assistant-messages"></div>
+                    </div>
+                    <div class="composer-wrap">
+                        <form class="composer" id="assistant-input-form">
+                            <button type="button" id="voice-mic" aria-label="Voice input" title="Voice input">
+                                <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" /><path d="M19 10v2a7 7 0 0 1-14 0v-2" /><line x1="12" y1="19" x2="12" y2="22" />
+                                </svg>
+                            </button>
+                            <input
+                                type="text"
+                                id="assistant-message"
+                                data-i18n-ph="composer.ph" placeholder="Ask about visas, buses, food…"
+                                autocomplete="off"
+                                autofocus
+                            />
+                            <button type="submit" id="assistant-send" aria-label="Send">
+                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <line x1="12" y1="19" x2="12" y2="5" /><polyline points="5 12 12 5 19 12" />
+                                </svg>
+                            </button>
+                        </form>
+                        <p class="composer-note">
+                            <span id="assistant-status">Connecting…</span>
+                            <span data-i18n="chat.note">· Verify critical details (visas, fees, deadlines) through official UKM / EMGS channels.</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── Guide view (openai.com-style minimal) ── -->
+        <section id="view-guide" class="guide-view" hidden>
+            <header class="oai-hero">
+                <h1 class="oai-hero-title" data-i18n="hero.title">Student life at FTSM,<br />answered.</h1>
+                <p class="oai-hero-sub" data-i18n="hero.sub">
+                    Visas, buses, food, housing, health and classes — curated from
+                    official UKM sources and grounded in the knowledge base.
+                </p>
+                <div class="oai-hero-actions">
+                    <button type="button" class="oai-btn-dark" id="guide-ask" data-i18n="hero.ask">Ask the assistant</button>
+                    <a class="oai-btn-ghost" href="#topics" data-i18n="hero.browse">Browse the guide</a>
+                </div>
+                <figure class="oai-hero-banner">
+                    <img src="/static/assets/guides/banner-campus.png" alt="UKM Bangi campus" loading="lazy" />
+                </figure>
+                <div class="oai-stats" id="guide-stats" hidden>
+                    <div class="oai-stat">
+                        <strong id="stat-docs">–</strong>
+                        <span data-i18n="stat.docs">Documents indexed</span>
+                    </div>
+                    <div class="oai-stat">
+                        <strong id="stat-chunks">–</strong>
+                        <span data-i18n="stat.chunks">Knowledge chunks</span>
+                    </div>
+                    <div class="oai-stat">
+                        <strong id="stat-cache">–</strong>
+                        <span data-i18n="stat.cache">Cached answers</span>
+                    </div>
+                    <div class="oai-stat">
+                        <strong id="stat-status">–</strong>
+                        <span data-i18n="stat.status">Assistant status</span>
+                    </div>
+                </div>
+            </header>
+
+            <main class="oai-main">
+                <section id="topics" class="oai-section">
+                    <h2 data-i18n="topics.h">Quick topics</h2>
+                    <p class="oai-section-sub" data-i18n="topics.sub">Click any question to ask the assistant right away — you will switch to the chat view.</p>
+                    <div class="oai-grid" id="guide-cards"></div>
+                </section>
+
+                <section id="programmes" class="oai-section oai-section-gray">
+                    <h2 data-i18n="prog.h">Programmes at FTSM</h2>
+                    <p class="oai-section-sub" data-i18n="prog.sub">
+                        Official programmes listed by the faculty — click a card to ask the
+                        assistant about admission, structure and courses.
+                    </p>
+                    <div class="oai-grid" id="programme-grid"></div>
+                    <p class="oai-source-note">
+                        Source: <a href="https://ftsm.ukm.my/v6/undergraduate" target="_blank" rel="noopener">ftsm.ukm.my</a>
+                        · undergraduate medium of instruction is Bahasa Melayu per the official page
+                        · always verify the latest admission cycle on official channels.
+                    </p>
+                </section>
+
+                <section id="checklist" class="oai-section">
+                    <h2 data-i18n="chk.h">Before you fly checklist</h2>
+                    <p class="oai-section-sub" data-i18n="chk.sub">
+                        Tick items off as you prepare — progress is saved in this browser.
+                    </p>
+                    <div class="oai-checklist">
+                        <ul id="checklist-items"></ul>
+                        <button type="button" class="oai-btn-ghost small" id="checklist-reset" data-i18n="chk.reset">Reset checklist</button>
+                    </div>
+                </section>
+
+                <section id="trending" class="oai-section oai-section-gray" hidden>
+                    <h2>Trending questions</h2>
+                    <p class="oai-section-sub">What students asked the most this week — click to get the current answer.</p>
+                    <div class="oai-trend-grid" id="trend-grid"></div>
+                </section>
+
+                <section id="how-it-works" class="oai-section">
+                    <h2 data-i18n="hiw.h">How the assistant answers</h2>
+                    <p class="oai-section-sub" data-i18n="hiw.sub">
+                        Every reply goes through the same retrieval pipeline — and questions the
+                        knowledge base cannot support are rejected instead of guessed.
+                    </p>
+                    <div class="oai-steps">
+                        <div class="oai-step">
+                            <span class="oai-step-num">01</span>
+                            <div>
+                                <h3 data-i18n="hiw1.t">Ingest</h3>
+                                <p data-i18n="hiw1.d">Official FTSM pages, timetables and curated guides are crawled, split into chunks and embedded into the vector index.</p>
+                            </div>
+                        </div>
+                        <div class="oai-step">
+                            <span class="oai-step-num">02</span>
+                            <div>
+                                <h3 data-i18n="hiw2.t">Hybrid retrieve</h3>
+                                <p data-i18n="hiw2.d">Dense vector search and BM25 keyword search run in parallel, then fuse through Reciprocal Rank Fusion.</p>
+                            </div>
+                        </div>
+                        <div class="oai-step">
+                            <span class="oai-step-num">03</span>
+                            <div>
+                                <h3 data-i18n="hiw3.t">Rerank</h3>
+                                <p data-i18n="hiw3.d">A cross-encoder reranker promotes the most relevant chunks before anything reaches the model.</p>
+                            </div>
+                        </div>
+                        <div class="oai-step">
+                            <span class="oai-step-num">04</span>
+                            <div>
+                                <h3 data-i18n="hiw4.t">Ground &amp; answer</h3>
+                                <p data-i18n="hiw4.d">The model answers only from retrieved context. Weak evidence fails a dual-threshold gate — no hallucinated answers.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="buses" class="oai-section oai-section-gray">
+                    <h2>Campus &amp; city bus routes</h2>
+                    <p class="oai-section-sub" data-i18n="bus.sub">
+                        Route maps for the UKM–KTM shuttle zones. Click a map to enlarge.
+                    </p>
+                    <div class="oai-bus-grid">
+                        <figure class="oai-bus-card">
+                            <img src="/static/assets/bus_routes/ZON1.png" alt="Bus route map, Zone 1" data-zoomable loading="lazy" />
+                            <figcaption data-i18n="bus.z1">Zone 1</figcaption>
+                        </figure>
+                        <figure class="oai-bus-card">
+                            <img src="/static/assets/bus_routes/ZON2.png" alt="Bus route map, Zone 2" data-zoomable loading="lazy" />
+                            <figcaption data-i18n="bus.z2">Zone 2</figcaption>
+                        </figure>
+                        <figure class="oai-bus-card">
+                            <img src="/static/assets/bus_routes/ZON3.png" alt="Bus route map, Zone 3" data-zoomable loading="lazy" />
+                            <figcaption data-i18n="bus.z3">Zone 3</figcaption>
+                        </figure>
+                        <figure class="oai-bus-card">
+                            <img src="/static/assets/bus_routes/ZON4.png" alt="Bus route map, Zone 4" data-zoomable loading="lazy" />
+                            <figcaption data-i18n="bus.z4">Zone 4</figcaption>
+                        </figure>
+                        <figure class="oai-bus-card">
+                            <img src="/static/assets/bus_routes/ZON5.png" alt="Bus route map, Zone 5" data-zoomable loading="lazy" />
+                            <figcaption data-i18n="bus.z5">Zone 5</figcaption>
+                        </figure>
+                        <figure class="oai-bus-card">
+                            <img src="/static/assets/bus_routes/ZON6.png" alt="Bus route map, Zone 6" data-zoomable loading="lazy" />
+                            <figcaption data-i18n="bus.z6">Zone 6</figcaption>
+                        </figure>
+                        <figure class="oai-bus-card">
+                            <img src="/static/assets/bus_routes/ZON7.png" alt="Bus route map, Zone 7" data-zoomable loading="lazy" />
+                            <figcaption data-i18n="bus.z7">Zone 7</figcaption>
+                        </figure>
+                        <figure class="oai-bus-card">
+                            <img src="/static/assets/bus_routes/ZON8.png" alt="Bus route map, Zone 8" data-zoomable loading="lazy" />
+                            <figcaption data-i18n="bus.z8">Zone 8</figcaption>
+                        </figure>
+                    </div>
+                </section>
+            </main>
+
+            <footer class="oai-footer">
+                <p data-i18n="footer">
+                    Answers come from the FTSM-RAG knowledge base (official pages, timetables and
+                    curated student guides). Always verify critical details — visas, fees, deadlines —
+                    through official UKM / EMGS channels.
+                </p>
+            </footer>
+        </section>
+
+        <!-- ── Topic detail view (openai.com story-page style) ── -->
+        <section id="view-topic" class="topic-view" hidden>
+            <header class="story-hero">
+                <img class="story-hero-img" id="topic-hero-img" src="" alt="" />
+                <div class="story-hero-shade"></div>
+                <div class="story-hero-text">
+                    <h1 id="topic-title"></h1>
+                    <p id="topic-sub"></p>
+                </div>
+            </header>
+            <div class="story-body">
+                <a class="story-back" href="#guide" data-i18n="story.back">← Back to guide</a>
+                <div id="topic-answers"></div>
+                <div class="story-cta">
+                    <p data-i18n="story.need">Need something more specific?</p>
+                    <button type="button" class="oai-btn-dark" id="topic-ask" data-i18n="hero.ask">Ask the assistant</button>
+                </div>
+                <p class="story-note" data-i18n="story.note">
+                    Answers on this page were generated from the FTSM-RAG knowledge base
+                    (official UKM pages, timetables and curated guides). Always verify critical
+                    details — visas, fees, deadlines — through official UKM / EMGS channels.
+                </p>
+            </div>
+        </section>
+
+        <div class="guide-lightbox" id="guide-lightbox" hidden>
+            <img id="guide-lightbox-img" src="" alt="Enlarged route map" />
+        </div>
+
+        <!-- ── Training materials drawer ── -->
+        <div class="kb-drawer" id="kb-drawer" hidden>
+            <div class="kb-drawer-backdrop" id="kb-backdrop"></div>
+            <aside class="kb-panel" role="dialog" aria-modal="true" aria-label="Training materials">
+                <header class="kb-head">
+                    <div>
+                        <h2 data-i18n="kb.h">Training materials</h2>
+                        <p class="kb-sub" data-i18n="kb.sub">Upload your own notes or documents, then retrain so the assistant can cite them.</p>
+                    </div>
+                    <button type="button" class="kb-close" id="kb-close" aria-label="Close">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                            <line x1="5" y1="5" x2="19" y2="19" /><line x1="19" y1="5" x2="5" y2="19" />
+                        </svg>
+                    </button>
+                </header>
+
+                <div class="kb-body">
+                    <div class="kb-drop" id="kb-drop" tabindex="0" role="button" aria-label="Choose files to upload">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M12 16V4" /><polyline points="7,9 12,4 17,9" /><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
+                        </svg>
+                        <p data-i18n="kb.drop"><strong>Drop files here</strong> or click to choose</p>
+                        <span class="kb-hint" id="kb-hint" data-i18n="kb.hint">TXT / PDF / PNG / JPG · max 50 MB each</span>
+                        <input type="file" id="kb-file" multiple hidden />
+                    </div>
+                    <p class="kb-msg" id="kb-upload-msg" hidden></p>
+
+                    <div class="kb-section-head">
+                        <span class="kb-section-title" data-i18n="kb.section">Knowledge base</span>
+                        <button type="button" class="kb-link" id="kb-refresh" data-i18n="kb.refresh">Refresh</button>
+                    </div>
+                    <div class="kb-files" id="kb-files"></div>
+
+                    <div class="kb-train">
+                        <button type="button" class="kb-train-btn" id="kb-train">
+                            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <polygon points="5,4 19,12 5,20" fill="currentColor" stroke="none" />
+                            </svg>
+                            <span id="kb-train-label" data-i18n="kb.train">Start training</span>
+                        </button>
+                        <div class="kb-progress" id="kb-progress" hidden><div class="kb-progress-bar"></div></div>
+                        <p class="kb-msg" id="kb-train-msg" hidden></p>
+                    </div>
+
+                    <div class="kb-stats" id="kb-stats">
+                        <div><strong id="kb-stat-docs">–</strong><span data-i18n="kb.documents">documents</span></div>
+                        <div><strong id="kb-stat-chunks">–</strong><span data-i18n="kb.chunks">chunks</span></div>
+                        <div><strong id="kb-stat-version">–</strong><span data-i18n="kb.indexv">index v</span></div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+
+        <script src="/static/guide.js?v=20261017-lg12" defer></script>
+    </body>
+</html>

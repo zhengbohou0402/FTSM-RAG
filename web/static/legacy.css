@@ -1,0 +1,392 @@
+/* FTSM-RAG Legacy Status — Apple system palette (2026-10-16)
+   ─────────────────────────────────────────────────────────────
+   本页原来用的是 ChatGPT 绿 #10a37f，与 /guide 的 teal 体系、桌面端的
+   antd 藏青 #2e6da4 三足鼎立 —— 这正是「四不像」的三个来源。
+   现在三端统一到 Apple HIG：系统蓝强调色 + SF Pro 字体 +
+   label / secondaryLabel / separator 三级中性色。
+
+   本页是「设置面板」性质，所以卡片用 14px 圆角（Apple Settings 风格，
+   不是 apple.com 那种全胶囊按钮），状态点用系统红绿。
+   ───────────────────────────────────────────────────────────── */
+
+:root {
+    /* 与 guide.css §11 同一套 Apple 系统色 */
+    --accent: #0066cc;
+    --accent-fill: #0071e3;
+    --accent-strong: #006edc;
+    --accent-soft: #e5f0ff;
+    --accent-bg: #f3f8ff;
+    --accent-line: #b8d4f5;
+
+    --ink: #1d1d1f; /* Apple label           16.8:1 */
+    --muted: #6e6e73; /* Apple secondaryLabel   5.07:1 ✅AA */
+    --line: #e5e5ea; /* Apple separator */
+    --card: #ffffff;
+    --page: #eef2f7;
+
+    --ok: #248a3d; /* Apple systemGreen（可访问版） */
+    --ok-soft: #eaf7ef;
+    --ok-line: #bfe6cb;
+    --danger: #d70015; /* Apple systemRed（可访问版） */
+    --danger-soft: #ffeceb;
+    --danger-line: #ffc9c7;
+
+    --dot-idle: #8e8e93;
+    --dot-ok: #34c759; /* Apple systemGreen */
+    --dot-error: #ff3b30; /* Apple systemRed */
+
+    --r-xs: 8px;
+    --r-sm: 10px;
+    --r-md: 14px;
+    --r-pill: 999px;
+    --hairline: 1px;
+    --ease-std: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (-webkit-min-device-pixel-ratio: 1.5), (min-resolution: 144dpi) {
+    :root {
+        --hairline: 0.5px;
+    }
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
+        "Helvetica Neue", "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    color: var(--ink);
+    background: var(--page);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    accent-color: var(--accent);
+    -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+    background: rgba(0, 113, 227, 0.2);
+    color: var(--ink);
+}
+
+/* 与 /guide 同一条环境光：三端要看起来像同一个产品 */
+.legacy-page::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+        radial-gradient(1100px 760px at 10% -8%, rgba(186, 222, 255, 0.56) 0%, rgba(186, 222, 255, 0) 62%),
+        radial-gradient(1000px 680px at 96% 12%, rgba(212, 200, 255, 0.46) 0%, rgba(212, 200, 255, 0) 58%),
+        radial-gradient(920px 720px at 46% 108%, rgba(176, 236, 219, 0.44) 0%, rgba(176, 236, 219, 0) 60%),
+        linear-gradient(180deg, #f7f9fc 0%, #eaeef5 56%, #f1f4f9 100%);
+}
+
+.legacy-page {
+    min-height: 100vh;
+    background: transparent;
+}
+
+.legacy-shell {
+    width: min(1040px, calc(100% - 32px));
+    margin: 0 auto;
+    padding: 40px 0 56px;
+}
+
+.legacy-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.legacy-kicker {
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0 0 6px;
+}
+
+.legacy-header h1 {
+    color: var(--ink);
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.022em;
+    margin: 0 0 8px;
+}
+
+.legacy-header p {
+    max-width: 680px;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.65;
+    margin: 0;
+}
+
+.legacy-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.legacy-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    padding: 0 18px;
+    border-radius: var(--r-pill);
+    border: var(--hairline) solid rgba(255, 255, 255, 0.80);
+    background: rgba(255, 255, 255, 0.62);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+            backdrop-filter: blur(20px) saturate(180%);
+    color: var(--ink);
+    font: inherit;
+    font-size: 13.5px;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.92),
+        0 2px 8px rgba(18, 30, 48, 0.06);
+    transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.legacy-btn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.86);
+    border-color: rgba(255, 255, 255, 0.95);
+    color: var(--accent);
+    transform: translateY(-1px);
+    box-shadow:
+        inset 0 1px 0 #ffffff,
+        0 6px 16px rgba(0, 122, 255, 0.12);
+}
+
+.legacy-btn:active:not(:disabled) {
+    transform: scale(0.985);
+    transition-duration: 0.1s;
+}
+
+.legacy-btn:disabled {
+    opacity: 0.55;
+    cursor: default;
+}
+
+.legacy-btn-primary {
+    border-color: rgba(255, 255, 255, 0.35);
+    background: linear-gradient(180deg, #1E8FFF 0%, #007AFF 100%);
+    color: #ffffff;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.45),
+        0 6px 16px -4px rgba(0, 122, 255, 0.36);
+}
+
+.legacy-btn-primary:hover {
+    background: linear-gradient(180deg, #2B97FF 0%, #006EE6 100%);
+    border-color: rgba(255, 255, 255, 0.45);
+    color: #ffffff;
+}
+
+:where(a, button, input, [tabindex]):focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: var(--r-xs);
+}
+
+.legacy-banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 18px;
+    border-radius: 18px;
+    border: var(--hairline) solid rgba(255, 255, 255, 0.78);
+    background: rgba(255, 255, 255, 0.62);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+            backdrop-filter: blur(24px) saturate(180%);
+    color: var(--ink);
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 18px;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.90),
+        0 8px 24px -6px rgba(18, 30, 48, 0.07);
+}
+
+.legacy-banner-ok {
+    border-color: rgba(52, 199, 89, 0.32);
+    background: rgba(234, 247, 239, 0.75);
+    color: var(--ok);
+}
+
+.legacy-banner-error {
+    border-color: rgba(255, 59, 48, 0.28);
+    background: rgba(255, 236, 235, 0.75);
+    color: var(--danger);
+}
+
+.legacy-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--dot-idle);
+}
+
+.legacy-dot-loading {
+    animation: pulse-dot 1s infinite;
+}
+
+.legacy-dot-ok {
+    background: var(--dot-ok);
+}
+
+.legacy-dot-error {
+    background: var(--dot-error);
+}
+
+@keyframes pulse-dot {
+    0%,
+    100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.35;
+    }
+}
+
+.legacy-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+/* iOS 26 Liquid Glass Lens Card */
+.legacy-card {
+    position: relative;
+    isolation: isolate;
+    background: rgba(255, 255, 255, 0.60);
+    -webkit-backdrop-filter: blur(28px) saturate(185%);
+            backdrop-filter: blur(28px) saturate(185%);
+    border: var(--hairline) solid rgba(255, 255, 255, 0.78);
+    border-radius: 22px;
+    padding: 20px 22px;
+    box-shadow:
+        0 12px 36px -8px rgba(18, 30, 48, 0.08),
+        0 2px 6px rgba(18, 30, 48, 0.04),
+        inset 0 1px 0 rgba(255, 255, 255, 0.92),
+        inset 0 -10px 18px -14px rgba(24, 38, 62, 0.08);
+    transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.24s ease;
+}
+
+.legacy-card:hover {
+    background: rgba(255, 255, 255, 0.76);
+    transform: translateY(-2px);
+}
+
+.legacy-card-wide {
+    grid-column: 1 / -1;
+}
+
+.legacy-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 14px;
+}
+
+.legacy-card-head span {
+    color: var(--ink);
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.012em;
+}
+
+.legacy-card-head strong {
+    padding: 4px 9px;
+    border-radius: var(--r-pill);
+    background: rgba(118, 118, 128, 0.12);
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.legacy-card-head strong.legacy-ok {
+    background: var(--ok-soft);
+    color: var(--ok);
+}
+
+.legacy-card-head strong.legacy-error {
+    background: var(--danger-soft);
+    color: var(--danger);
+}
+
+.legacy-card dl {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+}
+
+.legacy-dl-wide {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.legacy-card dl div {
+    min-width: 0;
+}
+
+.legacy-card dt {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+
+.legacy-card dd {
+    color: var(--ink);
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+    }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+    .legacy-page::before {
+        background: var(--page);
+    }
+}
+
+@media (max-width: 760px) {
+    .legacy-header {
+        flex-direction: column;
+    }
+
+    .legacy-actions {
+        justify-content: flex-start;
+    }
+
+    .legacy-grid,
+    .legacy-dl-wide {
+        grid-template-columns: 1fr;
+    }
+}

@@ -1,9 +1,38 @@
+import re
+
 from langchain.agents import create_agent
 
 from agent.tools.agent_tools import rag_summarize
 from agent.tools.middleware import log_before_model, monitor_tool
 from model.factory import create_chat_model
 from utils.prompt_loader import load_system_prompts
+
+_SOURCES_HEADING_RE = re.compile(
+    r"(?m)^\s*(?:#{1,6}\s*)?\*{0,2}\s*sources:?\s*\*{0,2}\s*$",
+    re.IGNORECASE,
+)
+_REFUSAL_MARKERS = (
+    "does not contain enough confirmed information",
+    "does not confirm the answer",
+    "does not contain the answer",
+    "not mentioned in the available",
+    "没有足够确认的信息",
+    "未包含",
+    "没有提及",
+    "无法确认",
+    "tiada maklumat",
+)
+
+
+def _extract_sources_trailer(tool_output: str) -> str:
+    """从 rag_summarize 工具返回中提取尾部的 Source reliability + Sources 块。"""
+    if not tool_output or "\nSources:\n" not in tool_output:
+        return ""
+    idx = tool_output.find("\nSource reliability:")
+    if idx != -1:
+        return tool_output[idx + 1 :].strip()
+    src_idx = tool_output.find("\nSources:\n")
+    return tool_output[src_idx + 1 :].strip() if src_idx != -1 else ""
 
 
 class ReactAgent:
@@ -14,40 +43,6 @@ class ReactAgent:
             tools=[rag_summarize],
             middleware=[monitor_tool, log_before_model],
         )
-
-    def _analyze_query_intent(self, query: str) -> str:
-        """Analyze the user's query and return a brief intent description."""
-        query_lower = query.lower()
-        
-        # Holiday related
-        if any(kw in query_lower for kw in ['holiday', '假期', 'public holiday', '节假日', 'deepavali', 'hari raya', 'christmas', 'new year', 'chinese new year']):
-            return 'Searching Malaysian public holidays'
-        # Academic calendar
-        if any(kw in query_lower for kw in ['calendar', '日历', 'semester', '学期', 'schedule', '安排']):
-            return 'Searching academic calendar'
-        # Timetable
-        if any(kw in query_lower for kw in ['timetable', '时间表', 'course', '课程', 'class', '课程表']):
-            return 'Searching course timetables'
-        # Advisor/Supervisor
-        if any(kw in query_lower for kw in ['advisor', '导师', 'supervisor', 'professor', '教授', 'staff', '教师']):
-            return 'Searching advisor information'
-        # Admission
-        if any(kw in query_lower for kw in ['admission', '入学', 'apply', '申请', 'requirement', '要求', 'program', '专业']):
-            return 'Searching admission requirements'
-        # Visa
-        if any(kw in query_lower for kw in ['visa', '签证', 'renew', '续签', 'pass', '准证']):
-            return 'Searching visa information'
-        # Facilities
-        if any(kw in query_lower for kw in ['facility', '设施', 'library', '图书馆', 'lab', '实验室', 'service', '服务']):
-            return 'Searching campus facilities'
-        # Contact
-        if any(kw in query_lower for kw in ['contact', '联系', 'phone', '电话', 'email', '邮箱', 'office', '办公室']):
-            return 'Searching contact information'
-        # Registration
-        if any(kw in query_lower for kw in ['register', '注册', 'enroll', 'enrolment', '报名']):
-            return 'Searching registration info'
-        # Default
-        return 'Analyzing question'
 
     def execute_stream(self, query: str, history: list[dict] | None = None):
         """
@@ -60,12 +55,9 @@ class ReactAgent:
         messages.append({"role": "user", "content": query})
         input_dict = {"messages": messages}
 
-        # Step 1: Analyze user intent
-        intent = self._analyze_query_intent(query)
-        yield f"__THINK__{intent}...__ENDTHINK__"
-
-        thinking_emitted = False
-        generating_answer = False
+        tool_search_emitted = False
+        sources_trailer = ""
+        emitted_parts: list[str] = []
 
         for message_chunk, metadata in self.agent.stream(
             input_dict,
@@ -73,34 +65,49 @@ class ReactAgent:
             context={"report": False},
         ):
             node = metadata.get("langgraph_node")
+            if node == "tools":
+                tool_text = str(getattr(message_chunk, "content", "") or "")
+                extracted = _extract_sources_trailer(tool_text)
+                if extracted:
+                    sources_trailer = extracted
+                continue
 
             if node == "model":
+                content = getattr(message_chunk, "content", "") or ""
+                if isinstance(content, list):
+                    content = "".join(
+                        part.get("text", "") if isinstance(part, dict) else str(part)
+                        for part in content
+                    )
                 tool_calls = getattr(message_chunk, "tool_calls", None)
-                
-                # Step 2: Searching knowledge base
-                if tool_calls and not thinking_emitted:
-                    thinking_emitted = True
-                    for tc in tool_calls:
-                        q = tc.get("args", {}).get("query", "")
-                        if q:
-                            yield f"__THINK__Searching: {q}__ENDTHINK__"
+                tool_call_chunks = getattr(message_chunk, "tool_call_chunks", None)
 
-                # Skip tool call chunks
-                if getattr(message_chunk, "tool_call_chunks", None):
+                if tool_calls and not tool_search_emitted:
+                    tool_search_emitted = True
+                    yield "__THINK__Searching knowledge base...__ENDTHINK__"
+
+                if tool_call_chunks:
                     continue
 
-                # Step 3: Generating answer
-                content = getattr(message_chunk, "content", "")
-                if isinstance(content, str) and content:
-                    if not generating_answer and not tool_calls:
-                        generating_answer = True
-                        yield f"__THINK__Generating answer...__ENDTHINK__"
-                    if not tool_calls:
-                        yield content
+                if content and not tool_calls:
+                    emitted_parts.append(content)
+                    yield content
+
+        # P1-4：工具不再跑内层 LLM，也不让外层 LLM 逐 token 复述 Sources 尾块；
+        # 流式正文结束后，若工具返回了 Sources 且回答不是拒答、也未自带 Sources，
+        # 由系统确定性追加，保证前端（guide.js / desktop useChat.ts）100% 稳定解析。
+        full_answer = "".join(emitted_parts).strip()
+        if (
+            sources_trailer
+            and full_answer
+            and not _SOURCES_HEADING_RE.search(full_answer)
+            and not any(marker in full_answer.lower() for marker in _REFUSAL_MARKERS)
+        ):
+            yield f"\n\n{sources_trailer}"
 
 
 if __name__ == "__main__":
     agent = ReactAgent()
-
     for chunk in agent.execute_stream("What facilities are available at UKM FTSM?"):
         print(chunk, end="", flush=True)
+

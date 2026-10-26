@@ -1,190 +1,151 @@
 # FTSM-RAG
 
-FTSM-RAG is a FastAPI-based Retrieval-Augmented Generation (RAG) assistant for UKM FTSM student information. It answers questions about FTSM and UKM student life by retrieving local knowledge base documents from Chroma and generating grounded responses with a Tongyi/DashScope chat model.
+A **Retrieval-Augmented Generation (RAG)** assistant for UKM FTSM student information, delivered as a **dual-stack microservices graduation project**: Java business services (Spring Boot 3) + a Python AI service (FastAPI + LangChain), integrated through **RabbitMQ events** behind a single gateway.
 
-The current implementation is a local web application with:
+> Legacy monolith heritage: the retrieval core (three-stage hybrid search + rerank + evaluation suite) comes from the single-app version; the delivery has been restructured into services. The desktop (PyInstaller/Tauri) packaging of the legacy version is frozen and archived under `desktop/`.
 
-- FastAPI backend and a static HTML/JavaScript chat UI
-- LangChain agent with a `rag_summarize` retrieval tool
-- Chroma persistent vector store
-- DashScope Tongyi chat model and DashScope embedding model
-- Local knowledge base under `data/ukm_ftsm`
-- FTSM website crawler under `scripts/scrape_ftsm_website.py`
-- Document upload and background vector-store rebuild endpoints
-- Conversation history and semantic response cache stored locally
-
-## Project Layout
+## Architecture
 
 ```text
-.
-|-- web_app.py                  # FastAPI application entry point
-|-- agent/                      # LangChain agent and tools
-|-- rag/                        # RAG retrieval and vector-store services
-|-- model/                      # Chat and embedding model factories
-|-- config/                     # YAML configuration
-|-- prompts/                    # System and RAG prompt templates
-|-- scripts/                    # FTSM website crawler
-|-- utils/                      # Config, scheduling, cache, file loading helpers
-|-- web/                        # Static frontend and Jinja template
-|-- data/ukm_ftsm/              # Local source documents
-|-- chroma_db_ftsm/             # Generated Chroma database, ignored by git
+                        ┌─────────────────────────── Java side ───────────────────────────┐
+ web/ (English UI) ──►  ftsm-gateway :8080  ──►  ftsm-user         :8101  (accounts, login)
+ (static, English)      (session verify,         ftsm-conversation :8102  (chats, messages)
+                         admin key,              ftsm-knowledge    :8103  (doc state machine,
+                         SSE passthrough)                                 query log, quality)
+                        └──────────────┬───────────────────────────────┬──────────────────┘
+                                       │  MySQL 8 (authoritative state) │ RabbitMQ 3.12
+                                       ▼                                ▼
+                        ┌─────────── Python side ─────────────────────────────────────────┐
+                        ftsm-rag :8104 — FastAPI + LangChain
+                        hybrid retrieval (ChromaDB vector + BM25 → RRF → rerank),
+                        semantic cache, ReAct agent, chat SSE, indexing consumer
+                                       ▼
+                                    ChromaDB vector store
 ```
 
-## Runtime Stack
+**Authority boundary**: `ftsm-knowledge` owns document state (`INDEXING → READY | FAILED`) and the query log; `ftsm-rag` never writes business state. The primary path is RabbitMQ: indexing and deletion are driven by events with **atomic, idempotent state migration** on the consumer side (`UPDATE ... WHERE status = 'INDEXING'`), so duplicated deliveries are harmless. Reads (`ready-ids`) use synchronous HTTP.
 
-| Component | Current Implementation |
-| --- | --- |
-| Web backend | FastAPI + Uvicorn |
-| Frontend | Static HTML/CSS/JavaScript served by FastAPI |
-| Agent framework | LangChain `create_agent` |
-| Chat model | DashScope Tongyi, configured as `qwen3-max` |
-| Embedding model | DashScope `text-embedding-v4` |
-| Vector store | Chroma via `langchain-chroma` |
-| Text splitting | `RecursiveCharacterTextSplitter` |
-| PDF loading | LangChain `PyPDFLoader` |
-| Image text extraction | DashScope Qwen-VL + Pillow |
-| Scheduled crawling | Local background scheduler using Playwright crawler |
+**Degraded path (no MQ)**: if RabbitMQ is unreachable, `ftsm-rag` falls back to its in-process training thread, and the state machine would otherwise never leave `INDEXING`. So it also POSTs the authoritative manifest result to `ftsm-knowledge` (`POST /internal/docs/ready`, best-effort, same atomic `WHERE status = 'INDEXING'` guard). Both paths therefore converge on the same state, and either one may be retried safely.
 
-Model names and vector-store settings are configured in:
+## Key Features
 
-- `config/rag.yml`
-- `config/chroma.yml`
-- `config/scheduler.yml`
+- **Three-stage retrieval** — multi-query vector search (ChromaDB) + BM25 keyword search, fused with RRF, then re-ranked by the provider set in `config/rag.yml` (`rerank.provider`):
 
-## Requirements
+  | provider | how it re-ranks | requires | measured |
+  | --- | --- | --- | --- |
+  | `none` | keeps RRF order | — | — |
+  | `dashscope` | `gte-rerank-v2` cross-encoder | a DashScope key **in good standing** | ~100 ms |
+  | `vertex` | LLM listwise re-rank via the Vertex Gemini chat model | nothing extra (reuses the chat backend) | ~3.2 s warm |
+  | `local` | `sentence-transformers` CrossEncoder | `pip install sentence-transformers` + a model name | local CPU |
+  | `auto` | follows the chat backend: `dashscope` → DashScope if keyed; `vertex` → `none` | — | — |
 
-- Python 3.12 is recommended, matching the existing local `.venv`.
-- A DashScope API key is required for chat, embedding, and image text extraction.
-- Chromium browser files are required if you run the Playwright crawler.
+  Re-ranking is **decoupled from the chat backend** and degrades non-silently: when the provider is unavailable the process logs one reason, keeps serving RRF order, and reports `rerank.active = false` plus `disabled_reason` from `GET /api/kb/stats`. Note `auto` resolves to `none` on the Vertex backend — the Vertex Ranking API is a separately-billed product (not enabled for this project), and the LLM listwise path costs ~3.2 s/query, so that trade-off is left to an explicit `provider: vertex`.
+- **Dual-threshold rejection** — a query is answered only if one of these admits it, otherwise a fixed no-answer refusal is returned instead of a hallucination:
+  1. **dense** — max cosine between the query vector and the top candidate chunks ≥ `dense_cosine_min` (0.66); computed explicitly because the Chroma collection is L2, so retrieval scores cannot be used as cosine;
+  2. **BM25** — query-term coverage ≥ `bm25_coverage_min` (0.30) **and** ≥ `bm25_min_matches` (2) genuinely distinctive terms actually matched;
+  3. **lexical overlap** — fallback only when the dense signal is unavailable.
 
-## Setup
+  Thresholds are calibrated, not guessed: `scripts/calibrate_dense_threshold.py` runs the real retrieval path over 12 in-domain + 10 out-of-domain questions and reports recall / false-admit per branch. Current calibration: in-domain min 0.6847, out-of-domain max 0.6531 → 100% recall, 0% false-admit.
+- **Event-driven indexing** — upload → knowledge service records `INDEXING` and publishes `doc.index.requested` → rag service indexes and replies `succeeded | failed`; failures after 3 retries land in `doc.index.dlq`.
+- **Retrieval quality telemetry** — every retrieval publishes `retrieval.logged`; `GET /api/retrieval/quality` reports hit rate, average latency and sources.
+- **Student auth** — PBKDF2-SHA256 (200k iterations) password hashing, byte-compatible with the legacy store (existing accounts importable); HMAC-signed session cookie verified at the gateway without a database round trip.
+- **Semantic cache** — cosine-similarity cache (threshold 0.92) inside the rag service, with hit/miss statistics.
+- **RAG evaluation suite** — `scripts/evaluate_rag.py` reports Source Hit Rate, MRR, Precision@5, Recall@5 and latency percentiles; export to JSON / Markdown / CSV.
 
-Create and activate a virtual environment:
+## Services
 
-```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
+| Service | Stack | Port | Responsibility |
+| --- | --- | --- | --- |
+| `ftsm-gateway` | Spring Cloud Gateway | 8080 | Routing, session verification (`X-Student-Id` injection), admin key, SSE passthrough |
+| `ftsm-user` | Spring Boot 3 + MyBatis-Plus | 8101 | Student accounts, register/login/logout/me |
+| `ftsm-conversation` | Spring Boot 3 + MyBatis-Plus | 8102 | Per-student conversations and messages |
+| `ftsm-knowledge` | Spring Boot 3 + MyBatis-Plus + AMQP | 8103 | Doc state machine, query log, quality stats |
+| `ftsm-rag` | FastAPI + LangChain (repo root Python code) | 8104 | Retrieval, rerank, generation, cache, indexing consumer, static English UI |
+
+MQ contract: topic exchange `ftsm.doc.exchange` with `doc.index.requested | doc.index.succeeded | doc.index.failed | doc.deleted | retrieval.logged`.
+
+## Quick Start
+
+```bash
+# 1) Infrastructure (MySQL with auto-initialized schema, RabbitMQ, Qdrant)
+docker compose up -d
+
+# 2) Java services — build once, then run the jars (each service needs its own JVM)
+cd ftsm-java && mvn -DskipTests package && cd ..
+./scripts/stack_up.sh          # host mode: 5 processes + readiness probes
+# or: ./scripts/stack_docker.sh  # container mode (see script header)
+
+# 3) Open the gateway
+open http://127.0.0.1:8080/
 ```
 
-Install dependencies:
+`scripts/stack_up.sh` is the supported launcher: it loads `.env`, translates the
+`MYSQL_*` names into the `FTSM_MYSQL_*` names Spring expects, preflights the jars /
+venv / infrastructure, then probes each service on a **real route** and prints the
+HTTP code (so a half-started service is visible instead of silently counted as up).
 
-```powershell
-pip install -r requirements.txt
+### Environment
+
+⚠️ **Python reads `.env`; the Spring services do not.** They only see the process
+environment, so anything they need must be exported before launch (this is what
+`stack_up.sh` does). Names differ between the two sides:
+
+| Purpose | `.env` (Python) | Environment (Spring) |
+| --- | --- | --- |
+| MySQL | `MYSQL_HOST` / `MYSQL_PORT` / `MYSQL_USER` / `MYSQL_PASSWORD` | `FTSM_MYSQL_HOST` / `FTSM_MYSQL_PORT` / `FTSM_MYSQL_USER` / `FTSM_MYSQL_PASSWORD` |
+| RabbitMQ | — | `FTSM_RABBITMQ_HOST` / `FTSM_RABBITMQ_PORT` / `FTSM_RABBITMQ_USER` / `FTSM_RABBITMQ_PASSWORD` |
+| Session signing | — | `FTSM_SESSION_SECRET` (shared by gateway + user service; **both fall back to the same dev default**, so overriding it on only one side breaks every login) |
+| Admin key | `ADMIN_API_KEY` | `ADMIN_API_KEY` (gateway returns **500** on admin routes when unset) |
+| LLM | `DASHSCOPE_API_KEY`, `LLM_BACKEND`, `VERTEX_*`, `GOOGLE_APPLICATION_CREDENTIALS` | — (Python only) |
+
+`GOOGLE_APPLICATION_CREDENTIALS` in `.env` points at the container path `/ftsm/.gcp/...`;
+in host mode it must point at the repo's `.gcp/` copy instead — `stack_up.sh` rewrites
+it automatically when the configured path does not exist.
+
+Degradation is intentional: if RabbitMQ or the knowledge service is unreachable, the rag
+service reconnects with backoff, falls back to local training, and writes the resulting
+index state back over HTTP (see *Authority boundary* above).
+
+## API (through the gateway)
+
+| Method | Path | Routed to | Notes |
+| --- | --- | --- | --- |
+| POST | `/api/auth/register` `/api/auth/login` `/api/auth/logout` | user | `GET /api/auth/me` requires session |
+| GET/POST | `/api/conversations` | conversation | requires session; legacy response shapes preserved |
+| GET/DELETE | `/api/conversations/{id}` | conversation | requires session |
+| POST | `/api/upload` | rag | requires session; registers docs to knowledge |
+| GET | `/api/training/status` | **rag** | the rag service owns `DATA_DIR` and the index |
+| GET | `/api/documents` | **rag** | on-disk document list |
+| GET | `/api/knowledge/stats` `/api/retrieval/quality` | knowledge | DB (registry + query log) authority |
+| GET | `/api/kb/stats` | rag | manifest-backed index size + `rerank.active` |
+| POST | `/api/training/start` | rag | **session only** (student re-index of their own uploads) |
+| POST | `/api/knowledge/update` | rag | requires `X-Admin-Api-Key` |
+| POST | `/api/chat` | rag | requires session; SSE character streaming |
+| GET | `/api/cache/stats` `/api/scheduler/status` `/api/health` | rag | |
+
+## Development Notes
+
+- **Frontend**: the tracked UI (`web/guide.html` + `web/static/guide.js` for the English
+  student portal, `web/legacy.html` + `web/static/legacy.js` for the legacy single-app
+  view) calls the API with relative paths, so it works unchanged behind the gateway.
+- **Database schema**: `docs/sql/schema.sql` (auto-applied by the MySQL container on first start). Epoch-second timestamps keep parity with the legacy Python contracts.
+- **Build verification**: `mvn compile` (Java 17) passes for all five modules; Python sources pass `py_compile`. Runtime smoke tests require the infrastructure containers.
+- **Desktop packaging** (PyInstaller/Tauri) is frozen with the legacy delivery; run the services with `docker compose` + `mvn`/`uvicorn` instead.
+
+## RAG Evaluation
+
+```bash
+python scripts/evaluate_rag.py                                  # retrieval-only
+python scripts/evaluate_rag.py --report-dir results/rag_eval    # with JSON/MD/CSV reports
+python scripts/evaluate_rag.py --with-answer --report-dir results/rag_eval_answer
+python scripts/evaluate_cache.py --report-dir results/cache_eval
 ```
 
-If you plan to run the crawler, install the Playwright browser runtime:
+Metrics: Source Hit Rate, first-hit rank, MRR, Precision@5, Recall@5, Answer Hit Rate, latency P50/P90.
 
-```powershell
-python -m playwright install chromium
-```
+## Honest Limitations
 
-Create a local environment file from the example:
-
-```powershell
-Copy-Item .env.example .env
-```
-
-Then edit `.env` and set your DashScope key:
-
-```text
-DASHSCOPE_API_KEY=your_dashscope_api_key_here
-```
-
-Before starting the app, load the key into your shell. For example:
-
-```powershell
-$env:DASHSCOPE_API_KEY="your_dashscope_api_key_here"
-```
-
-Alternatively, use your deployment platform's secret manager or environment-variable configuration.
-
-## Run The Web App
-
-Start the FastAPI application:
-
-```powershell
-uvicorn web_app:app --host 127.0.0.1 --port 8000
-```
-
-Open:
-
-```text
-http://127.0.0.1:8000/
-```
-
-The web UI requires a local FTSM student account. Students can register and sign in from the login screen. Accounts are stored locally in `data/ukm_ftsm/student_accounts.json` with PBKDF2 password hashes; this file is ignored by git.
-
-Management endpoints for uploading, deleting, and re-indexing documents are separate from student login and require the `X-Admin-API-Key` header configured by `ADMIN_API_KEY`.
-
-Health check:
-
-```powershell
-Invoke-RestMethod http://127.0.0.1:8000/api/health
-```
-
-For LAN or server deployment, bind to all interfaces:
-
-```powershell
-uvicorn web_app:app --host 0.0.0.0 --port 8000
-```
-
-## Build Or Refresh The Vector Store
-
-The source documents live in `data/ukm_ftsm`. The vector store is generated into `chroma_db_ftsm`, which is intentionally ignored by git.
-
-During ingestion, each local file is normalized into a source-document record with a stable `doc_id`, content `hash`, `title`, `updated_at`, `file_path`, `source_type`, and `permission_scope`. Chunk metadata is written into Chroma with `doc_id`, `chunk_id`, `chunk_index`, `hash`, and source fields so retrieved answers can be traced back to the indexed document.
-
-Index state is stored in `data/ukm_ftsm/ingestion_manifest.json`. If a file hash is unchanged, indexing skips it. If a known file changes, the old chunk ids are deleted from Chroma before new chunks are added.
-
-Run indexing manually:
-
-```powershell
-python rag/vector_store.py
-```
-
-Or call the API after the web app is running:
-
-```powershell
-Invoke-RestMethod -Method Post http://127.0.0.1:8000/api/training/start
-```
-
-You can also upload documents from the UI or through `/api/upload`; uploaded files are saved into the configured knowledge-base directory and trigger background training.
-
-## Crawl FTSM Website
-
-Run the crawler:
-
-```powershell
-python scripts/scrape_ftsm_website.py
-```
-
-Limit the number of crawled pages:
-
-```powershell
-python scripts/scrape_ftsm_website.py --max-pages 80
-```
-
-Skip training after crawling:
-
-```powershell
-python scripts/scrape_ftsm_website.py --no-train
-```
-
-The scheduler can also run crawling periodically when the FastAPI app starts. Configure it in `config/scheduler.yml`.
-
-## Important Local Files
-
-The following are generated at runtime and ignored by git:
-
-- `.venv/`
-- `logs/`
-- `chroma_db_ftsm/`
-- nested `**/chroma_db/`
-- `md5_ftsm.text`
-- `data/ukm_ftsm/chat_sessions.json`
-- `data/ukm_ftsm/semantic_cache.json`
-- `data/ukm_ftsm/.last_crawl`
-
-## Notes
-
-This repository currently represents a local/demo RAG application. Before using it in production, add authentication for document upload, deletion, and training endpoints; implement vector deletion/update by document ID; and add evaluation tests for retrieval and answer quality.
+- Delivered as a graduation project: no production traffic, disaster recovery or compliance hardening.
+- MQ retry counters are in-process (a crash mid-retry resets the count); the dead-letter queue is the safety net.
+- The dense-side rejection gate computes direct cosine similarity (`_max_dense_cosine`) against the retrieved candidates; the bundled Qdrant container is currently unused (the vector store is ChromaDB).
+- Evaluation datasets are small, self-built and model-assisted; metrics are not generalization claims.
